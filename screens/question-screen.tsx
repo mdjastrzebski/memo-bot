@@ -1,57 +1,61 @@
-import { useState, useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useSpeech } from "../hooks/useSpeech"
-import { BotIcon as Robot, Volume2, ArrowRight } from "lucide-react"
-import type { WordResult } from "../types/types"
-import type React from "react"
-import { WordDiff } from "../components/word-diff"
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useSpeech } from "../src/hooks/useSpeech";
+import { BotIcon as Robot, Volume2, ArrowRight } from "lucide-react";
+import type { WordResult } from "../types/types";
+import type React from "react";
+import { WordDiff } from "../src/components/word-diff";
 
 interface QuestionScreenProps {
-  word: string
-  onAnswer: (result: WordResult) => void
+  word: string;
+  onAnswer: (result: WordResult) => void;
   progress: {
-    remaining: number
-    completed: number
-    currentStreak: number
-    currentMistakes: number
-  }
+    remaining: number;
+    completed: number;
+    currentStreak: number;
+    currentMistakes: number;
+  };
 }
 
-export default function QuestionScreen({ word, onAnswer, progress }: QuestionScreenProps) {
-  const [answer, setAnswer] = useState("")
-  const [showResult, setShowResult] = useState(false)
-  const [retryMode, setRetryMode] = useState(false)
-  const [retryAttempt, setRetryAttempt] = useState("")
-  const [incorrectAttempts, setIncorrectAttempts] = useState(0)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const retryInputRef = useRef<HTMLInputElement>(null)
-  const { speak } = useSpeech()
+export default function QuestionScreen({
+  word,
+  onAnswer,
+  progress,
+}: QuestionScreenProps) {
+  const [answer, setAnswer] = useState("");
+  const [showResult, setShowResult] = useState(false);
+  const [retryMode, setRetryMode] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState("");
+  const [incorrectAttempts, setIncorrectAttempts] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const retryInputRef = useRef<HTMLInputElement>(null);
+  const { speak } = useSpeech();
 
-  const isCorrect = answer.toLowerCase().trim() === word.toLowerCase().trim()
+  const isCorrect = answer.toLowerCase().trim() === word.toLowerCase().trim();
 
   useEffect(() => {
-    speak(word)
+    speak(word);
     if (inputRef.current) {
-      inputRef.current.focus()
+      inputRef.current.focus();
     }
-  }, [word, speak])
+  }, [word, speak]);
 
   useEffect(() => {
     if (retryMode && retryInputRef.current) {
-      retryInputRef.current.focus()
+      retryInputRef.current.focus();
     }
-  }, [retryMode])
+  }, [retryMode]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!showResult) {
-      setShowResult(true)
+      setShowResult(true);
 
       if (!isCorrect) {
         // Track incorrect attempt but don't send to parent yet
-        setIncorrectAttempts((prev) => prev + 1)
-        setRetryMode(true)
+        setIncorrectAttempts((prev) => prev + 1);
+        setRetryMode(true);
       } else {
         // If correct, proceed after delay with all accumulated attempts
         setTimeout(() => {
@@ -59,20 +63,21 @@ export default function QuestionScreen({ word, onAnswer, progress }: QuestionScr
             word,
             correct: true,
             attempt: answer,
-          })
-          setAnswer("")
-          setShowResult(false)
-          setRetryMode(false)
-          setRetryAttempt("")
-          setIncorrectAttempts(0)
-        }, 1500)
+          });
+          setAnswer("");
+          setShowResult(false);
+          setRetryMode(false);
+          setRetryAttempt("");
+          setIncorrectAttempts(0);
+        }, 1500);
       }
     }
-  }
+  };
 
   const handleRetrySubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    const isRetryCorrect = retryAttempt.toLowerCase().trim() === word.toLowerCase().trim()
+    e.preventDefault();
+    const isRetryCorrect =
+      retryAttempt.toLowerCase().trim() === word.toLowerCase().trim();
 
     if (isRetryCorrect) {
       // Send all accumulated attempts plus the successful one
@@ -83,36 +88,38 @@ export default function QuestionScreen({ word, onAnswer, progress }: QuestionScr
             word,
             correct: false,
             attempt: answer, // Using the original incorrect attempt
-          })
+          });
         }
         // Then send the successful attempt
         onAnswer({
           word,
           correct: true,
           attempt: retryAttempt,
-        })
-        setAnswer("")
-        setShowResult(false)
-        setRetryMode(false)
-        setRetryAttempt("")
-        setIncorrectAttempts(0)
-      }, 1500)
+        });
+        setAnswer("");
+        setShowResult(false);
+        setRetryMode(false);
+        setRetryAttempt("");
+        setIncorrectAttempts(0);
+      }, 1500);
     } else {
       // Just track the incorrect attempt but don't send to parent yet
-      setIncorrectAttempts((prev) => prev + 1)
-      setRetryAttempt("")
+      setIncorrectAttempts((prev) => prev + 1);
+      setRetryAttempt("");
       if (retryInputRef.current) {
-        retryInputRef.current.focus()
+        retryInputRef.current.focus();
       }
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center">
           <Robot className="w-24 h-24 mx-auto text-purple-300 animate-bounce" />
-          <h2 className="text-2xl font-bold text-white mb-4">Type what you hear!</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Type what you hear!
+          </h2>
 
           {/* Progress information */}
           <div className="flex justify-between text-purple-200 text-sm mb-4">
@@ -123,15 +130,23 @@ export default function QuestionScreen({ word, onAnswer, progress }: QuestionScr
             <div
               className="bg-purple-500 h-full rounded-full transition-all duration-300"
               style={{
-                width: `${(progress.completed / (progress.remaining + progress.completed)) * 100}%`,
+                width: `${
+                  (progress.completed /
+                    (progress.remaining + progress.completed)) *
+                  100
+                }%`,
               }}
             />
           </div>
           {progress.currentStreak > 0 && (
-            <div className="text-green-400 text-sm mb-2">Current streak: {progress.currentStreak}/2</div>
+            <div className="text-green-400 text-sm mb-2">
+              Current streak: {progress.currentStreak}/2
+            </div>
           )}
           {progress.currentMistakes > 0 && (
-            <div className="text-red-400 text-sm mb-2">Mistakes: {progress.currentMistakes}</div>
+            <div className="text-red-400 text-sm mb-2">
+              Mistakes: {progress.currentMistakes}
+            </div>
           )}
         </div>
 
@@ -165,7 +180,11 @@ export default function QuestionScreen({ word, onAnswer, progress }: QuestionScr
             {showResult && (
               <div className="text-center space-y-2 py-2">
                 <WordDiff expected={word} actual={answer} />
-                <div className={`text-xl font-bold ${isCorrect ? "text-green-400" : "text-red-400"}`}>
+                <div
+                  className={`text-xl font-bold ${
+                    isCorrect ? "text-green-400" : "text-red-400"
+                  }`}
+                >
                   {isCorrect ? "🎉 Correct! 🎉" : "Try again!"}
                 </div>
               </div>
@@ -197,6 +216,5 @@ export default function QuestionScreen({ word, onAnswer, progress }: QuestionScr
         </div>
       </div>
     </div>
-  )
+  );
 }
-
