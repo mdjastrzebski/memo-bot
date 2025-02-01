@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import type { WordState } from "../types/types";
+import type { WordState } from "../types";
 import { Trophy, RotateCcw } from "lucide-react";
 
 interface ResultsScreenProps {

@@ -2,7 +2,7 @@ import { useState } from "react";
 import InputScreen from "./screens/input-screen";
 import QuestionScreen from "./screens/question-screen";
 import ResultsScreen from "./screens/results-screen";
-import type { GameState, WordResult, WordState } from "./types/types";
+import type { GameState, WordResult, WordState } from "./types";
 
 function shuffleArray<T>(array: T[]): T[] {
   const newArray = [...array];
