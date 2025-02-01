@@ -88,16 +88,19 @@ export default function App() {
     return <InputScreen onWordsSubmit={handleWordsSubmit} />;
   }
 
+  const currentWord = gameState.queue[0];
+
   if (!isGameComplete) {
     return (
       <QuestionScreen
-        word={gameState.queue[0].word}
+        key={`${currentWord.word}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
+        word={currentWord.word}
         onAnswer={handleAnswer}
         progress={{
           remaining: gameState.queue.length,
           completed: gameState.completedWords.length,
-          currentStreak: gameState.queue[0].correctStreak,
-          currentMistakes: gameState.queue[0].incorrectCount,
+          currentStreak: currentWord.correctStreak,
+          currentMistakes: currentWord.incorrectCount,
         }}
       />
     );

@@ -34,9 +34,13 @@ export default function QuestionScreen({
   const isCorrect = input.toLowerCase().trim() === word.toLowerCase().trim();
 
   useEffect(() => {
-    speak(word);
-    inputRef.current?.focus();
-  }, [word, speak]);
+    const id = setTimeout(() => {
+      speak(word);
+      inputRef.current?.focus();
+    }, 150);
+
+    return () => clearTimeout(id);
+  }, [word]);
 
   useEffect(() => {
     if (retryMode && retryInputRef.current) {

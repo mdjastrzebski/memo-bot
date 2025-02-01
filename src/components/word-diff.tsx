@@ -7,23 +7,12 @@ interface WordDiffProps {
 
 export function WordDiff({ expected, actual }: WordDiffProps) {
   const differences = diffChars(expected.toLowerCase(), actual.toLowerCase());
-
-  // Calculate the number of incorrect characters
-  const incorrectChars = differences.reduce((count, part) => {
-    if (part.added || part.removed) {
-      return count + part.value.length;
-    }
-    return count;
-  }, 0);
-
-  // Otherwise show detailed character-by-character diff
   return (
     <div className="space-y-2 font-mono text-2xl tracking-wider">
       <div className="text-green-400">{expected}</div>
       {expected.toLowerCase() !== actual.toLowerCase() && (
         <div>
           {differences.map((part, index) => {
-            console.log("PART", part);
             if (part.added) {
               // Extra letters typed by user (wrong)
               return (
