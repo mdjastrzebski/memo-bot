@@ -7,13 +7,13 @@ import type { WordResult } from "../types";
 import type React from "react";
 import { WordDiff } from "../components/word-diff";
 
+const CORRECT_STATE_DURATION = 1000;
+
 export type QuestionScreenProps = {
   word: string;
   onAnswer: (result: WordResult) => void;
-  progress: {
-    remaining: number;
-    completed: number;
-  };
+  remaining: number;
+  completed: number;
 };
 
 type State = "question" | "retry" | "correct";
@@ -21,7 +21,8 @@ type State = "question" | "retry" | "correct";
 export default function QuestionScreen({
   word,
   onAnswer,
-  progress,
+  remaining,
+  completed,
 }: QuestionScreenProps) {
   const [state, setState] = useState<State>("question");
   const [input, setInput] = useState("");
@@ -29,13 +30,15 @@ export default function QuestionScreen({
   const inputRef = useRef<HTMLInputElement>(null);
   const { speak } = useSpeech();
 
-  useEffect(() => {
-    const id = setTimeout(() => {
-      speak(word);
-      inputRef.current?.focus();
-    }, 150);
+  // Prevent initial sound from playing twice in strict mode
+  const initialSoundPlayed = useRef(false);
 
-    return () => clearTimeout(id);
+  useEffect(() => {
+    if (initialSoundPlayed.current) return;
+    initialSoundPlayed.current = true;
+
+    speak(word);
+    inputRef.current?.focus();
   }, [word]);
 
   const handleSpeak = () => {
@@ -61,14 +64,12 @@ export default function QuestionScreen({
     setTimeout(() => {
       onAnswer({
         word,
-        correct: isFirstAttempt,
-        attempt: input,
+        isCorrect: isFirstAttempt,
       });
-    }, 1000);
+    }, CORRECT_STATE_DURATION);
   };
 
-  const progressPercentage =
-    (progress.completed / (progress.remaining + progress.completed)) * 100;
+  const progressPercentage = (completed / (remaining + completed)) * 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 p-4">
@@ -80,8 +81,8 @@ export default function QuestionScreen({
           </h2>
 
           <div className="flex justify-between text-purple-200 text-sm mb-4">
-            <span>To do: {progress.remaining}</span>
-            <span>Done: {progress.completed}</span>
+            <span>To do: {remaining}</span>
+            <span>Done: {completed}</span>
           </div>
           <div className="bg-white/10 rounded-full h-2 mb-4">
             <div

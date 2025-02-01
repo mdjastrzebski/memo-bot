@@ -4,15 +4,6 @@ import QuestionScreen from "./screens/question-screen";
 import ResultsScreen from "./screens/results-screen";
 import type { GameState, WordResult, WordState } from "./types";
 
-function shuffleArray<T>(array: T[]): T[] {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-}
-
 export default function App() {
   const [gameState, setGameState] = useState<GameState>({
     queue: [],
@@ -44,8 +35,8 @@ export default function App() {
       // Update the current word state based on the result
       const updatedWord: WordState = {
         ...currentWord,
-        correctStreak: result.correct ? currentWord.correctStreak + 1 : 0,
-        incorrectCount: result.correct
+        correctStreak: result.isCorrect ? currentWord.correctStreak + 1 : 0,
+        incorrectCount: result.isCorrect
           ? currentWord.incorrectCount
           : currentWord.incorrectCount + 1,
       };
@@ -59,7 +50,7 @@ export default function App() {
       } else {
         // For incorrect attempts or not enough correct streaks,
         // move to the end of the queue
-        if (!result.correct || updatedWord.correctStreak < 2) {
+        if (!result.isCorrect || updatedWord.correctStreak < 2) {
           newQueue.push(updatedWord);
         }
       }
@@ -96,12 +87,8 @@ export default function App() {
         key={`${currentWord.word}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
         word={currentWord.word}
         onAnswer={handleAnswer}
-        progress={{
-          remaining: gameState.queue.length,
-          completed: gameState.completedWords.length,
-          currentStreak: currentWord.correctStreak,
-          currentMistakes: currentWord.incorrectCount,
-        }}
+        remaining={gameState.queue.length}
+        completed={gameState.completedWords.length}
       />
     );
   }
@@ -112,4 +99,13 @@ export default function App() {
       onRestart={handleRestart}
     />
   );
+}
+
+function shuffleArray<T>(array: T[]): T[] {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
 }
