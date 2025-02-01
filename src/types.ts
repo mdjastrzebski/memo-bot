@@ -1,7 +1,6 @@
 export interface WordResult {
   word: string;
-  correct: boolean;
-  attempt: string;
+  isCorrect: boolean;
 }
 
 export interface WordState {

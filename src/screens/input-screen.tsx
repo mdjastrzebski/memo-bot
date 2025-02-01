@@ -1,9 +1,16 @@
-// ... rest of the file remains the same
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Rocket } from "lucide-react";
+
+const DEFAULT_WORDS = [
+  "apple",
+  "banana",
+  "spaceship",
+  "robot",
+  "moon",
+  "earth",
+];
 
 interface InputScreenProps {
   onWordsSubmit: (words: string[]) => void;
@@ -13,8 +20,8 @@ export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
   const [text, setText] = useState("");
 
   const handleSubmit = () => {
-    const words = text
-      .split("\n")
+    const input = text.trim() ? text.split("\n") : DEFAULT_WORDS;
+    const words = input
       .map((word) => word.trim())
       .filter((word) => word.length > 0);
     onWordsSubmit(words);
@@ -36,18 +43,13 @@ export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Enter words here...
-apple
-banana
-spacecraft
-robot"
+            placeholder={`Enter words here...\n${DEFAULT_WORDS.join("\n")}`}
             className="min-h-[200px] mb-4 bg-white/20 text-white placeholder:text-purple-200"
           />
 
           <Button
             onClick={handleSubmit}
             className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-3 rounded-xl shadow-lg transform transition hover:scale-105"
-            disabled={!text.trim()}
           >
             <Rocket className="mr-2 h-5 w-5" />
             Launch Mission!
