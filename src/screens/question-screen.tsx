@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSpeech } from "../hooks/useSpeech";
 import { BotIcon as Robot, Volume2, ArrowRight } from "lucide-react";
-import type { WordResult } from "../types/types";
+import type { WordResult } from "../types";
 import type React from "react";
 import { WordDiff } from "../components/word-diff";
 
