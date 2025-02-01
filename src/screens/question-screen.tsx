@@ -100,7 +100,7 @@ export default function QuestionScreen({
                     state === 'correct' ? 'text-green-400' : 'text-red-400'
                   }`}
                 >
-                  {state === 'correct' ? '🎉 Correct! 🎉' : 'Try again!'}
+                  {state === 'correct' ? 'Correct! 🎉' : 'Try again! 🙈'}
                 </div>
                 <WordDiff expected={word} actual={answer} />
               </div>
@@ -114,13 +114,15 @@ export default function QuestionScreen({
               <Play className="mr-2" style={{ height: '24', width: '24' }} />
             </Button>
 
+            <div className="h-2" />
+
             <form onSubmit={handleSubmit}>
               <Input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                className="w-full text-center text-2xl bg-white/20 text-white placeholder:text-purple-200"
+                className="w-full text-center text-3xl h-16 bg-white/20 text-white placeholder:text-purple-200"
                 placeholder={state === 'retry' ? 'Type it again...' : 'Type here...'}
                 disabled={state === 'correct'}
               />

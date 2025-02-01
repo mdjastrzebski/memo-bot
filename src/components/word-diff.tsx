@@ -8,8 +8,8 @@ export type WordDiffProps = {
 export function WordDiff({ expected, actual }: WordDiffProps) {
   const differences = diffChars(actual.toLowerCase(), expected.toLowerCase());
   return (
-    <div className="space-y-2 font-mono text-2xl tracking-wider">
-      <div className="text-green-400">{expected}</div>
+    <div className="space-y-4 font-mono text-xl tracking-wider">
+      <div className="text-green-400 text-3xl">{expected}</div>
 
       {expected.toLowerCase() !== actual.toLowerCase() && (
         <div>
