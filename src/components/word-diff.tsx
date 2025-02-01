@@ -1,4 +1,4 @@
-import { diffChars } from "diff";
+import { diffChars } from 'diff';
 
 export type WordDiffProps = {
   expected: string;
@@ -17,10 +17,7 @@ export function WordDiff({ expected, actual }: WordDiffProps) {
             // Extra letters typed by user (wrong)
             if (part.removed) {
               return (
-                <span
-                  key={index}
-                  className="text-red-500 line-through opacity-70"
-                >
+                <span key={index} className="text-red-500 line-through opacity-70">
                   {part.value}
                 </span>
               );
