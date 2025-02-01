@@ -7,6 +7,7 @@ import { Input } from '../components/ui/input';
 import { WordDiff } from '../components/word-diff';
 import { useSpeech } from '../hooks/use-speech';
 import type { WordResult } from '../types';
+import { playCorrect, playWrong } from '../utils/sounds';
 
 const CORRECT_STATE_DURATION = 1000;
 
@@ -52,6 +53,7 @@ export default function QuestionScreen({
 
     const isCorrect = input.toLowerCase().trim() === word.toLowerCase().trim();
     if (!isCorrect) {
+      //playWrong();
       speak(word);
       setState('retry');
       setAnswer(input);
@@ -59,6 +61,7 @@ export default function QuestionScreen({
       return;
     }
 
+    playCorrect();
     const isFirstAttempt = state === 'question';
     setState('correct');
     setAnswer(input);
