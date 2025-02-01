@@ -36,9 +36,7 @@ export default function QuestionScreen({
 
   useEffect(() => {
     speak(word);
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    inputRef.current?.focus();
   }, [word, speak]);
 
   useEffect(() => {
@@ -46,6 +44,11 @@ export default function QuestionScreen({
       retryInputRef.current.focus();
     }
   }, [retryMode]);
+
+  const handleSpeak = () => {
+    speak(word);
+    inputRef.current?.focus();
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +157,7 @@ export default function QuestionScreen({
           <div className="space-y-4">
             <Button
               type="button"
-              onClick={() => speak(word)}
+              onClick={handleSpeak}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl"
             >
               <Volume2 className="mr-2 h-5 w-5" />
