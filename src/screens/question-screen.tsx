@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSpeech } from "../hooks/use-speech";
-import { BotIcon as Robot, Volume2, ArrowRight } from "lucide-react";
+import { BotIcon as Robot, Play } from "lucide-react";
 import type { WordResult } from "../types";
 import type React from "react";
 import { WordDiff } from "../components/word-diff";
@@ -23,16 +23,15 @@ export default function QuestionScreen({
   onAnswer,
   progress,
 }: QuestionScreenProps) {
+  const [input, setInput] = useState("");
   const [answer, setAnswer] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [retryMode, setRetryMode] = useState(false);
-  const [retryAttempt, setRetryAttempt] = useState("");
-  const [incorrectAttempts, setIncorrectAttempts] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const retryInputRef = useRef<HTMLInputElement>(null);
   const { speak } = useSpeech();
 
-  const isCorrect = answer.toLowerCase().trim() === word.toLowerCase().trim();
+  const isCorrect = input.toLowerCase().trim() === word.toLowerCase().trim();
 
   useEffect(() => {
     speak(word);
@@ -52,26 +51,27 @@ export default function QuestionScreen({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
     if (!showResult) {
       setShowResult(true);
 
       if (!isCorrect) {
-        // Track incorrect attempt but don't send to parent yet
-        setIncorrectAttempts((prev) => prev + 1);
         setRetryMode(true);
+        setAnswer(input);
+        setInput("");
       } else {
+        setAnswer(input);
         // If correct, proceed after delay with all accumulated attempts
         setTimeout(() => {
           onAnswer({
             word,
             correct: true,
-            attempt: answer,
+            attempt: input,
           });
+          setInput("");
           setAnswer("");
           setShowResult(false);
           setRetryMode(false);
-          setRetryAttempt("");
-          setIncorrectAttempts(0);
         }, 1500);
       }
     }
@@ -79,36 +79,25 @@ export default function QuestionScreen({
 
   const handleRetrySubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const isRetryCorrect =
-      retryAttempt.toLowerCase().trim() === word.toLowerCase().trim();
 
+    const isRetryCorrect =
+      input.toLowerCase().trim() === word.toLowerCase().trim();
     if (isRetryCorrect) {
-      // Send all accumulated attempts plus the successful one
+      setAnswer(input);
       setTimeout(() => {
-        // First, send all the incorrect attempts
-        for (let i = 0; i < incorrectAttempts; i++) {
-          onAnswer({
-            word,
-            correct: false,
-            attempt: answer, // Using the original incorrect attempt
-          });
-        }
-        // Then send the successful attempt
         onAnswer({
           word,
-          correct: true,
-          attempt: retryAttempt,
+          correct: false,
+          attempt: input,
         });
+        setInput("");
         setAnswer("");
         setShowResult(false);
         setRetryMode(false);
-        setRetryAttempt("");
-        setIncorrectAttempts(0);
       }, 1500);
     } else {
-      // Just track the incorrect attempt but don't send to parent yet
-      setIncorrectAttempts((prev) => prev + 1);
-      setRetryAttempt("");
+      setAnswer(input);
+      setInput("");
       if (retryInputRef.current) {
         retryInputRef.current.focus();
       }
@@ -141,27 +130,30 @@ export default function QuestionScreen({
               }}
             />
           </div>
-          {progress.currentStreak > 0 && (
-            <div className="text-green-400 text-sm mb-2">
-              Current streak: {progress.currentStreak}/2
-            </div>
-          )}
-          {progress.currentMistakes > 0 && (
-            <div className="text-red-400 text-sm mb-2">
-              Mistakes: {progress.currentMistakes}
-            </div>
-          )}
         </div>
 
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white/20">
           <div className="space-y-4">
+            {/* Show diff of the original attempt */}
+            {showResult && (
+              <div className="text-center space-y-6 py-2">
+                <div
+                  className={`text-xl font-bold ${
+                    isCorrect ? "text-green-400" : "text-red-400"
+                  }`}
+                >
+                  {isCorrect ? "🎉 Correct! 🎉" : "Try again!"}
+                </div>
+                <WordDiff expected={word} actual={answer} />
+              </div>
+            )}
+
             <Button
               type="button"
               onClick={handleSpeak}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl"
             >
-              <Volume2 className="mr-2 h-5 w-5" />
-              Hear the word again
+              <Play className="mr-2" style={{ height: "24", width: "24" }} />
             </Button>
 
             {/* Original attempt form */}
@@ -170,27 +162,13 @@ export default function QuestionScreen({
                 <Input
                   ref={inputRef}
                   type="text"
-                  value={answer}
-                  onChange={(e) => setAnswer(e.target.value)}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
                   className="w-full text-center text-2xl bg-white/20 text-white placeholder:text-purple-200"
                   placeholder="Type the word here..."
                   disabled={showResult}
                 />
               </form>
-            )}
-
-            {/* Show diff of the original attempt */}
-            {showResult && (
-              <div className="text-center space-y-2 py-2">
-                <WordDiff expected={word} actual={answer} />
-                <div
-                  className={`text-xl font-bold ${
-                    isCorrect ? "text-green-400" : "text-red-400"
-                  }`}
-                >
-                  {isCorrect ? "🎉 Correct! 🎉" : "Try again!"}
-                </div>
-              </div>
             )}
 
             {/* Retry form */}
@@ -200,18 +178,12 @@ export default function QuestionScreen({
                   <Input
                     ref={retryInputRef}
                     type="text"
-                    value={retryAttempt}
-                    onChange={(e) => setRetryAttempt(e.target.value)}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
                     className="w-full text-center text-2xl bg-white/20 text-white placeholder:text-purple-200 pr-12"
                     placeholder="Type it again..."
                     autoFocus
                   />
-                  <Button
-                    type="submit"
-                    className="absolute right-1 top-1 bottom-1 px-3 bg-purple-500 hover:bg-purple-600"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
                 </div>
               </form>
             )}
