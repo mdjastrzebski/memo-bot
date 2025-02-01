@@ -1,16 +1,14 @@
-import { Button } from "@/components/ui/button";
-import type { WordState } from "../types";
-import { Trophy, RotateCcw } from "lucide-react";
+import { RotateCcw, Trophy } from 'lucide-react';
+
+import { Button } from '../components/ui/button';
+import type { WordState } from '../types';
 
 interface ResultsScreenProps {
   completedWords: WordState[];
   onRestart: () => void;
 }
 
-export default function ResultsScreen({
-  completedWords,
-  onRestart,
-}: ResultsScreenProps) {
+export default function ResultsScreen({ completedWords, onRestart }: ResultsScreenProps) {
   // Calculate scores
   const calculateWordScore = (word: WordState) => {
     // Base score is 100 points
@@ -23,17 +21,14 @@ export default function ResultsScreen({
   };
 
   const totalPossibleScore = completedWords.length * 100;
-  const actualScore = completedWords.reduce(
-    (sum, word) => sum + calculateWordScore(word),
-    0
-  );
+  const actualScore = completedWords.reduce((sum, word) => sum + calculateWordScore(word), 0);
   const percentage = Math.round((actualScore / totalPossibleScore) * 100);
 
   const getEmoji = (percentage: number) => {
-    if (percentage === 100) return "🏆";
-    if (percentage >= 80) return "🌟";
-    if (percentage >= 60) return "👍";
-    return "💪";
+    if (percentage === 100) return '🏆';
+    if (percentage >= 80) return '🌟';
+    if (percentage >= 60) return '👍';
+    return '💪';
   };
 
   return (
@@ -65,9 +60,7 @@ export default function ResultsScreen({
                       Score: {calculateWordScore(word)}
                     </span>
                     {word.incorrectCount > 0 && (
-                      <span className="text-sm text-red-400">
-                        ({word.incorrectCount} mistakes)
-                      </span>
+                      <span className="text-sm text-red-400">({word.incorrectCount} mistakes)</span>
                     )}
                   </div>
                 </div>

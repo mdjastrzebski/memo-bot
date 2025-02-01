@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useSpeech } from "../hooks/use-speech";
-import { BotIcon as Robot, Play } from "lucide-react";
-import type { WordResult } from "../types";
-import type React from "react";
-import { WordDiff } from "../components/word-diff";
+import { useEffect, useRef, useState } from 'react';
+import { BotIcon as Robot, Play } from 'lucide-react';
+import type React from 'react';
+
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { WordDiff } from '../components/word-diff';
+import { useSpeech } from '../hooks/use-speech';
+import type { WordResult } from '../types';
 
 const CORRECT_STATE_DURATION = 1000;
 
@@ -16,7 +17,7 @@ export type QuestionScreenProps = {
   completed: number;
 };
 
-type State = "question" | "retry" | "correct";
+type State = 'question' | 'retry' | 'correct';
 
 export default function QuestionScreen({
   word,
@@ -24,9 +25,9 @@ export default function QuestionScreen({
   remaining,
   completed,
 }: QuestionScreenProps) {
-  const [state, setState] = useState<State>("question");
-  const [input, setInput] = useState("");
-  const [answer, setAnswer] = useState("");
+  const [state, setState] = useState<State>('question');
+  const [input, setInput] = useState('');
+  const [answer, setAnswer] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const { speak } = useSpeech();
 
@@ -52,14 +53,14 @@ export default function QuestionScreen({
     const isCorrect = input.toLowerCase().trim() === word.toLowerCase().trim();
     if (!isCorrect) {
       speak(word);
-      setState("retry");
+      setState('retry');
       setAnswer(input);
-      setInput("");
+      setInput('');
       return;
     }
 
-    const isFirstAttempt = state === "question";
-    setState("correct");
+    const isFirstAttempt = state === 'question';
+    setState('correct');
     setAnswer(input);
     setTimeout(() => {
       onAnswer({
@@ -76,9 +77,7 @@ export default function QuestionScreen({
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center">
           <Robot className="w-24 h-24 mx-auto text-purple-300 animate-bounce" />
-          <h2 className="text-2xl font-bold text-white mb-4">
-            Type what you hear!
-          </h2>
+          <h2 className="text-2xl font-bold text-white mb-4">Type what you hear!</h2>
 
           <div className="flex justify-between text-purple-200 text-sm mb-4">
             <span>To do: {remaining}</span>
@@ -94,14 +93,14 @@ export default function QuestionScreen({
 
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white/20">
           <div className="space-y-4">
-            {state !== "question" && (
+            {state !== 'question' && (
               <div className="text-center space-y-6 py-2">
                 <div
                   className={`text-xl font-bold ${
-                    state === "correct" ? "text-green-400" : "text-red-400"
+                    state === 'correct' ? 'text-green-400' : 'text-red-400'
                   }`}
                 >
-                  {state === "correct" ? "🎉 Correct! 🎉" : "Try again!"}
+                  {state === 'correct' ? '🎉 Correct! 🎉' : 'Try again!'}
                 </div>
                 <WordDiff expected={word} actual={answer} />
               </div>
@@ -112,7 +111,7 @@ export default function QuestionScreen({
               onClick={handleSpeak}
               className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl"
             >
-              <Play className="mr-2" style={{ height: "24", width: "24" }} />
+              <Play className="mr-2" style={{ height: '24', width: '24' }} />
             </Button>
 
             <form onSubmit={handleSubmit}>
@@ -122,10 +121,8 @@ export default function QuestionScreen({
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 className="w-full text-center text-2xl bg-white/20 text-white placeholder:text-purple-200"
-                placeholder={
-                  state === "retry" ? "Type it again..." : "Type here..."
-                }
-                disabled={state === "correct"}
+                placeholder={state === 'retry' ? 'Type it again...' : 'Type here...'}
+                disabled={state === 'correct'}
               />
             </form>
           </div>

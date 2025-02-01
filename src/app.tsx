@@ -1,8 +1,9 @@
-import { useState } from "react";
-import InputScreen from "./screens/input-screen";
-import QuestionScreen from "./screens/question-screen";
-import ResultsScreen from "./screens/results-screen";
-import type { GameState, WordResult, WordState } from "./types";
+import { useState } from 'react';
+
+import InputScreen from './screens/input-screen';
+import QuestionScreen from './screens/question-screen';
+import ResultsScreen from './screens/results-screen';
+import type { GameState, WordResult, WordState } from './types';
 
 export default function App() {
   const [gameState, setGameState] = useState<GameState>({
@@ -18,7 +19,7 @@ export default function App() {
         word,
         correctStreak: 0,
         incorrectCount: 0,
-      }))
+      })),
     );
 
     setGameState({
@@ -72,8 +73,7 @@ export default function App() {
   };
 
   // Calculate if the game is complete (queue is empty)
-  const isGameComplete =
-    gameState.queue.length === 0 && gameState.completedWords.length > 0;
+  const isGameComplete = gameState.queue.length === 0 && gameState.completedWords.length > 0;
 
   if (gameState.queue.length === 0 && gameState.completedWords.length === 0) {
     return <InputScreen onWordsSubmit={handleWordsSubmit} />;
@@ -93,12 +93,7 @@ export default function App() {
     );
   }
 
-  return (
-    <ResultsScreen
-      completedWords={gameState.completedWords}
-      onRestart={handleRestart}
-    />
-  );
+  return <ResultsScreen completedWords={gameState.completedWords} onRestart={handleRestart} />;
 }
 
 function shuffleArray<T>(array: T[]): T[] {
