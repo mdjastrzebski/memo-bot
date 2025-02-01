@@ -34,7 +34,7 @@ export default function ResultsScreen({ completedWords, onRestart }: ResultsScre
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 p-4">
       <div className="max-w-md mx-auto space-y-6">
-        <div className="text-center">
+        <div className="text-center space-y-6">
           <Trophy className="w-24 h-24 mx-auto text-yellow-400 animate-pulse" />
           <h2 className="text-4xl font-bold text-white mb-2">
             Mission Complete! {getEmoji(percentage)}
@@ -43,7 +43,7 @@ export default function ResultsScreen({ completedWords, onRestart }: ResultsScre
 
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white/20">
           <div className="text-center space-y-4">
-            <div className="text-6xl font-bold text-white">{percentage}%</div>
+            <div className="text-6xl font-bold text-green-600">{percentage}%</div>
             <p className="text-purple-200">
               Score: {actualScore} / {totalPossibleScore}
             </p>
