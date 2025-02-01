@@ -1,3 +1,17 @@
-// Move from types/types.ts to src/types/types.ts
-// Content remains the same
+export interface WordResult {
+  word: string;
+  correct: boolean;
+  attempt: string;
+}
 
+export interface WordState {
+  word: string;
+  correctStreak: number;
+  incorrectCount: number;
+}
+
+export interface GameState {
+  queue: WordState[];
+  results: WordResult[];
+  completedWords: WordState[];
+}

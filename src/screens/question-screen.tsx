@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useSpeech } from "../hooks/useSpeech";
+import { useSpeech } from "../hooks/use-speech";
 import { BotIcon as Robot, Volume2, ArrowRight } from "lucide-react";
 import type { WordResult } from "../types";
 import type React from "react";
