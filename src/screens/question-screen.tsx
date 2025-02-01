@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useSpeech } from "../hooks/use-speech";
+import { useEffect, useRef,useState } from "react";
 import { BotIcon as Robot, Play } from "lucide-react";
-import type { WordResult } from "../types";
 import type React from "react";
+
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { WordDiff } from "../components/word-diff";
+import { useSpeech } from "../hooks/use-speech";
+import type { WordResult } from "../types";
 
 const CORRECT_STATE_DURATION = 1000;
 

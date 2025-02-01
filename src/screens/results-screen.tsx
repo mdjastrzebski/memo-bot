@@ -1,6 +1,7 @@
-import { Button } from "@/components/ui/button";
+import { RotateCcw,Trophy } from "lucide-react";
+
+import { Button } from "../components/ui/button";
 import type { WordState } from "../types";
-import { Trophy, RotateCcw } from "lucide-react";
 
 interface ResultsScreenProps {
   completedWords: WordState[];

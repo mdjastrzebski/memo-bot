@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Rocket } from "lucide-react";
+
+import { Button } from "../components/ui/button";
+import { Textarea } from "../components/ui/textarea";
 
 const DEFAULT_WORDS = [
   "apple",
