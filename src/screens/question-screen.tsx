@@ -6,9 +6,10 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { WordDiff } from '../components/word-diff';
 import type { WordResult } from '../types';
-import type { Language } from '../utils/languages';
+import { SPECIAL_CHARACTERS, type Language } from '../utils/languages';
 import { playCorrect } from '../utils/sounds';
 import { speak } from '../utils/speak';
+import { SpecialCharactersKeyboard } from '../components/special-chars-keyboard';
 
 const CORRECT_STATE_DURATION = 1000;
 
@@ -133,16 +134,23 @@ export default function QuestionScreen({
             <div className="h-2" />
 
             <form onSubmit={handleSubmit}>
-              <Input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                className="w-full text-center text-3xl h-16 bg-white/20 text-white placeholder:text-purple-200"
-                placeholder={state === 'retry' ? 'Type it again...' : 'Type here...'}
-                disabled={state === 'correct'}
-                spellCheck={false}
-              />
+              <div className="space-y-3">
+                <Input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  className="w-full text-center text-3xl h-16 bg-white/20 text-white placeholder:text-purple-200"
+                  placeholder={state === 'retry' ? 'Type it again...' : 'Type here...'}
+                  disabled={state === 'correct'}
+                  spellCheck={false}
+                />
+
+                <SpecialCharactersKeyboard
+                  characters={SPECIAL_CHARACTERS[language.code]}
+                  onCharacterClick={(char) => setInput((prev) => prev + char)}
+                />
+              </div>
             </form>
 
             <div className="h-4" />

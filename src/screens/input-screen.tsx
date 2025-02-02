@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Rocket } from 'lucide-react';
 
-import { LanguageSelector } from '../components/LanguageSelector';
+import { LanguageSelector } from '../components/language-selector';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
 import type { Language } from '../utils/languages';
