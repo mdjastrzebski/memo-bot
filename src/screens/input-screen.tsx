@@ -1,22 +1,26 @@
 import { useState } from 'react';
 import { Rocket } from 'lucide-react';
 
+import { LanguageSelector } from '../components/LanguageSelector';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
+import type { Language } from '../utils/languages';
+import { LANGUAGES } from '../utils/languages';
 
 const DEFAULT_WORDS = ['robot', 'spaceship', 'rocket', 'moon', 'star'];
 
 interface InputScreenProps {
-  onWordsSubmit: (words: string[]) => void;
+  onWordsSubmit: (words: string[], language: Language) => void;
 }
 
 export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
   const [text, setText] = useState('');
+  const [language, setLanguage] = useState<Language>(LANGUAGES[0]);
 
   const handleSubmit = () => {
     const input = text.trim() ? text.split('\n') : DEFAULT_WORDS;
     const words = input.map((word) => word.trim()).filter((word) => word.length > 0);
-    onWordsSubmit(words);
+    onWordsSubmit(words, language);
   };
 
   return (
@@ -28,11 +32,13 @@ export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
         </div>
 
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white/20">
+          <LanguageSelector value={language} onChange={setLanguage} />
+
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder={`Enter words here...\n${DEFAULT_WORDS.join('\n')}`}
-            className="min-h-[200px] mb-4 bg-white/20 text-white placeholder:text-purple-200"
+            className="min-h-[200px] my-4 bg-white/20 text-white placeholder:text-purple-200"
           />
 
           <Button

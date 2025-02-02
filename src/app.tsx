@@ -6,6 +6,8 @@ import InputScreen from './screens/input-screen';
 import QuestionScreen from './screens/question-screen';
 import ResultsScreen from './screens/results-screen';
 import type { GameState, WordResult, WordState } from './types';
+import type { Language } from './utils/languages';
+import { LANGUAGES } from './utils/languages';
 
 const STREAK_GOAL = 2;
 
@@ -14,6 +16,7 @@ export default function App() {
     queue: [],
     results: [],
     completedWords: [],
+    language: LANGUAGES[0],
   });
 
   const isSetupState = gameState.queue.length === 0 && gameState.completedWords.length === 0;
@@ -21,7 +24,7 @@ export default function App() {
   const isLearningState = gameState.queue.length > 0;
   useBeforeUnload(isLearningState);
 
-  const handleWordsSubmit = (words: string[]) => {
+  const handleWordsSubmit = (words: string[], language: Language) => {
     // Initialize queue with shuffled words
     const initialQueue = shuffleArray(
       words.map((word) => ({
@@ -35,6 +38,7 @@ export default function App() {
       queue: initialQueue,
       results: [],
       completedWords: [],
+      language,
     });
   };
 
@@ -52,6 +56,7 @@ export default function App() {
       queue: [],
       results: [],
       completedWords: [],
+      language: gameState.language,
     });
   };
 
@@ -88,6 +93,7 @@ export default function App() {
       }
 
       return {
+        ...prev,
         queue: newQueue,
         results: [...prev.results, result],
         completedWords: newCompletedWords,
@@ -109,6 +115,7 @@ export default function App() {
       <QuestionScreen
         key={`${currentWord.word}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
         word={currentWord.word}
+        language={gameState.language}
         onAnswer={handleAnswer}
         remaining={remaining}
         completed={completed}
