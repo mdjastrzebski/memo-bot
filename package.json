@@ -1,6 +1,8 @@
 {
-  "name": "memorize",
-  "version": "0.1.0",
+  "name": "memo-bot",
+  "version": "0.2.0",
+  "description": "Memo Bot is a fun and engaging spelling practice tool for children.",
+  "license": "MIT",
   "type": "module",
   "private": true,
   "scripts": {
