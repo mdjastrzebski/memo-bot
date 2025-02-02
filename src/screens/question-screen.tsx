@@ -128,6 +128,7 @@ export default function QuestionScreen({
                 className="w-full text-center text-3xl h-16 bg-white/20 text-white placeholder:text-purple-200"
                 placeholder={state === 'retry' ? 'Type it again...' : 'Type here...'}
                 disabled={state === 'correct'}
+                spellCheck={false}
               />
             </form>
           </div>
