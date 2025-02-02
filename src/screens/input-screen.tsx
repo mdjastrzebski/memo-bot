@@ -4,7 +4,7 @@ import { Rocket } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
 
-const DEFAULT_WORDS = ['apple', 'banana', 'spaceship', 'robot', 'moon', 'earth'];
+const DEFAULT_WORDS = ['robot', 'spaceship', 'rocket', 'moon', 'star'];
 
 interface InputScreenProps {
   onWordsSubmit: (words: string[]) => void;
@@ -23,7 +23,7 @@ export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 p-4">
       <div className="max-w-md mx-auto space-y-6">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-white mb-2">Space Spelling Academy 🚀</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">Memo Bot 🤖</h1>
           <p className="text-purple-200">Enter your spelling words below, one per line!</p>
         </div>
 
