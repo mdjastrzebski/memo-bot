@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { useBeforeUnload } from './hooks/use-before-unload';
 import InputScreen from './screens/input-screen';
 import QuestionScreen from './screens/question-screen';
 import ResultsScreen from './screens/results-screen';
@@ -13,6 +14,11 @@ export default function App() {
     results: [],
     completedWords: [],
   });
+
+  const isSetupState = gameState.queue.length === 0 && gameState.completedWords.length === 0;
+  const isResultsState = gameState.queue.length === 0 && gameState.completedWords.length > 0;
+  const isLearningState = gameState.queue.length > 0;
+  useBeforeUnload(isLearningState);
 
   const handleWordsSubmit = (words: string[]) => {
     // Initialize queue with shuffled words
@@ -30,6 +36,22 @@ export default function App() {
       completedWords: [],
     });
   };
+
+  if (isSetupState) {
+    return <InputScreen onWordsSubmit={handleWordsSubmit} />;
+  }
+
+  const handleRestart = () => {
+    setGameState({
+      queue: [],
+      results: [],
+      completedWords: [],
+    });
+  };
+
+  if (isResultsState) {
+    return <ResultsScreen completedWords={gameState.completedWords} onRestart={handleRestart} />;
+  }
 
   const handleAnswer = (result: WordResult) => {
     setGameState((prev) => {
@@ -62,27 +84,7 @@ export default function App() {
     });
   };
 
-  const handleRestart = () => {
-    setGameState({
-      queue: [],
-      results: [],
-      completedWords: [],
-    });
-  };
-
-  // Calculate if the game is complete (queue is empty)
-
-  if (gameState.queue.length === 0 && gameState.completedWords.length === 0) {
-    return <InputScreen onWordsSubmit={handleWordsSubmit} />;
-  }
-
   const currentWord = gameState.queue[0];
-
-  const isGameComplete = gameState.queue.length === 0 && gameState.completedWords.length > 0;
-  if (isGameComplete) {
-    return <ResultsScreen completedWords={gameState.completedWords} onRestart={handleRestart} />;
-  }
-
   const remaining = gameState.queue.reduce(
     (acc, word) => acc + STREAK_GOAL - word.correctStreak,
     0,
