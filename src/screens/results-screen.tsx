@@ -1,7 +1,9 @@
+import { useEffect } from 'react';
 import { RotateCcw, Trophy } from 'lucide-react';
 
 import { Button } from '../components/ui/button';
 import type { WordState } from '../types';
+import { playCompleted } from '../utils/sounds';
 
 interface ResultsScreenProps {
   completedWords: WordState[];
@@ -9,6 +11,10 @@ interface ResultsScreenProps {
 }
 
 export default function ResultsScreen({ completedWords, onRestart }: ResultsScreenProps) {
+  useEffect(() => {
+    playCompleted();
+  }, []);
+
   // Calculate scores
   const calculateWordScore = (word: WordState) => {
     // Base score is 100 points

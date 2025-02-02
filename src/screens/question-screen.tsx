@@ -5,8 +5,9 @@ import type React from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { WordDiff } from '../components/word-diff';
-import { useSpeech } from '../hooks/use-speech';
 import type { WordResult } from '../types';
+import { playCorrect } from '../utils/sounds';
+import { speak } from '../utils/speak';
 
 const CORRECT_STATE_DURATION = 1000;
 
@@ -29,12 +30,11 @@ export default function QuestionScreen({
   const [input, setInput] = useState('');
   const [answer, setAnswer] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
-  const { speak } = useSpeech();
 
-  // Prevent initial sound from playing twice in strict mode
   const initialSoundPlayed = useRef(false);
 
   useEffect(() => {
+    // Prevent initial sound from playing twice in strict mode
     if (initialSoundPlayed.current) return;
     initialSoundPlayed.current = true;
 
@@ -59,6 +59,7 @@ export default function QuestionScreen({
       return;
     }
 
+    playCorrect();
     const isFirstAttempt = state === 'question';
     setState('correct');
     setAnswer(input);
@@ -125,6 +126,7 @@ export default function QuestionScreen({
                 className="w-full text-center text-3xl h-16 bg-white/20 text-white placeholder:text-purple-200"
                 placeholder={state === 'retry' ? 'Type it again...' : 'Type here...'}
                 disabled={state === 'correct'}
+                spellCheck={false}
               />
             </form>
           </div>
