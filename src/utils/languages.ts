@@ -12,3 +12,15 @@ export const LANGUAGES: Language[] = [
   { code: 'es-ES', name: 'Spanish', voice: 'es-ES', flag: '🇪🇸' },
   { code: 'pt-PT', name: 'Portuguese', voice: 'pt-PT', flag: '🇵🇹' },
 ];
+
+export type SpecialCharacters = {
+  [key: string]: string[]; // language code -> special characters
+};
+
+export const SPECIAL_CHARACTERS: SpecialCharacters = {
+  'en-US': [],
+  'en-GB': [],
+  'pl-PL': ['ą', 'ć', 'ę', 'ł', 'ń', 'ó', 'ś', 'ź', 'ż'],
+  'es-ES': ['á', 'é', 'í', 'ñ', 'ó', 'ú', 'ü', '¿', '¡'],
+  'pt-PT': ['ã', 'á', 'à', 'â', 'ç', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú'],
+};
