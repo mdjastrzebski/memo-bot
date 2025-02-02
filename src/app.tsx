@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { Footer } from './components/footer';
 import { useBeforeUnload } from './hooks/use-before-unload';
 import InputScreen from './screens/input-screen';
 import QuestionScreen from './screens/question-screen';
@@ -38,7 +39,12 @@ export default function App() {
   };
 
   if (isSetupState) {
-    return <InputScreen onWordsSubmit={handleWordsSubmit} />;
+    return (
+      <>
+        <InputScreen onWordsSubmit={handleWordsSubmit} />
+        <Footer />
+      </>
+    );
   }
 
   const handleRestart = () => {
@@ -50,7 +56,12 @@ export default function App() {
   };
 
   if (isResultsState) {
-    return <ResultsScreen completedWords={gameState.completedWords} onRestart={handleRestart} />;
+    return (
+      <>
+        <ResultsScreen completedWords={gameState.completedWords} onRestart={handleRestart} />
+        <Footer />
+      </>
+    );
   }
 
   const handleAnswer = (result: WordResult) => {
@@ -94,13 +105,16 @@ export default function App() {
     gameState.completedWords.reduce((acc, word) => acc + word.correctStreak, 0);
 
   return (
-    <QuestionScreen
-      key={`${currentWord.word}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
-      word={currentWord.word}
-      onAnswer={handleAnswer}
-      remaining={remaining}
-      completed={completed}
-    />
+    <>
+      <QuestionScreen
+        key={`${currentWord.word}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
+        word={currentWord.word}
+        onAnswer={handleAnswer}
+        remaining={remaining}
+        completed={completed}
+      />
+      <Footer />
+    </>
   );
 }
 

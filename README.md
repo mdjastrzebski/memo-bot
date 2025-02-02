@@ -1,13 +1,13 @@
-Your child struggles with spelling? 😔 You're not alone! 🫂
+Is your child struggling with spelling? 😔 You're not alone!
 
-## Memo Bot
+## Meet Memo Bot 🤖
 
-Meet Memo Bot 🤖, where spelling practice is fun! ✨
+Quick, fun, effective spelling practice! ✨
 
-### Why It Matters? 🤔
+### Why It Matters?
 
-- Playing is fun and helps your child learn 🎮
-- Consistent practice builds strong spelling skills 🔄  
-- Engaging approach turns repetition into enjoyable challenge 😊
+- Play sparks learning 🎮
+- Regular practice sharpens skills 🔄
+- Fun challenges replace dull drills 😊
 
 [Play with Memo Bot!](https://memo-bot.netlify.app) 🚀
