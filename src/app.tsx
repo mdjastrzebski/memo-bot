@@ -7,6 +7,7 @@ import InputScreen from './screens/input-screen';
 import QuestionScreen from './screens/question-screen';
 import ResultsScreen from './screens/results-screen';
 import type { GameState, WordResult, WordState } from './types';
+import { LANGUAGES } from './utils/languages';
 
 const STREAK_GOAL = 2;
 const DIFFICULTY_SCHEDULES: Record<StudyMode, number> = {
@@ -20,19 +21,16 @@ export default function App() {
     queue: [],
     results: [],
     completedWords: [],
+    language: LANGUAGES[0],
+    scheduleAfter: DIFFICULTY_SCHEDULES.learning,
   });
-  const [scheduleAfter, setScheduleAfter] = useState(DIFFICULTY_SCHEDULES.learning);
 
   const isSetupState = gameState.queue.length === 0 && gameState.completedWords.length === 0;
   const isResultsState = gameState.queue.length === 0 && gameState.completedWords.length > 0;
   const isLearningState = gameState.queue.length > 0;
   useBeforeUnload(isLearningState);
 
-  const handleWordsSubmit = ({ words, mode }: WordsSubmitParams) => {
-    // Set schedule based on selected mode
-    setScheduleAfter(DIFFICULTY_SCHEDULES[mode]);
-
-    // Initialize queue with shuffled words
+  const handleWordsSubmit = ({ words, mode, language }: WordsSubmitParams) => {
     const initialQueue = shuffleArray(
       words.map((word) => ({
         word,
@@ -45,6 +43,8 @@ export default function App() {
       queue: initialQueue,
       results: [],
       completedWords: [],
+      language,
+      scheduleAfter: DIFFICULTY_SCHEDULES[mode],
     });
   };
 
@@ -62,6 +62,8 @@ export default function App() {
       queue: [],
       results: [],
       completedWords: [],
+      language: gameState.language,
+      scheduleAfter: gameState.scheduleAfter,
     });
   };
 
@@ -82,6 +84,7 @@ export default function App() {
       if (result.skipped) {
         const skippedWord = { ...currentWord, skipped: true };
         return {
+          ...prev,
           queue: remainingQueue,
           results: [...prev.results, result],
           completedWords: [...prev.completedWords, skippedWord],
@@ -105,11 +108,12 @@ export default function App() {
         newCompletedWords.push(updatedWord);
       } else {
         // Insert the word scheduleAfter positions ahead, or at the end if queue is too short
-        const insertPosition = Math.min(scheduleAfter - 1, newQueue.length);
+        const insertPosition = Math.min(gameState.scheduleAfter - 1, newQueue.length);
         newQueue.splice(insertPosition, 0, updatedWord);
       }
 
       return {
+        ...prev,
         queue: newQueue,
         results: [...prev.results, result],
         completedWords: newCompletedWords,
@@ -131,6 +135,7 @@ export default function App() {
       <QuestionScreen
         key={`${currentWord.word}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
         word={currentWord.word}
+        language={gameState.language}
         onAnswer={handleAnswer}
         remaining={remaining}
         completed={completed}

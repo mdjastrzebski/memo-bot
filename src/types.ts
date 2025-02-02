@@ -1,3 +1,5 @@
+import type { Language } from './utils/languages';
+
 export interface WordResult {
   word: string;
   isCorrect: boolean;
@@ -15,4 +17,6 @@ export interface GameState {
   queue: WordState[];
   results: WordResult[];
   completedWords: WordState[];
+  language: Language;
+  scheduleAfter: number;
 }

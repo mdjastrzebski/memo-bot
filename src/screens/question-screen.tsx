@@ -6,6 +6,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { WordDiff } from '../components/word-diff';
 import type { WordResult } from '../types';
+import type { Language } from '../utils/languages';
 import { playCorrect } from '../utils/sounds';
 import { speak } from '../utils/speak';
 
@@ -13,6 +14,7 @@ const CORRECT_STATE_DURATION = 1000;
 
 export type QuestionScreenProps = {
   word: string;
+  language: Language;
   onAnswer: (result: WordResult) => void;
   remaining: number;
   completed: number;
@@ -22,6 +24,7 @@ type State = 'question' | 'retry' | 'correct';
 
 export default function QuestionScreen({
   word,
+  language,
   onAnswer,
   remaining,
   completed,
@@ -38,12 +41,12 @@ export default function QuestionScreen({
     if (initialSoundPlayed.current) return;
     initialSoundPlayed.current = true;
 
-    speak(word);
+    speak(word, language);
     inputRef.current?.focus();
-  }, [word]);
+  }, [word, language]);
 
   const handleSpeak = () => {
-    speak(word);
+    speak(word, language);
     inputRef.current?.focus();
   };
 
@@ -55,7 +58,7 @@ export default function QuestionScreen({
 
     const isCorrect = normalizedInput === normalizedWord;
     if (!isCorrect) {
-      speak(word);
+      speak(word, language);
       setState('retry');
       setAnswer(input);
       setInput('');
