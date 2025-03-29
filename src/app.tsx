@@ -23,6 +23,7 @@ export default function App() {
     completedWords: [],
     language: LANGUAGES[0],
     scheduleAfter: DIFFICULTY_SCHEDULES.learning,
+    ignoreAccents: true,
   });
 
   const isSetupState = gameState.queue.length === 0 && gameState.completedWords.length === 0;
@@ -45,6 +46,7 @@ export default function App() {
       completedWords: [],
       language,
       scheduleAfter: DIFFICULTY_SCHEDULES[mode],
+      ignoreAccents: mode !== 'hard',
     });
   };
 
@@ -64,6 +66,7 @@ export default function App() {
       completedWords: [],
       language: gameState.language,
       scheduleAfter: gameState.scheduleAfter,
+      ignoreAccents: gameState.ignoreAccents,
     });
   };
 
@@ -139,6 +142,7 @@ export default function App() {
         onAnswer={handleAnswer}
         remaining={remaining}
         completed={completed}
+        ignoreAccents={gameState.ignoreAccents}
       />
       <Footer />
     </>

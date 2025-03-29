@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { BotIcon as Robot, Play, X } from 'lucide-react';
 import type React from 'react';
 
+import { SpecialCharactersKeyboard } from '../components/special-chars-keyboard';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { WordDiff } from '../components/word-diff';
 import type { WordResult } from '../types';
-import { SPECIAL_CHARACTERS, type Language } from '../utils/languages';
+import { type Language } from '../utils/languages';
 import { playCorrect } from '../utils/sounds';
 import { speak } from '../utils/speak';
-import { SpecialCharactersKeyboard } from '../components/special-chars-keyboard';
 
 const CORRECT_STATE_DURATION = 1000;
 
@@ -19,6 +19,7 @@ export type QuestionScreenProps = {
   onAnswer: (result: WordResult) => void;
   remaining: number;
   completed: number;
+  ignoreAccents: boolean;
 };
 
 type State = 'question' | 'retry' | 'correct';
@@ -29,11 +30,13 @@ export default function QuestionScreen({
   onAnswer,
   remaining,
   completed,
+  ignoreAccents,
 }: QuestionScreenProps) {
   const [state, setState] = useState<State>('question');
   const [input, setInput] = useState('');
   const [answer, setAnswer] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
+  const cursorPositionRef = useRef<number | null>(null);
 
   const initialSoundPlayed = useRef(false);
 
@@ -51,13 +54,43 @@ export default function QuestionScreen({
     inputRef.current?.focus();
   };
 
+  // Track cursor position when input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value);
+    cursorPositionRef.current = e.target.selectionStart;
+  };
+
+  // Handle special character insertion
+  const handleSpecialCharClick = (char: string) => {
+    const position = cursorPositionRef.current !== null ? cursorPositionRef.current : input.length;
+
+    // Insert the character at cursor position
+    const newValue = input.slice(0, position) + char + input.slice(position);
+    setInput(newValue);
+
+    // Update cursor position for next time
+    cursorPositionRef.current = position + char.length;
+
+    // Set focus back to input after a short delay to ensure state is updated
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.setSelectionRange(cursorPositionRef.current!, cursorPositionRef.current!);
+      }
+    }, 0);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const normalizedInput = normalizeText(input);
     const normalizedWord = normalizeText(word);
 
-    const isCorrect = normalizedInput === normalizedWord;
+    // Use accent-insensitive comparison if ignoreAccents is true
+    const isCorrect = ignoreAccents
+      ? normalizedInput.localeCompare(normalizedWord, undefined, { sensitivity: 'base' }) === 0
+      : normalizedInput === normalizedWord;
+
     if (!isCorrect) {
       speak(word, language);
       setState('retry');
@@ -139,17 +172,17 @@ export default function QuestionScreen({
                   ref={inputRef}
                   type="text"
                   value={input}
-                  onChange={(e) => setInput(e.target.value)}
+                  onChange={handleInputChange}
+                  onSelect={(e) => {
+                    cursorPositionRef.current = e.currentTarget.selectionStart;
+                  }}
                   className="w-full text-center text-3xl h-16 bg-white/20 text-white placeholder:text-purple-200"
                   placeholder={state === 'retry' ? 'Type it again...' : 'Type here...'}
                   disabled={state === 'correct'}
                   spellCheck={false}
                 />
 
-                <SpecialCharactersKeyboard
-                  characters={SPECIAL_CHARACTERS[language.code]}
-                  onCharacterClick={(char) => setInput((prev) => prev + char)}
-                />
+                <SpecialCharactersKeyboard word={word} onCharacterClick={handleSpecialCharClick} />
               </div>
             </form>
 

@@ -19,4 +19,5 @@ export interface GameState {
   completedWords: WordState[];
   language: Language;
   scheduleAfter: number;
+  ignoreAccents: boolean;
 }
