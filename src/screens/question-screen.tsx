@@ -119,7 +119,7 @@ export default function QuestionScreen({
             <Button
               type="button"
               onClick={handleSpeak}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl"
+              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl flex items-center justify-center"
             >
               <Play className="mr-2" style={{ height: '24', width: '24' }} />
             </Button>
@@ -148,7 +148,7 @@ export default function QuestionScreen({
               className="w-full text-purple-300 hover:bg-purple-800/30 hover:text-white border border-purple-500/30"
             >
               <X className="mr-2" style={{ height: '20', width: '20' }} />
-              Skip this word
+              Skip
             </Button>
           </div>
         </div>
