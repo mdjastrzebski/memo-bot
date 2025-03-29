@@ -6,17 +6,25 @@ import { Textarea } from '../components/ui/textarea';
 
 const DEFAULT_WORDS = ['robot', 'spaceship', 'rocket', 'moon', 'star'];
 
+export type StudyMode = 'learning' | 'medium' | 'hard';
+
+export interface WordsSubmitParams {
+  words: string[];
+  mode: StudyMode;
+}
+
 interface InputScreenProps {
-  onWordsSubmit: (words: string[]) => void;
+  onWordsSubmit: (params: WordsSubmitParams) => void;
 }
 
 export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
   const [text, setText] = useState('');
+  const [mode, setMode] = useState<StudyMode>('learning');
 
   const handleSubmit = () => {
     const input = text.trim() ? text.split('\n') : DEFAULT_WORDS;
     const words = input.map((word) => word.trim()).filter((word) => word.length > 0);
-    onWordsSubmit(words);
+    onWordsSubmit({ words, mode });
   };
 
   return (
@@ -34,6 +42,44 @@ export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
             placeholder={`Enter words here...\n${DEFAULT_WORDS.join('\n')}`}
             className="min-h-[200px] mb-4 bg-white/20 text-white placeholder:text-purple-200"
           />
+
+          <div className="flex justify-center mb-4 bg-white/20 p-3 rounded-xl text-white">
+            <div className="flex space-x-6">
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="mode"
+                  value="learning"
+                  checked={mode === 'learning'}
+                  onChange={() => setMode('learning')}
+                  className="w-4 h-4 accent-pink-500"
+                />
+                <span>Easy</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="mode"
+                  value="medium"
+                  checked={mode === 'medium'}
+                  onChange={() => setMode('medium')}
+                  className="w-4 h-4 accent-pink-500"
+                />
+                <span>Medium</span>
+              </label>
+              <label className="flex items-center space-x-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="mode"
+                  value="hard"
+                  checked={mode === 'hard'}
+                  onChange={() => setMode('hard')}
+                  className="w-4 h-4 accent-pink-500"
+                />
+                <span>Master</span>
+              </label>
+            </div>
+          </div>
 
           <Button
             onClick={handleSubmit}

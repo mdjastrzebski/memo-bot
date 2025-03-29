@@ -2,12 +2,18 @@ import { useState } from 'react';
 
 import { Footer } from './components/footer';
 import { useBeforeUnload } from './hooks/use-before-unload';
+import type { StudyMode, WordsSubmitParams } from './screens/input-screen';
 import InputScreen from './screens/input-screen';
 import QuestionScreen from './screens/question-screen';
 import ResultsScreen from './screens/results-screen';
 import type { GameState, WordResult, WordState } from './types';
 
 const STREAK_GOAL = 2;
+const DIFFICULTY_SCHEDULES: Record<StudyMode, number> = {
+  learning: 3,
+  medium: 5,
+  hard: 9,
+};
 
 export default function App() {
   const [gameState, setGameState] = useState<GameState>({
@@ -15,13 +21,17 @@ export default function App() {
     results: [],
     completedWords: [],
   });
+  const [scheduleAfter, setScheduleAfter] = useState(DIFFICULTY_SCHEDULES.learning);
 
   const isSetupState = gameState.queue.length === 0 && gameState.completedWords.length === 0;
   const isResultsState = gameState.queue.length === 0 && gameState.completedWords.length > 0;
   const isLearningState = gameState.queue.length > 0;
   useBeforeUnload(isLearningState);
 
-  const handleWordsSubmit = (words: string[]) => {
+  const handleWordsSubmit = ({ words, mode }: WordsSubmitParams) => {
+    // Set schedule based on selected mode
+    setScheduleAfter(DIFFICULTY_SCHEDULES[mode]);
+
     // Initialize queue with shuffled words
     const initialQueue = shuffleArray(
       words.map((word) => ({
@@ -94,7 +104,9 @@ export default function App() {
       if (updatedWord.correctStreak >= STREAK_GOAL) {
         newCompletedWords.push(updatedWord);
       } else {
-        newQueue.push(updatedWord);
+        // Insert the word scheduleAfter positions ahead, or at the end if queue is too short
+        const insertPosition = Math.min(scheduleAfter - 1, newQueue.length);
+        newQueue.splice(insertPosition, 0, updatedWord);
       }
 
       return {

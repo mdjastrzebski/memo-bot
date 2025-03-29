@@ -62,22 +62,26 @@ export default function ResultsScreen({ completedWords, onRestart }: ResultsScre
 
           <div className="mt-8 space-y-4">
             <h3 className="text-xl font-bold text-white mb-4">Word Review:</h3>
-            {completedWords.map((word, index) => (
-              <div key={index} className="p-4 rounded-lg bg-white/10">
-                <div className="flex justify-between items-center">
-                  <span className="text-white font-medium">{word.word}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-purple-200">
-                      Score: {calculateWordScore(word)}
-                    </span>
-                    {word.incorrectCount > 0 && !word.skipped && (
-                      <span className="text-sm text-red-400">({word.incorrectCount} mistakes)</span>
-                    )}
-                    {word.skipped && <span className="text-sm text-yellow-400">skipped</span>}
+            {[...completedWords]
+              .sort((a, b) => calculateWordScore(b) - calculateWordScore(a))
+              .map((word, index) => (
+                <div key={index} className="p-4 rounded-lg bg-white/10">
+                  <div className="flex justify-between items-center">
+                    <span className="text-white font-medium">{word.word}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-purple-200">
+                        Score: {calculateWordScore(word)}
+                      </span>
+                      {word.incorrectCount > 0 && !word.skipped && (
+                        <span className="text-sm text-red-400">
+                          ({word.incorrectCount} mistakes)
+                        </span>
+                      )}
+                      {word.skipped && <span className="text-sm text-yellow-400">skipped</span>}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
           </div>
 
           <Button
