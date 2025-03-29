@@ -50,7 +50,10 @@ export default function QuestionScreen({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const isCorrect = input.toLowerCase().trim() === word.toLowerCase().trim();
+    const normalizedInput = normalizeText(input);
+    const normalizedWord = normalizeText(word);
+
+    const isCorrect = normalizedInput === normalizedWord;
     if (!isCorrect) {
       speak(word);
       setState('retry');
@@ -156,3 +159,12 @@ export default function QuestionScreen({
     </div>
   );
 }
+
+// Function to normalize text by:
+// - converting to lowercase
+// - trimming
+// - replacing multiple spaces with single spaces
+// - removing trailing dots
+const normalizeText = (text: string): string => {
+  return text.toLowerCase().trim().replace(/\s+/g, ' ').replace(/\.+$/, '');
+};
