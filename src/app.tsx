@@ -68,6 +68,16 @@ export default function App() {
     setGameState((prev) => {
       const [currentWord, ...remainingQueue] = prev.queue;
 
+      // If word was skipped, mark it as skipped and move to completed
+      if (result.skipped) {
+        const skippedWord = { ...currentWord, skipped: true };
+        return {
+          queue: remainingQueue,
+          results: [...prev.results, result],
+          completedWords: [...prev.completedWords, skippedWord],
+        };
+      }
+
       // Update the current word state based on the result
       const updatedWord: WordState = {
         ...currentWord,

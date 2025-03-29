@@ -1,12 +1,14 @@
 export interface WordResult {
   word: string;
   isCorrect: boolean;
+  skipped?: boolean;
 }
 
 export interface WordState {
   word: string;
   correctStreak: number;
   incorrectCount: number;
+  skipped?: boolean;
 }
 
 export interface GameState {

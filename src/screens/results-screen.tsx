@@ -17,6 +17,11 @@ export default function ResultsScreen({ completedWords, onRestart }: ResultsScre
 
   // Calculate scores
   const calculateWordScore = (word: WordState) => {
+    // If word was skipped, return 0
+    if (word.skipped) {
+      return 0;
+    }
+
     // Base score is 100 points
     // Deduct 25 points for each mistake
     // If there were any mistakes, maximum score is 75
@@ -65,9 +70,10 @@ export default function ResultsScreen({ completedWords, onRestart }: ResultsScre
                     <span className="text-sm text-purple-200">
                       Score: {calculateWordScore(word)}
                     </span>
-                    {word.incorrectCount > 0 && (
+                    {word.incorrectCount > 0 && !word.skipped && (
                       <span className="text-sm text-red-400">({word.incorrectCount} mistakes)</span>
                     )}
+                    {word.skipped && <span className="text-sm text-yellow-400">skipped</span>}
                   </div>
                 </div>
               </div>
