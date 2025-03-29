@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BotIcon as Robot, Play } from 'lucide-react';
+import { BotIcon as Robot, Play, X } from 'lucide-react';
 import type React from 'react';
 
 import { Button } from '../components/ui/button';
@@ -71,6 +71,15 @@ export default function QuestionScreen({
     }, CORRECT_STATE_DURATION);
   };
 
+  const handleSkip = () => {
+    setState('correct');
+    onAnswer({
+      word,
+      isCorrect: false,
+      skipped: true,
+    });
+  };
+
   const progressPercentage = (completed / (remaining + completed)) * 100;
 
   return (
@@ -129,6 +138,18 @@ export default function QuestionScreen({
                 spellCheck={false}
               />
             </form>
+
+            <div className="h-4" />
+
+            <Button
+              type="button"
+              onClick={handleSkip}
+              variant="ghost"
+              className="w-full text-purple-300 hover:bg-purple-800/30 hover:text-white border border-purple-500/30"
+            >
+              <X className="mr-2" style={{ height: '20', width: '20' }} />
+              Skip this word
+            </Button>
           </div>
         </div>
       </div>
