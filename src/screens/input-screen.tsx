@@ -4,12 +4,11 @@ import { Rocket } from 'lucide-react';
 import { LanguageSelector } from '../components/language-selector';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
+import type { StudyMode } from '../types';
 import type { Language } from '../utils/languages';
 import { LANGUAGES } from '../utils/languages';
 
 const DEFAULT_WORDS = ['robot', 'spaceship', 'rocket', 'moon', 'star'];
-
-export type StudyMode = 'learning' | 'medium' | 'hard';
 
 export interface WordsSubmitParams {
   words: string[];
@@ -23,7 +22,7 @@ interface InputScreenProps {
 
 export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
   const [text, setText] = useState('');
-  const [mode, setMode] = useState<StudyMode>('learning');
+  const [mode, setMode] = useState<StudyMode>('learn');
   const [language, setLanguage] = useState<Language>(LANGUAGES[0]);
 
   const handleSubmit = () => {
@@ -56,34 +55,23 @@ export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
                 <input
                   type="radio"
                   name="mode"
-                  value="learning"
-                  checked={mode === 'learning'}
-                  onChange={() => setMode('learning')}
+                  value="learn"
+                  checked={mode === 'learn'}
+                  onChange={() => setMode('learn')}
                   className="w-4 h-4 accent-pink-500"
                 />
-                <span>Easy</span>
+                <span>Learn</span>
               </label>
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
                   type="radio"
                   name="mode"
-                  value="medium"
-                  checked={mode === 'medium'}
-                  onChange={() => setMode('medium')}
+                  value="review"
+                  checked={mode === 'review'}
+                  onChange={() => setMode('review')}
                   className="w-4 h-4 accent-pink-500"
                 />
-                <span>Medium</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="mode"
-                  value="hard"
-                  checked={mode === 'hard'}
-                  onChange={() => setMode('hard')}
-                  className="w-4 h-4 accent-pink-500"
-                />
-                <span>Master</span>
+                <span>Review</span>
               </label>
             </div>
           </div>
