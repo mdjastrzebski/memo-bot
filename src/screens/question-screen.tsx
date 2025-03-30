@@ -83,6 +83,12 @@ export default function QuestionScreen({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Prevent submission if input is empty or only whitespace
+    if (!input) {
+      inputRef.current?.focus();
+      return;
+    }
+
     const normalizedInput = normalizeText(input);
     const normalizedWord = normalizeText(word);
 
@@ -112,6 +118,13 @@ export default function QuestionScreen({
   };
 
   const handleSkip = () => {
+    // Show confirmation dialog before skipping
+    const confirmed = confirm('Skip this word?');
+    if (!confirmed) {
+      inputRef.current?.focus();
+      return;
+    }
+
     setState('correct');
     onAnswer({
       word,
