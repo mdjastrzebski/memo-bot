@@ -15,22 +15,6 @@ export default function ResultsScreen({ completedWords, onRestart }: ResultsScre
     playCompleted();
   }, []);
 
-  // Calculate scores
-  const calculateWordScore = (word: WordState) => {
-    // If word was skipped, return 0
-    if (word.skipped) {
-      return 0;
-    }
-
-    // Base score is 100 points
-    // Deduct 25 points for each mistake
-    // If there were any mistakes, maximum score is 75
-    if (word.incorrectCount > 0) {
-      return Math.max(75 - (word.incorrectCount - 1) * 25, 10);
-    }
-    return 100; // Perfect score for no mistakes
-  };
-
   const totalPossibleScore = completedWords.length * 100;
   const actualScore = completedWords.reduce((sum, word) => sum + calculateWordScore(word), 0);
   const percentage = Math.round((actualScore / totalPossibleScore) * 100);
@@ -62,26 +46,22 @@ export default function ResultsScreen({ completedWords, onRestart }: ResultsScre
 
           <div className="mt-8 space-y-4">
             <h3 className="text-xl font-bold text-white mb-4">Word Review:</h3>
-            {[...completedWords]
-              .sort((a, b) => calculateWordScore(b) - calculateWordScore(a))
-              .map((word, index) => (
-                <div key={index} className="p-4 rounded-lg bg-white/10">
-                  <div className="flex justify-between items-center">
-                    <span className="text-white font-medium">{word.word}</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-purple-200">
-                        Score: {calculateWordScore(word)}
-                      </span>
-                      {word.incorrectCount > 0 && !word.skipped && (
-                        <span className="text-sm text-red-400">
-                          ({word.incorrectCount} mistakes)
-                        </span>
-                      )}
-                      {word.skipped && <span className="text-sm text-yellow-400">skipped</span>}
-                    </div>
+            {[...completedWords].sort(sortWordScores).map((word, index) => (
+              <div key={index} className="p-4 rounded-lg bg-white/10">
+                <div className="flex justify-between items-center">
+                  <span className="text-white font-medium">{word.word}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-purple-200">
+                      Score: {calculateWordScore(word)}
+                    </span>
+                    {word.incorrectCount > 0 && !word.skipped && (
+                      <span className="text-sm text-red-400">({word.incorrectCount} mistakes)</span>
+                    )}
+                    {word.skipped && <span className="text-sm text-yellow-400">skipped</span>}
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
 
           <Button
@@ -95,4 +75,34 @@ export default function ResultsScreen({ completedWords, onRestart }: ResultsScre
       </div>
     </div>
   );
+}
+
+function sortWordScores(a: WordState, b: WordState) {
+  const scoreA = calculateWordScore(a);
+  const scoreB = calculateWordScore(b);
+  if (scoreA !== scoreB) {
+    return scoreB - scoreA;
+  }
+
+  if (a.incorrectCount !== b.incorrectCount) {
+    return a.incorrectCount - b.incorrectCount;
+  }
+
+  return a.word.localeCompare(b.word);
+}
+
+// Calculate scores
+function calculateWordScore(word: WordState) {
+  // If word was skipped, return 0
+  if (word.skipped) {
+    return 0;
+  }
+
+  // Base score is 100 points
+  // Deduct 25 points for each mistake
+  // If there were any mistakes, maximum score is 75
+  if (word.incorrectCount > 0) {
+    return Math.max(75 - (word.incorrectCount - 1) * 25, 10);
+  }
+  return 100; // Perfect score for no mistakes
 }
