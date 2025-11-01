@@ -13,13 +13,10 @@ export interface WordState {
   skipped?: boolean;
 }
 
-export type StudyMode = 'learn' | 'review';
-
 export interface GameState {
   queue: WordState[];
   results: WordResult[];
   completedWords: WordState[];
   language: Language;
-  mode: StudyMode;
   ignoreAccents: boolean;
 }
