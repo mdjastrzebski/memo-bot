@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { Word, WordResult, WordState } from '../types';
+import type { Word, WordState } from '../types';
 import { shuffleArray } from '../utils/data';
 import { type Language, LANGUAGES } from '../utils/languages';
 

@@ -1,8 +1,8 @@
 import type { GameStatus, WordState } from '../types';
-import type { GameStore } from './game-store';
+import type { GameState } from './game-store';
 import { useGameState } from './game-store';
 
-export function selectGameStatus(state: GameStore): GameStatus {
+export function selectGameStatus(state: GameState): GameStatus {
   if (state.pendingWords.length > 0) {
     return 'learning';
   }
@@ -10,7 +10,7 @@ export function selectGameStatus(state: GameStore): GameStatus {
   return state.completedWords.length > 0 ? 'finished' : 'initial';
 }
 
-export function selectCurrentWord(state: GameStore): WordState | undefined {
+export function selectCurrentWord(state: GameState): WordState | undefined {
   return state.pendingWords[0];
 }
 
@@ -19,7 +19,7 @@ type GameProgress = {
   completed: number;
 };
 
-export function selectGameProgress(state: GameStore): GameProgress {
+export function selectGameProgress(state: GameState): GameProgress {
   return {
     remaining: state.pendingWords.length,
     completed: state.completedWords.length,

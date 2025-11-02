@@ -6,7 +6,7 @@ import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
 import { useGameState } from '../stores/game-store';
 import type { Word } from '../types';
-import { type Language, LANGUAGES } from '../utils/languages';
+import { LANGUAGES } from '../utils/languages';
 
 const DEFAULT_WORDS = ['robot', 'spaceship', 'rocket', 'moon', 'star'];
 
