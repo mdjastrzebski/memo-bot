@@ -9,9 +9,9 @@ import ResultsScreen from './screens/results-screen';
 import type { GameState, WordResult, WordState } from './types';
 import { LANGUAGES } from './utils/languages';
 
-const STREAK_GOAL = 2;
-const SCHEDULE_AFTER_CORRECT = 5;
-const SCHEDULE_AFTER_INCORRECT = 3;
+const STREAK_GOAL_AFTER_INCORRECT = 2;
+const SCHEDULE_AFTER_CORRECT = 3;
+const SCHEDULE_AFTER_INCORRECT = 1;
 
 export default function App() {
   const [gameState, setGameState] = useState<GameState>({
@@ -103,7 +103,7 @@ export default function App() {
       // If word has been answered correctly twice, move to completed
       if (
         (updatedWord.correctStreak === 1 && currentWord.incorrectCount === 0) ||
-        updatedWord.correctStreak >= STREAK_GOAL
+        updatedWord.correctStreak >= STREAK_GOAL_AFTER_INCORRECT
       ) {
         newCompletedWords.push(updatedWord);
       } else {
