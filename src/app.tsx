@@ -29,8 +29,9 @@ export default function App() {
 
   const handleWordsSubmit = ({ words, language }: WordsSubmitParams) => {
     const initialQueue = shuffleArray(
-      words.map((word) => ({
+      words.map(({ word, prompt }) => ({
         word,
+        prompt,
         correctStreak: 0,
         incorrectCount: 0,
       })),
@@ -129,6 +130,7 @@ export default function App() {
       <QuestionScreen
         key={`${currentWord.word}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
         word={currentWord.word}
+        prompt={currentWord.prompt}
         language={gameState.language}
         onAnswer={handleAnswer}
         remaining={remaining}
