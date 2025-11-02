@@ -16,7 +16,6 @@ const SCHEDULE_AFTER_INCORRECT = 1;
 export default function App() {
   const [gameState, setGameState] = useState<GameState>({
     queue: [],
-    results: [],
     completedWords: [],
     language: LANGUAGES[0],
     ignoreAccents: true,
@@ -39,7 +38,6 @@ export default function App() {
 
     setGameState({
       queue: initialQueue,
-      results: [],
       completedWords: [],
       language,
       ignoreAccents: false,
@@ -59,7 +57,6 @@ export default function App() {
     setGameState({
       ...gameState,
       queue: [],
-      results: [],
       completedWords: [],
     });
   };
@@ -83,7 +80,6 @@ export default function App() {
         return {
           ...prev,
           queue: remainingQueue,
-          results: [...prev.results, result],
           completedWords: [...prev.completedWords, skippedWord],
         };
       }
@@ -115,7 +111,6 @@ export default function App() {
       return {
         ...prev,
         queue: newQueue,
-        results: [...prev.results, result],
         completedWords: newCompletedWords,
       };
     });
