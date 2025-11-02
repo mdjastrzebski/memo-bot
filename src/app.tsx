@@ -19,7 +19,6 @@ export default function App() {
     results: [],
     completedWords: [],
     language: LANGUAGES[0],
-    mode: 'learn',
     ignoreAccents: true,
   });
 
@@ -28,11 +27,11 @@ export default function App() {
   const isLearningState = gameState.queue.length > 0;
   useBeforeUnload(isLearningState);
 
-  const handleWordsSubmit = ({ words, mode, language }: WordsSubmitParams) => {
+  const handleWordsSubmit = ({ words, language }: WordsSubmitParams) => {
     const initialQueue = shuffleArray(
       words.map((word) => ({
         word,
-        correctStreak: mode === 'review' ? 1 : 0,
+        correctStreak: 0,
         incorrectCount: 0,
       })),
     );
@@ -42,8 +41,7 @@ export default function App() {
       results: [],
       completedWords: [],
       language,
-      mode,
-      ignoreAccents: mode !== 'review',
+      ignoreAccents: false,
     });
   };
 
@@ -102,7 +100,10 @@ export default function App() {
       const newCompletedWords = [...prev.completedWords];
 
       // If word has been answered correctly twice, move to completed
-      if (updatedWord.correctStreak >= STREAK_GOAL) {
+      if (
+        (updatedWord.correctStreak === 1 && currentWord.incorrectCount === 0) ||
+        updatedWord.correctStreak >= STREAK_GOAL
+      ) {
         newCompletedWords.push(updatedWord);
       } else {
         const insertAfter = result.isCorrect ? SCHEDULE_AFTER_CORRECT : SCHEDULE_AFTER_INCORRECT;
@@ -120,13 +121,8 @@ export default function App() {
   };
 
   const currentWord = gameState.queue[0];
-  const remaining = gameState.queue.reduce(
-    (acc, word) => acc + STREAK_GOAL - word.correctStreak,
-    0,
-  );
-  const completed =
-    gameState.queue.reduce((acc, word) => acc + word.correctStreak, 0) +
-    gameState.completedWords.reduce((acc, word) => acc + word.correctStreak, 0);
+  const remaining = gameState.queue.length;
+  const completed = gameState.completedWords.length;
 
   return (
     <>

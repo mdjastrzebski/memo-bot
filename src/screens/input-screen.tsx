@@ -4,7 +4,6 @@ import { Rocket } from 'lucide-react';
 import { LanguageSelector } from '../components/language-selector';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
-import type { StudyMode } from '../types';
 import type { Language } from '../utils/languages';
 import { LANGUAGES } from '../utils/languages';
 
@@ -12,7 +11,6 @@ const DEFAULT_WORDS = ['robot', 'spaceship', 'rocket', 'moon', 'star'];
 
 export interface WordsSubmitParams {
   words: string[];
-  mode: StudyMode;
   language: Language;
 }
 
@@ -22,13 +20,12 @@ interface InputScreenProps {
 
 export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
   const [text, setText] = useState('');
-  const [mode, setMode] = useState<StudyMode>('learn');
   const [language, setLanguage] = useState<Language>(LANGUAGES[0]);
 
   const handleSubmit = () => {
     const input = text.trim() ? text.split('\n') : DEFAULT_WORDS;
-    const words = input.map((word) => word.trim()).filter((word) => word.length > 0);
-    onWordsSubmit({ words, mode, language });
+    const words = input.map((word: string) => word.trim()).filter((word) => word.length > 0);
+    onWordsSubmit({ words, language });
   };
 
   return (
@@ -48,33 +45,6 @@ export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
             placeholder={`Enter words here...\n${DEFAULT_WORDS.join('\n')}`}
             className="min-h-[200px] my-4 bg-white/20 text-white placeholder:text-purple-200"
           />
-
-          <div className="flex justify-center mb-4 bg-white/20 p-3 rounded-xl text-white">
-            <div className="flex space-x-6">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="mode"
-                  value="learn"
-                  checked={mode === 'learn'}
-                  onChange={() => setMode('learn')}
-                  className="w-4 h-4 accent-pink-500"
-                />
-                <span>Learn</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="radio"
-                  name="mode"
-                  value="review"
-                  checked={mode === 'review'}
-                  onChange={() => setMode('review')}
-                  className="w-4 h-4 accent-pink-500"
-                />
-                <span>Review</span>
-              </label>
-            </div>
-          </div>
 
           <Button
             onClick={handleSubmit}
