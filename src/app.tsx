@@ -3,17 +3,15 @@ import { useBeforeUnload } from './hooks/use-before-unload';
 import InputScreen from './screens/input-screen';
 import QuestionScreen from './screens/question-screen';
 import ResultsScreen from './screens/results-screen';
-import { useGameStore } from './stores/game-store';
+import { useCurrentWord, useGameStatus } from './stores/selectors';
 
 export default function App() {
-  const isSetupState = useGameStore((state) => state.isSetupState());
-  const isResultsState = useGameStore((state) => state.isResultsState());
-  const isLearningState = useGameStore((state) => state.isLearningState());
-  const currentWord = useGameStore((state) => state.getCurrentWord());
+  const status = useGameStatus();
+  const currentWord = useCurrentWord();
 
-  useBeforeUnload(isLearningState);
+  useBeforeUnload(status === 'learning');
 
-  if (isSetupState) {
+  if (status === 'initial') {
     return (
       <>
         <InputScreen />
@@ -22,7 +20,7 @@ export default function App() {
     );
   }
 
-  if (isResultsState) {
+  if (status === 'finished') {
     return (
       <>
         <ResultsScreen />

@@ -13,3 +13,5 @@ export interface WordState extends Word {
   incorrectCount: number;
   skipped?: boolean;
 }
+
+export type GameStatus = 'initial' | 'learning' | 'finished';

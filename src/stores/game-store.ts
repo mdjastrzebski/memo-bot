@@ -1,41 +1,29 @@
 import { create } from 'zustand';
 
 import type { Word, WordResult, WordState } from '../types';
+import { shuffleArray } from '../utils/data';
 import { type Language, LANGUAGES } from '../utils/languages';
 
 const STREAK_GOAL_AFTER_INCORRECT = 2;
 const SCHEDULE_AFTER_CORRECT = 3;
 const SCHEDULE_AFTER_INCORRECT = 1;
 
-export interface GameStore {
+export interface GameState {
   pendingWords: WordState[];
   completedWords: WordState[];
-
   language: Language;
   ignoreAccents: boolean;
-  // Actions
-  startGame: (words: Word[], language: Language) => void;
-  handleAnswer: (result: WordResult) => void;
-  restart: () => void;
-  // Computed selectors
-  isSetupState: () => boolean;
-  isResultsState: () => boolean;
-  isLearningState: () => boolean;
-  getCurrentWord: () => WordState | undefined;
-  getRemainingCount: () => number;
-  getCompletedCount: () => number;
 }
 
-const shuffleArray = <T>(array: T[]): T[] => {
-  const newArray = [...array];
-  for (let i = newArray.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-  }
-  return newArray;
-};
+export interface GameActions {
+  startGame: (words: Word[], language: Language) => void;
+  resetGame: () => void;
+  correctAnswer: (word: WordState) => void;
+  incorrectAnswer: (word: WordState) => void;
+  skipWord: (word: WordState) => void;
+}
 
-export const useGameStore = create<GameStore>((set, get) => ({
+export const useGameState = create<GameState & GameActions>((set) => ({
   pendingWords: [],
   completedWords: [],
   language: LANGUAGES[0],
@@ -59,53 +47,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     });
   },
 
-  handleAnswer: (result) => {
-    set((state) => {
-      const [currentWord, ...remainingQueue] = state.pendingWords;
-
-      // If word was skipped, mark it as skipped and move to completed
-      if (result.skipped) {
-        const skippedWord = { ...currentWord, skipped: true };
-        return {
-          ...state,
-          pendingWords: remainingQueue,
-          completedWords: [...state.completedWords, skippedWord],
-        };
-      }
-
-      // Update the current word state based on the result
-      const updatedWord: WordState = {
-        ...currentWord,
-        correctStreak: result.isCorrect ? currentWord.correctStreak + 1 : 0,
-        incorrectCount: result.isCorrect
-          ? currentWord.incorrectCount
-          : currentWord.incorrectCount + 1,
-      };
-
-      const newQueue = [...remainingQueue];
-      const newCompletedWords = [...state.completedWords];
-
-      // If word has been answered correctly twice, move to completed
-      if (
-        (updatedWord.correctStreak === 1 && currentWord.incorrectCount === 0) ||
-        updatedWord.correctStreak >= STREAK_GOAL_AFTER_INCORRECT
-      ) {
-        newCompletedWords.push(updatedWord);
-      } else {
-        const insertAfter = result.isCorrect ? SCHEDULE_AFTER_CORRECT : SCHEDULE_AFTER_INCORRECT;
-        const insertPosition = Math.min(insertAfter - 1, newQueue.length);
-        newQueue.splice(insertPosition, 0, updatedWord);
-      }
-
-      return {
-        ...state,
-        pendingWords: newQueue,
-        completedWords: newCompletedWords,
-      };
-    });
-  },
-
-  restart: () => {
+  resetGame: () => {
     set((state) => ({
       ...state,
       pendingWords: [],
@@ -113,30 +55,62 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }));
   },
 
-  // Computed selectors
-  isSetupState: () => {
-    const state = get();
-    return state.pendingWords.length === 0 && state.completedWords.length === 0;
+  correctAnswer: (word: WordState) => {
+    set((state: GameState & GameActions) => {
+      const remainingWords = state.pendingWords.filter((w) => w.word !== word.word);
+      const updatedWord: WordState = {
+        ...word,
+        correctStreak: word.correctStreak + 1,
+      };
+
+      const isCompleted =
+        (updatedWord.correctStreak === 1 && updatedWord.incorrectCount === 0) ||
+        updatedWord.correctStreak >= STREAK_GOAL_AFTER_INCORRECT;
+      if (isCompleted) {
+        return {
+          ...state,
+          pendingWords: remainingWords,
+          completedWords: [...state.completedWords, updatedWord],
+        };
+      }
+
+      const insertPosition = Math.min(SCHEDULE_AFTER_CORRECT - 1, remainingWords.length);
+      remainingWords.splice(insertPosition, 0, updatedWord);
+
+      return {
+        ...state,
+        pendingWords: remainingWords,
+      };
+    });
   },
 
-  isResultsState: () => {
-    const state = get();
-    return get().pendingWords.length === 0 && state.completedWords.length > 0;
+  incorrectAnswer: (word: WordState) => {
+    set((state) => {
+      const remainingWords = state.pendingWords.filter((w) => w.word !== word.word);
+      const updatedWord: WordState = {
+        ...word,
+        correctStreak: 0,
+        incorrectCount: word.incorrectCount + 1,
+      };
+
+      const insertPosition = Math.min(SCHEDULE_AFTER_INCORRECT - 1, remainingWords.length);
+      remainingWords.splice(insertPosition, 0, updatedWord);
+
+      return {
+        ...state,
+        pendingWords: remainingWords,
+      };
+    });
   },
 
-  isLearningState: () => {
-    return get().pendingWords.length > 0;
-  },
-
-  getCurrentWord: () => {
-    return get().pendingWords[0];
-  },
-
-  getRemainingCount: () => {
-    return get().pendingWords.length;
-  },
-
-  getCompletedCount: () => {
-    return get().completedWords.length;
+  skipWord: (word: WordState) => {
+    set((state: GameState & GameActions) => {
+      const skippedWord: WordState = { ...word, skipped: true };
+      return {
+        ...state,
+        pendingWords: state.pendingWords.filter((w) => w.word !== word.word),
+        completedWords: [...state.completedWords, skippedWord],
+      };
+    });
   },
 }));

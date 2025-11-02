@@ -4,7 +4,7 @@ import { Rocket } from 'lucide-react';
 import { LanguageSelector } from '../components/language-selector';
 import { Button } from '../components/ui/button';
 import { Textarea } from '../components/ui/textarea';
-import { useGameStore } from '../stores/game-store';
+import { useGameState } from '../stores/game-store';
 import type { Word } from '../types';
 import { type Language, LANGUAGES } from '../utils/languages';
 
@@ -12,18 +12,11 @@ const DEFAULT_WORDS = ['robot', 'spaceship', 'rocket', 'moon', 'star'];
 
 export default function InputScreen() {
   const [text, setText] = useState('');
-  const [language, setLanguage] = useState<Language>(LANGUAGES[0]);
-  const startGame = useGameStore((state) => state.startGame);
+  const [language, setLanguage] = useState(LANGUAGES[0]);
+  const startGame = useGameState((state) => state.startGame);
 
   const handleSubmit = () => {
-    const input = text.trim() ? text.split('\n') : DEFAULT_WORDS;
-    const words: Word[] = [];
-    for (const line of input) {
-      const [word, prompt] = line.split('|');
-      if (word.trim().length > 0) {
-        words.push({ word: word.trim(), prompt: prompt?.trim() });
-      }
-    }
+    const words = parseWords(text);
     startGame(words, language);
   };
 
@@ -56,4 +49,18 @@ export default function InputScreen() {
       </div>
     </div>
   );
+}
+
+function parseWords(text: string): Word[] {
+  const input = text.trim() ? text.split('\n') : DEFAULT_WORDS;
+  const words: Word[] = [];
+  for (const line of input) {
+    const [word, prompt] = line.split('|');
+    const trimmedWord = word.trim();
+    if (trimmedWord.length > 0) {
+      words.push({ word: trimmedWord, prompt: prompt?.trim() });
+    }
+  }
+
+  return words;
 }
