@@ -17,7 +17,6 @@ export interface WordState {
 
 export interface GameState {
   queue: WordState[];
-  results: WordResult[];
   completedWords: WordState[];
   language: Language;
   ignoreAccents: boolean;
