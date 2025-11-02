@@ -2,15 +2,13 @@ import { useEffect } from 'react';
 import { RotateCcw, Trophy } from 'lucide-react';
 
 import { Button } from '../components/ui/button';
+import { useGameStore } from '../stores/game-store';
 import type { WordState } from '../types';
 import { playCompleted } from '../utils/sounds';
 
-interface ResultsScreenProps {
-  completedWords: WordState[];
-  onRestart: () => void;
-}
-
-export default function ResultsScreen({ completedWords, onRestart }: ResultsScreenProps) {
+export default function ResultsScreen() {
+  const completedWords = useGameStore((state) => state.completedWords);
+  const restart = useGameStore((state) => state.restart);
   useEffect(() => {
     playCompleted();
   }, []);
@@ -65,7 +63,7 @@ export default function ResultsScreen({ completedWords, onRestart }: ResultsScre
           </div>
 
           <Button
-            onClick={onRestart}
+            onClick={restart}
             className="w-full mt-6 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-bold py-3 rounded-xl"
           >
             <RotateCcw className="mr-2 h-5 w-5" />

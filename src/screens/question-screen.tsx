@@ -6,53 +6,55 @@ import { SpecialCharactersKeyboard } from '../components/special-chars-keyboard'
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { WordDiff } from '../components/word-diff';
-import type { WordResult } from '../types';
-import { type Language } from '../utils/languages';
+import { useGameStore } from '../stores/game-store';
 import { playCorrect } from '../utils/sounds';
 import { speak } from '../utils/speak';
 
 const CORRECT_STATE_DURATION = 1000;
 
-export type QuestionScreenProps = {
-  word: string;
-  prompt?: string;
-  language: Language;
-  onAnswer: (result: WordResult) => void;
-  remaining: number;
-  completed: number;
-  ignoreAccents: boolean;
-};
+type ScreenState = 'question' | 'retry' | 'correct';
 
-type State = 'question' | 'retry' | 'correct';
+export default function QuestionScreen() {
+  const currentWord = useGameStore((state) => state.getCurrentWord());
+  const language = useGameStore((state) => state.language);
+  const ignoreAccents = useGameStore((state) => state.ignoreAccents);
+  const remainingCount = useGameStore((state) => state.getRemainingCount());
+  const completedCount = useGameStore((state) => state.getCompletedCount());
+  const handleAnswer = useGameStore((state) => state.handleAnswer);
 
-export default function QuestionScreen({
-  word,
-  prompt,
-  language,
-  onAnswer,
-  remaining,
-  completed,
-  ignoreAccents,
-}: QuestionScreenProps) {
-  const [state, setState] = useState<State>('question');
+  const [screenState, setScreenState] = useState<ScreenState>('question');
   const [input, setInput] = useState('');
   const [answer, setAnswer] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const cursorPositionRef = useRef<number | null>(null);
 
-  const initialSoundPlayed = useRef(false);
+  const initialSoundPlayed = useRef<string | null>(null);
+
+  const word = currentWord?.word ?? '';
+  const prompt = currentWord?.prompt;
 
   useEffect(() => {
-    // Prevent initial sound from playing twice in strict mode
-    if (initialSoundPlayed.current) return;
-    initialSoundPlayed.current = true;
+    if (!currentWord) return;
+
+    // Reset local state when word changes
+    setScreenState('question');
+    setInput('');
+    setAnswer('');
+
+    // Prevent initial sound from playing twice in strict mode for the same word
+    if (initialSoundPlayed.current === word) return;
+    initialSoundPlayed.current = word;
 
     if (prompt == null) {
       speak(word, language);
     }
 
     inputRef.current?.focus();
-  }, [word, language, prompt]);
+  }, [word, language, prompt, currentWord]);
+
+  if (!currentWord) {
+    return null;
+  }
 
   const handleSpeak = () => {
     speak(word, language);
@@ -104,7 +106,7 @@ export default function QuestionScreen({
 
     if (!isCorrect) {
       speak(word, language);
-      setState('retry');
+      setScreenState('retry');
       setAnswer(input);
       setInput('');
       return;
@@ -113,11 +115,11 @@ export default function QuestionScreen({
     playCorrect();
     if (prompt != null) speak(word, language);
 
-    const isFirstAttempt = state === 'question';
-    setState('correct');
+    const isFirstAttempt = screenState === 'question';
+    setScreenState('correct');
     setAnswer(input);
     setTimeout(() => {
-      onAnswer({
+      handleAnswer({
         word,
         isCorrect: isFirstAttempt,
       });
@@ -132,17 +134,17 @@ export default function QuestionScreen({
       return;
     }
 
-    setState('correct');
-    onAnswer({
+    setScreenState('correct');
+    handleAnswer({
       word,
       isCorrect: false,
       skipped: true,
     });
   };
 
-  const progressPercentage = (completed / (remaining + completed)) * 100;
+  const progressPercentage = (completedCount / (remainingCount + completedCount)) * 100;
 
-  const showPlayButton = prompt == null || state !== 'question';
+  const showPlayButton = prompt == null || screenState !== 'question';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 p-4">
@@ -152,8 +154,8 @@ export default function QuestionScreen({
           <h2 className="text-2xl font-bold text-white mb-4">Type what you hear!</h2>
 
           <div className="flex justify-between text-purple-200 text-sm mb-4">
-            <span>To do: {remaining}</span>
-            <span>Done: {completed}</span>
+            <span>To do: {remainingCount}</span>
+            <span>Done: {completedCount}</span>
           </div>
           <div className="bg-white/10 rounded-full h-2 mb-4">
             <div
@@ -165,14 +167,14 @@ export default function QuestionScreen({
 
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white/20">
           <div className="space-y-4">
-            {state !== 'question' && (
+            {screenState !== 'question' && (
               <div className="text-center space-y-6 py-2">
                 <div
                   className={`text-xl font-bold ${
-                    state === 'correct' ? 'text-green-400' : 'text-red-400'
+                    screenState === 'correct' ? 'text-green-400' : 'text-red-400'
                   }`}
                 >
-                  {state === 'correct' ? 'Correct! 🎉' : 'Try again! 🙈'}
+                  {screenState === 'correct' ? 'Correct! 🎉' : 'Try again! 🙈'}
                 </div>
               </div>
             )}
@@ -181,7 +183,7 @@ export default function QuestionScreen({
               <div className="text-3xl text-center text-purple-100 my-4">{prompt}</div>
             )}
 
-            {state !== 'question' && (
+            {screenState !== 'question' && (
               <div className="text-center space-y-6 py-2">
                 <WordDiff expected={word} actual={answer} />
               </div>
@@ -210,8 +212,8 @@ export default function QuestionScreen({
                     cursorPositionRef.current = e.currentTarget.selectionStart;
                   }}
                   className="w-full text-center text-3xl h-16 bg-white/20 text-white placeholder:text-purple-200"
-                  placeholder={state === 'retry' ? 'Type it again...' : 'Type here...'}
-                  disabled={state === 'correct'}
+                  placeholder={screenState === 'retry' ? 'Type it again...' : 'Type here...'}
+                  disabled={screenState === 'correct'}
                   spellCheck={false}
                 />
 
