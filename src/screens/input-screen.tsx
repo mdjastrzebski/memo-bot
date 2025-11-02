@@ -9,8 +9,13 @@ import { LANGUAGES } from '../utils/languages';
 
 const DEFAULT_WORDS = ['robot', 'spaceship', 'rocket', 'moon', 'star'];
 
+export interface WordInput {
+  word: string;
+  prompt?: string;
+}
+
 export interface WordsSubmitParams {
-  words: string[];
+  words: WordInput[];
   language: Language;
 }
 
@@ -24,7 +29,13 @@ export default function InputScreen({ onWordsSubmit }: InputScreenProps) {
 
   const handleSubmit = () => {
     const input = text.trim() ? text.split('\n') : DEFAULT_WORDS;
-    const words = input.map((word: string) => word.trim()).filter((word) => word.length > 0);
+    const words: WordInput[] = [];
+    for (const line of input) {
+      const [word, prompt] = line.split('|');
+      if (word.trim().length > 0) {
+        words.push({ word: word.trim(), prompt: prompt?.trim() });
+      }
+    }
     onWordsSubmit({ words, language });
   };
 

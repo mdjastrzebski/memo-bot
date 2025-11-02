@@ -15,6 +15,7 @@ const CORRECT_STATE_DURATION = 1000;
 
 export type QuestionScreenProps = {
   word: string;
+  prompt?: string;
   language: Language;
   onAnswer: (result: WordResult) => void;
   remaining: number;
@@ -26,6 +27,7 @@ type State = 'question' | 'retry' | 'correct';
 
 export default function QuestionScreen({
   word,
+  prompt,
   language,
   onAnswer,
   remaining,
@@ -45,9 +47,12 @@ export default function QuestionScreen({
     if (initialSoundPlayed.current) return;
     initialSoundPlayed.current = true;
 
-    speak(word, language);
+    if (prompt == null) {
+      speak(word, language);
+    }
+
     inputRef.current?.focus();
-  }, [word, language]);
+  }, [word, language, prompt]);
 
   const handleSpeak = () => {
     speak(word, language);
@@ -106,6 +111,8 @@ export default function QuestionScreen({
     }
 
     playCorrect();
+    if (prompt != null) speak(word, language);
+
     const isFirstAttempt = state === 'question';
     setState('correct');
     setAnswer(input);
@@ -134,6 +141,8 @@ export default function QuestionScreen({
   };
 
   const progressPercentage = (completed / (remaining + completed)) * 100;
+
+  const showPlayButton = prompt == null || state !== 'question';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 p-4">
@@ -165,17 +174,28 @@ export default function QuestionScreen({
                 >
                   {state === 'correct' ? 'Correct! 🎉' : 'Try again! 🙈'}
                 </div>
+              </div>
+            )}
+
+            {prompt != null && (
+              <div className="text-3xl text-center text-purple-100 my-4">{prompt}</div>
+            )}
+
+            {state !== 'question' && (
+              <div className="text-center space-y-6 py-2">
                 <WordDiff expected={word} actual={answer} />
               </div>
             )}
 
-            <Button
-              type="button"
-              onClick={handleSpeak}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl flex items-center justify-center"
-            >
-              <Play className="mr-2" style={{ height: '24', width: '24' }} />
-            </Button>
+            {showPlayButton && (
+              <Button
+                type="button"
+                onClick={handleSpeak}
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl flex items-center justify-center"
+              >
+                <Play className="mr-2" style={{ height: '24', width: '24' }} />
+              </Button>
+            )}
 
             <div className="h-2" />
 
@@ -223,5 +243,5 @@ export default function QuestionScreen({
 // - replacing multiple spaces with single spaces
 // - removing trailing dots
 const normalizeText = (text: string): string => {
-  return text.toLowerCase().trim().replace(/\s+/g, ' ').replace(/\.+$/, '');
+  return text.trim().replace(/\s+/g, ' ').replace(/\.+$/, '');
 };
