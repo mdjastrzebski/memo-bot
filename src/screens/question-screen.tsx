@@ -240,10 +240,19 @@ export default function QuestionScreen() {
 }
 
 // Function to normalize text by:
-// - converting to lowercase
 // - trimming
 // - replacing multiple spaces with single spaces
-// - removing trailing dots
+// - normalizing space before and after punctuation
+// - removing trailing dot, question mark, exclamation mark
 const normalizeInput = (input: string): string => {
-  return input.trim().replace(/\s+/g, ' ').replace(/\.+$/, '');
+  let current = input.trim();
+  if (current.endsWith('.') || current.endsWith('?') || current.endsWith('!')) {
+    current = current.slice(0, -1);
+  }
+
+  current = current.replace(/([.,!?])([^\s])/g, '$1 $2');
+  current = current.replace(/\s+([.,!?])/g, '$1');
+  current = current.replace(/\s+/g, ' ').replace(/\.+$/, '');
+
+  return current.trim();
 };

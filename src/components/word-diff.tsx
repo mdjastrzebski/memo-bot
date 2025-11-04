@@ -18,7 +18,7 @@ export function WordDiff({ expected, actual }: WordDiffProps) {
             if (part.removed) {
               return (
                 <span key={index} className="text-red-500 line-through opacity-70">
-                  {part.value}
+                  {normalizePart(part.value)}
                 </span>
               );
             }
@@ -27,7 +27,7 @@ export function WordDiff({ expected, actual }: WordDiffProps) {
             if (part.added) {
               return (
                 <span key={index} className="text-yellow-400">
-                  {part.value}
+                  {normalizePart(part.value)}
                 </span>
               );
             }
@@ -43,4 +43,12 @@ export function WordDiff({ expected, actual }: WordDiffProps) {
       )}
     </div>
   );
+}
+
+function normalizePart(text: string): string {
+  if (text == ' ') {
+    return '_';
+  }
+
+  return text;
 }
