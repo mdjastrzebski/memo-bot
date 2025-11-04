@@ -7,15 +7,15 @@ import { calculateWordScore, compareWordScores } from '../utils/score';
 import { playCompleted } from '../utils/sounds';
 
 export default function ResultsScreen() {
-  const completedWords = useGameState((state) => state.completedWords);
+  const words = useGameState((state) => state.completedWords);
   const restart = useGameState((state) => state.resetGame);
 
   React.useEffect(() => {
     playCompleted();
   }, []);
 
-  const totalPossibleScore = completedWords.length * 100;
-  const actualScore = completedWords.reduce((sum, word) => sum + calculateWordScore(word), 0);
+  const totalPossibleScore = words.length * 100;
+  const actualScore = words.reduce((sum, word) => sum + calculateWordScore(word), 0);
   const percentage = Math.round((actualScore / totalPossibleScore) * 100);
 
   const getEmoji = (percentage: number) => {
@@ -25,7 +25,7 @@ export default function ResultsScreen() {
     return '💪';
   };
 
-  const sortedCompletedWords = [...completedWords].sort(compareWordScores);
+  const sortedWords = [...words].sort(compareWordScores);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 p-4">
@@ -47,7 +47,7 @@ export default function ResultsScreen() {
 
           <div className="mt-8 space-y-4">
             <h3 className="text-xl font-bold text-white mb-4">Word Review:</h3>
-            {sortedCompletedWords.map((word, index) => (
+            {sortedWords.map((word, index) => (
               <div key={index} className="p-4 rounded-lg bg-white/10">
                 <div className="flex justify-between items-center">
                   <span className="text-white font-medium">{word.word}</span>

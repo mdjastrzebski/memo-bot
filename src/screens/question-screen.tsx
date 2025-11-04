@@ -25,7 +25,7 @@ export default function QuestionScreen() {
   const incorrectAnswer = useGameState((state) => state.incorrectAnswer);
   const skipWord = useGameState((state) => state.skipWord);
 
-  const [questionStatus, setQuestionStatus] = useState<QuestionStatus>('question');
+  const [status, setStatus] = useState<QuestionStatus>('question');
   const [input, setInput] = useState('');
   const [answer, setAnswer] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -33,14 +33,14 @@ export default function QuestionScreen() {
 
   const initialSoundPlayed = useRef<string | null>(null);
 
-  const word = currentWord?.word ?? '';
+  const word = currentWord?.word;
   const prompt = currentWord?.prompt;
 
   useEffect(() => {
-    if (!currentWord) return;
+    if (!word) return;
 
     // Reset local state when word changes
-    setQuestionStatus('question');
+    setStatus('question');
     setInput('');
     setAnswer('');
 
@@ -55,7 +55,7 @@ export default function QuestionScreen() {
     inputRef.current?.focus();
   }, [word, language, prompt, currentWord]);
 
-  if (!currentWord) {
+  if (!currentWord || !word) {
     return null;
   }
 
@@ -109,7 +109,7 @@ export default function QuestionScreen() {
 
     if (!isCorrect) {
       speak(word, language);
-      setQuestionStatus('retry');
+      setStatus('retry');
       setAnswer(input);
       setInput('');
       return;
@@ -118,8 +118,8 @@ export default function QuestionScreen() {
     playCorrect();
     if (prompt != null) speak(word, language);
 
-    const isFirstAttempt = questionStatus === 'question';
-    setQuestionStatus('correct');
+    const isFirstAttempt = status === 'question';
+    setStatus('correct');
     setAnswer(input);
     setTimeout(() => {
       if (isFirstAttempt) {
@@ -138,13 +138,13 @@ export default function QuestionScreen() {
       return;
     }
 
-    setQuestionStatus('correct');
+    setStatus('correct');
     skipWord(currentWord);
   };
 
   const progressPercentage = (completed / (remaining + completed)) * 100;
 
-  const showPlayButton = prompt == null || questionStatus !== 'question';
+  const showPlayButton = prompt == null || status !== 'question';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 p-4">
@@ -167,14 +167,14 @@ export default function QuestionScreen() {
 
         <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white/20">
           <div className="space-y-4">
-            {questionStatus !== 'question' && (
+            {status !== 'question' && (
               <div className="text-center space-y-6 py-2">
                 <div
                   className={`text-xl font-bold ${
-                    questionStatus === 'correct' ? 'text-green-400' : 'text-red-400'
+                    status === 'correct' ? 'text-green-400' : 'text-red-400'
                   }`}
                 >
-                  {questionStatus === 'correct' ? 'Correct! 🎉' : 'Try again! 🙈'}
+                  {status === 'correct' ? 'Correct! 🎉' : 'Try again! 🙈'}
                 </div>
               </div>
             )}
@@ -183,7 +183,7 @@ export default function QuestionScreen() {
               <div className="text-3xl text-center text-purple-100 my-4">{prompt}</div>
             )}
 
-            {questionStatus !== 'question' && (
+            {status !== 'question' && (
               <div className="text-center space-y-6 py-2">
                 <WordDiff expected={word} actual={answer} />
               </div>
@@ -212,8 +212,8 @@ export default function QuestionScreen() {
                     cursorPositionRef.current = e.currentTarget.selectionStart;
                   }}
                   className="w-full text-center text-3xl h-16 bg-white/20 text-white placeholder:text-purple-200"
-                  placeholder={questionStatus === 'retry' ? 'Type it again...' : 'Type here...'}
-                  disabled={questionStatus === 'correct'}
+                  placeholder={status === 'retry' ? 'Type it again...' : 'Type here...'}
+                  disabled={status === 'correct'}
                   spellCheck={false}
                 />
 
