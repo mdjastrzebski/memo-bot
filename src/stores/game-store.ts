@@ -5,8 +5,8 @@ import { shuffleArray } from '../utils/data';
 import { type Language, LANGUAGES } from '../utils/languages';
 
 const STREAK_GOAL_AFTER_INCORRECT = 2;
-const SCHEDULE_AFTER_CORRECT = 3;
-const SCHEDULE_AFTER_INCORRECT = 1;
+const SCHEDULE_AFTER_CORRECT = 5;
+const SCHEDULE_AFTER_INCORRECT = 0;
 
 export interface GameState {
   pendingWords: WordState[];
@@ -56,48 +56,53 @@ export const useGameState = create<GameState & GameActions>((set) => ({
 
   correctAnswer: (word: WordState) => {
     set((state: GameState & GameActions) => {
-      const remainingWords = state.pendingWords.filter((w) => w.word !== word.word);
-      const updatedWord: WordState = {
-        ...word,
-        correctStreak: word.correctStreak + 1,
-      };
+      const updatedWord = { ...word, correctStreak: word.correctStreak + 1 };
+      const otherWords = state.pendingWords.filter((w) => w.word !== word.word);
 
       const isCompleted =
-        (updatedWord.correctStreak === 1 && updatedWord.incorrectCount === 0) ||
+        updatedWord.incorrectCount === 0 ||
         updatedWord.correctStreak >= STREAK_GOAL_AFTER_INCORRECT;
       if (isCompleted) {
         return {
           ...state,
-          pendingWords: remainingWords,
+          pendingWords: otherWords,
           completedWords: [...state.completedWords, updatedWord],
         };
       }
 
-      const insertPosition = Math.min(SCHEDULE_AFTER_CORRECT - 1, remainingWords.length);
-      remainingWords.splice(insertPosition, 0, updatedWord);
+      const insertPosition = Math.min(SCHEDULE_AFTER_CORRECT, otherWords.length);
+      otherWords.splice(insertPosition, 0, updatedWord);
 
       return {
         ...state,
-        pendingWords: remainingWords,
+        pendingWords: otherWords,
       };
     });
   },
 
   incorrectAnswer: (word: WordState) => {
     set((state) => {
-      const remainingWords = state.pendingWords.filter((w) => w.word !== word.word);
+      const otherWords = state.pendingWords.filter((w) => w.word !== word.word);
       const updatedWord: WordState = {
         ...word,
         correctStreak: 0,
         incorrectCount: word.incorrectCount + 1,
       };
 
-      const insertPosition = Math.min(SCHEDULE_AFTER_INCORRECT - 1, remainingWords.length);
-      remainingWords.splice(insertPosition, 0, updatedWord);
+      // In the first pass, go through all words. In subsequent passes, schedule the repetition closer.
+      const isFirstAttempt = word.incorrectCount === 0;
+      if (isFirstAttempt) {
+        return {
+          ...state,
+          pendingWords: [...otherWords, updatedWord],
+        };
+      }
 
+      const insertPosition = Math.min(SCHEDULE_AFTER_INCORRECT, otherWords.length);
+      otherWords.splice(insertPosition, 0, updatedWord);
       return {
         ...state,
-        pendingWords: remainingWords,
+        pendingWords: otherWords,
       };
     });
   },
