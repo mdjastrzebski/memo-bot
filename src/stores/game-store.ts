@@ -48,11 +48,10 @@ export const useGameState = create<GameState & GameActions>((set) => ({
   },
 
   resetGame: () => {
-    set((state) => ({
-      ...state,
+    set({
       pendingWords: [],
       completedWords: [],
-    }));
+    });
   },
 
   correctAnswer: (word: WordState) => {
