@@ -181,10 +181,8 @@ describe('QuestionScreen', () => {
 
     // Should show prompt text instead of speaking
     expect(screen.getByText(/Say hello/i)).toBeInTheDocument();
-    // Play button should not be visible initially when there's a prompt
-    const playButtons = screen.getAllByRole('button');
-    const playBtn = playButtons.find((btn) => btn.textContent?.includes('Play') || btn.querySelector('svg'));
-    // Play button should appear after status changes (when showPlayButton becomes true)
+    // Play button should not be visible initially when there's a prompt (showPlayButton is false)
+    expect(screen.queryByRole('button', { name: /Play word/i })).not.toBeInTheDocument();
   });
 
   it('shows WordDiff when answer is incorrect', async () => {
