@@ -47,10 +47,12 @@ export default function ResultsScreen() {
 
           <div className="mt-8 space-y-4">
             <h3 className="text-xl font-bold text-white mb-4">Word Review:</h3>
-            {sortedWords.map((word, index) => (
-              <div key={index} className="p-4 rounded-lg bg-white/10">
+            {sortedWords.map((word) => (
+              <div key={word.id} className="p-4 rounded-lg bg-white/10">
                 <div className="flex justify-between items-center">
-                  <span className="text-white font-medium">{word.word}</span>
+                  <span className="text-white font-medium">
+                    {word.word} {word.prompt && `(${word.prompt})`}
+                  </span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-purple-200">
                       Score: {calculateWordScore(word)}

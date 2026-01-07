@@ -11,8 +11,9 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest",
-    "validate": "pnpm lint && pnpm typecheck && pnpm test"
+    "test": "vitest --no-watch",
+    "validate": "prettier --check . && pnpm run lint && pnpm run typecheck && pnpm run test",
+    "validate:fix": "prettier --write . && pnpm run lint --fix && pnpm run typecheck && pnpm run test -u"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.2",

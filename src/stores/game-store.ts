@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 import type { Word, WordState } from '../types';
 import { shuffleArray } from '../utils/data';
+import { generateId } from '../utils/id';
 import { type Language, LANGUAGES } from '../utils/languages';
 
 const STREAK_GOAL_AFTER_INCORRECT = 2;
@@ -32,6 +33,7 @@ export const useGameState = create<GameState & GameActions>((set) => ({
   startGame: (words, language) => {
     const initialQueue = shuffleArray(
       words.map(({ word, prompt }) => ({
+        id: generateId(),
         word,
         prompt,
         correctStreak: 0,
@@ -57,7 +59,7 @@ export const useGameState = create<GameState & GameActions>((set) => ({
   correctAnswer: (word: WordState) => {
     set((state: GameState & GameActions) => {
       const updatedWord = { ...word, correctStreak: word.correctStreak + 1 };
-      const otherWords = state.pendingWords.filter((w) => w.word !== word.word);
+      const otherWords = state.pendingWords.filter((w) => w.id !== word.id);
 
       const isCompleted =
         updatedWord.incorrectCount === 0 ||
@@ -82,7 +84,7 @@ export const useGameState = create<GameState & GameActions>((set) => ({
 
   incorrectAnswer: (word: WordState) => {
     set((state) => {
-      const otherWords = state.pendingWords.filter((w) => w.word !== word.word);
+      const otherWords = state.pendingWords.filter((w) => w.id !== word.id);
       const updatedWord: WordState = {
         ...word,
         correctStreak: 0,
@@ -112,7 +114,7 @@ export const useGameState = create<GameState & GameActions>((set) => ({
       const skippedWord: WordState = { ...word, skipped: true };
       return {
         ...state,
-        pendingWords: state.pendingWords.filter((w) => w.word !== word.word),
+        pendingWords: state.pendingWords.filter((w) => w.id !== word.id),
         completedWords: [...state.completedWords, skippedWord],
       };
     });

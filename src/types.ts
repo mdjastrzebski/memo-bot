@@ -4,6 +4,7 @@ export interface Word {
 }
 
 export interface WordState extends Word {
+  id: string;
   correctStreak: number;
   incorrectCount: number;
   skipped?: boolean;
