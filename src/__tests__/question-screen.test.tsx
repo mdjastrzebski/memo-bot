@@ -59,9 +59,7 @@ describe('QuestionScreen', () => {
     await user.type(input, 'hello{Enter}');
 
     // Should show "Correct!" feedback
-    await waitFor(() => {
-      expect(screen.getByText(/Correct!/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
 
     // Verify the word was marked as correct in the store
     await waitFor(
@@ -84,9 +82,7 @@ describe('QuestionScreen', () => {
     await user.type(input, 'wrong{Enter}');
 
     // Should show "Try again!" feedback
-    await waitFor(() => {
-      expect(screen.getByText(/Try again!/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Try again!/i)).toBeInTheDocument();
 
     // Input should be cleared and ready for retry
     const retryInput = screen.getByPlaceholderText(/Type it again/i);
@@ -108,9 +104,7 @@ describe('QuestionScreen', () => {
     await user.type(input, 'hello.  {Enter}');
 
     // Should still be marked as correct due to normalization
-    await waitFor(() => {
-      expect(screen.getByText(/Correct!/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
   });
 
   it('allows user to skip word with confirmation', async () => {
@@ -195,9 +189,7 @@ describe('QuestionScreen', () => {
     await user.type(input, 'wrong{Enter}');
 
     // Should show WordDiff component with expected and actual
-    await waitFor(() => {
-      expect(screen.getByText(/Try again!/i)).toBeInTheDocument();
-    });
+    expect(await screen.findByText(/Try again!/i)).toBeInTheDocument();
 
     // WordDiff should be rendered (it shows the expected word)
     expect(screen.getByText(/hello/i)).toBeInTheDocument();
