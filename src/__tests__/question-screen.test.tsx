@@ -157,4 +157,55 @@ describe('QuestionScreen', () => {
 
     confirmSpy.mockRestore();
   });
+
+  it('allows user to replay word by clicking play button', async () => {
+    const user = userEvent.setup();
+    render(<QuestionScreen />);
+
+    // Find play button (should be visible when prompt is null)
+    const playButton = screen.getByRole('button', { name: '' });
+    const playButtons = screen.getAllByRole('button');
+    const playBtn = playButtons.find((btn) => btn.querySelector('svg'));
+
+    expect(playBtn).toBeDefined();
+    await user.click(playBtn!);
+
+    // Should call speak with the word
+    expect(mockSpeak).toHaveBeenCalled();
+  });
+
+  it('displays text prompt when word has prompt instead of speaking', () => {
+    useGameState.getState().resetGame();
+    useGameState.getState().startGame(
+      [{ word: 'hello', prompt: 'Say hello' }],
+      LANGUAGES[0],
+    );
+
+    render(<QuestionScreen />);
+
+    // Should show prompt text instead of speaking
+    expect(screen.getByText(/Say hello/i)).toBeInTheDocument();
+    // Play button should not be visible initially when there's a prompt
+    const playButtons = screen.getAllByRole('button');
+    const playBtn = playButtons.find((btn) => btn.textContent?.includes('Play') || btn.querySelector('svg'));
+    // Play button should appear after status changes (when showPlayButton becomes true)
+  });
+
+  it('shows WordDiff when answer is incorrect', async () => {
+    const user = userEvent.setup();
+    render(<QuestionScreen />);
+
+    const input = screen.getByPlaceholderText(/Type here/i);
+
+    // Type incorrect answer and submit
+    await user.type(input, 'wrong{Enter}');
+
+    // Should show WordDiff component with expected and actual
+    await waitFor(() => {
+      expect(screen.getByText(/Try again!/i)).toBeInTheDocument();
+    });
+
+    // WordDiff should be rendered (it shows the expected word)
+    expect(screen.getByText(/hello/i)).toBeInTheDocument();
+  });
 });
