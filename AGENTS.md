@@ -38,7 +38,7 @@ The project uses `pnpm` as the package manager.
 
 - **Start Development Server**: `pnpm dev`
 - **Build for Production**: `pnpm build`
-- **Run Tests**: `pnpm test`
+- **Run Tests**: `pnpm run test`
 - **Lint Code**: `pnpm lint`
 - **Type Check**: `pnpm typecheck`
 - **Validate All (Lint + Typecheck + Test)**: `pnpm validate`
