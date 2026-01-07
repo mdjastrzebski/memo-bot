@@ -256,4 +256,32 @@ describe('QuestionScreen', () => {
     expect(word).toBeDefined();
     expect(word!.incorrectCount).toBe(1);
   });
+
+  it('inserts special character into input field when clicking special character button', async () => {
+    const user = userEvent.setup();
+    // Start game with word containing special character
+    useGameState.getState().startGame(
+      [{ word: 'café', prompt: undefined }],
+      LANGUAGES[0],
+    );
+
+    render(<QuestionScreen />);
+
+    const input = screen.getByPlaceholderText(/Type here/i) as HTMLInputElement;
+
+    // Type part of the word
+    await user.type(input, 'caf');
+
+    // Find and click the é special character button
+    const eButton = screen.getByRole('button', { name: 'é' });
+    await user.click(eButton);
+
+    // Character should be inserted into input field
+    await waitFor(() => {
+      expect(input.value).toBe('café');
+    });
+
+    // Input should still be focused
+    expect(input).toHaveFocus();
+  });
 });
