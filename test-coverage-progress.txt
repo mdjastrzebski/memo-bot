@@ -1,0 +1,6 @@
+test(input-screen): User can enter words and start game
+- Coverage: input-screen.tsx 0% → 100% (all statements, branches, functions, lines)
+- Overall: 2.44% → 10.01% statements
+- Tested: word input parsing, default words fallback, prompt parsing with pipe separator
+- Used real Zustand store (not mocked) to test actual integration
+- Learned: words are shuffled in startGame, so tests check presence not order
