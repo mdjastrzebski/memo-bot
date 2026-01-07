@@ -125,8 +125,11 @@ describe('QuestionScreen', () => {
     await waitFor(() => {
       const state = useGameState.getState();
       expect(state.completedWords.length).toBeGreaterThan(0);
-      expect(state.completedWords[0].skipped).toBe(true);
     });
+
+    // Verify the skipped flag is set
+    const state = useGameState.getState();
+    expect(state.completedWords[0].skipped).toBe(true);
 
     confirmSpy.mockRestore();
   });
