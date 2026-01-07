@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -64,16 +64,19 @@ describe('ResultsScreen', () => {
     // Should show word review section
     expect(screen.getByText(/Word Review:/i)).toBeInTheDocument();
 
-    // Should display all completed words
-    expect(screen.getByText(/perfect/i)).toBeInTheDocument();
-    expect(screen.getByText(/good/i)).toBeInTheDocument();
-    expect(screen.getByText(/okay/i)).toBeInTheDocument();
+    // Validate each word has its correct score assigned
+    // Use testID to find the container that holds both word and score, then use "within" to validate pairs
+    const perfectContainer = screen.getByTestId('word-score-perfect');
+    expect(within(perfectContainer).getByText(/perfect/i)).toBeInTheDocument();
+    expect(within(perfectContainer).getByText(/Score: 100/i)).toBeInTheDocument();
 
-    // Words should be sorted by score (highest first)
-    // Check that words appear in score order by verifying their individual scores
-    expect(screen.getByText(/perfect/i).closest('.bg-white\\/10')).toHaveTextContent('Score: 100');
-    expect(screen.getByText(/good/i).closest('.bg-white\\/10')).toHaveTextContent('Score: 75');
-    expect(screen.getByText(/okay/i).closest('.bg-white\\/10')).toHaveTextContent('Score: 50');
+    const goodContainer = screen.getByTestId('word-score-good');
+    expect(within(goodContainer).getByText(/good/i)).toBeInTheDocument();
+    expect(within(goodContainer).getByText(/Score: 75/i)).toBeInTheDocument();
+
+    const okayContainer = screen.getByTestId('word-score-okay');
+    expect(within(okayContainer).getByText(/okay/i)).toBeInTheDocument();
+    expect(within(okayContainer).getByText(/Score: 50/i)).toBeInTheDocument();
   });
 
   it('shows appropriate emoji based on performance percentage', () => {

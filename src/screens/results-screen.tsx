@@ -49,7 +49,7 @@ export default function ResultsScreen() {
             <h3 className="text-xl font-bold text-white mb-4">Word Review:</h3>
             {sortedWords.map((word) => (
               <div key={word.id} className="p-4 rounded-lg bg-white/10">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center" data-testid={`word-score-${word.word}`}>
                   <span className="text-white font-medium">
                     {word.word} {word.prompt && `(${word.prompt})`}
                   </span>
