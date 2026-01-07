@@ -112,4 +112,49 @@ describe('QuestionScreen', () => {
       expect(screen.getByText(/Correct!/i)).toBeInTheDocument();
     });
   });
+
+  it('allows user to skip word with confirmation', async () => {
+    const user = userEvent.setup();
+    // Mock window.confirm to return true
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<QuestionScreen />);
+
+    // Find and click skip button
+    const skipButton = screen.getByRole('button', { name: /Skip/i });
+    await user.click(skipButton);
+
+    // Should show confirmation dialog
+    expect(confirmSpy).toHaveBeenCalledWith('Skip this word?');
+
+    // Word should be skipped (moved to completed)
+    await waitFor(() => {
+      const state = useGameState.getState();
+      expect(state.completedWords.length).toBeGreaterThan(0);
+      expect(state.completedWords[0].skipped).toBe(true);
+    });
+
+    confirmSpy.mockRestore();
+  });
+
+  it('does not skip word when user cancels confirmation', async () => {
+    const user = userEvent.setup();
+    // Mock window.confirm to return false
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+
+    render(<QuestionScreen />);
+
+    const skipButton = screen.getByRole('button', { name: /Skip/i });
+    await user.click(skipButton);
+
+    // Should show confirmation dialog
+    expect(confirmSpy).toHaveBeenCalledWith('Skip this word?');
+
+    // Word should NOT be skipped (still in pending)
+    const state = useGameState.getState();
+    expect(state.pendingWords.length).toBeGreaterThan(0);
+    expect(state.completedWords.length).toBe(0);
+
+    confirmSpy.mockRestore();
+  });
 });
