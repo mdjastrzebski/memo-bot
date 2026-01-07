@@ -107,6 +107,30 @@ describe('QuestionScreen', () => {
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
   });
 
+  it('prevents submission when input is empty', async () => {
+    const user = userEvent.setup();
+    render(<QuestionScreen />);
+
+    const input = screen.getByPlaceholderText(/Type here/i) as HTMLInputElement;
+    const initialState = useGameState.getState();
+    const initialPendingCount = initialState.pendingWords.length;
+
+    // Try to submit empty input
+    await user.type(input, '{Enter}');
+
+    // Input should remain focused
+    expect(input).toHaveFocus();
+
+    // No feedback should be shown
+    expect(screen.queryByText(/Correct!/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Try again!/i)).not.toBeInTheDocument();
+
+    // Word should still be in pending (not completed)
+    const state = useGameState.getState();
+    expect(state.pendingWords.length).toBe(initialPendingCount);
+    expect(state.completedWords.length).toBe(0);
+  });
+
   it('allows user to skip word with confirmation', async () => {
     const user = userEvent.setup();
     // Mock window.confirm to return true
