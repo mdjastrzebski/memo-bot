@@ -162,13 +162,9 @@ describe('QuestionScreen', () => {
     const user = userEvent.setup();
     render(<QuestionScreen />);
 
-    // Find play button (should be visible when prompt is null)
-    const playButton = screen.getByRole('button', { name: '' });
-    const playButtons = screen.getAllByRole('button');
-    const playBtn = playButtons.find((btn) => btn.querySelector('svg'));
-
-    expect(playBtn).toBeDefined();
-    await user.click(playBtn!);
+    // Find play button using aria-label
+    const playButton = screen.getByRole('button', { name: /Play word/i });
+    await user.click(playButton);
 
     // Should call speak with the word
     expect(mockSpeak).toHaveBeenCalled();

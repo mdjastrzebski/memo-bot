@@ -193,6 +193,7 @@ export default function QuestionScreen() {
               <Button
                 type="button"
                 onClick={handleSpeak}
+                aria-label="Play word"
                 className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl flex items-center justify-center"
               >
                 <Play className="mr-2" style={{ height: '24', width: '24' }} />
