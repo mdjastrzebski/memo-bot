@@ -215,4 +215,42 @@ describe('QuestionScreen', () => {
     // Should be marked as correct due to accent-insensitive matching
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
   });
+
+  it('calls incorrectAnswer when user corrects answer on retry', async () => {
+    const user = userEvent.setup();
+    render(<QuestionScreen />);
+
+    const input = screen.getByPlaceholderText(/Type here/i);
+    const initialState = useGameState.getState();
+    const initialPendingCount = initialState.pendingWords.length;
+
+    // Submit incorrect answer first
+    await user.type(input, 'wrong{Enter}');
+    expect(await screen.findByText(/Try again!/i)).toBeInTheDocument();
+
+    // Now submit correct answer on retry
+    const retryInput = screen.getByPlaceholderText(/Type it again/i);
+    await user.type(retryInput, 'hello{Enter}');
+
+    // Should show "Correct!" feedback
+    expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
+
+    // After timeout, should call incorrectAnswer (not correctAnswer) because it was wrong first
+    // Word should still be in pending (not completed) because it was wrong first
+    await waitFor(
+      () => {
+        const state = useGameState.getState();
+        const word = state.pendingWords.find((w) => w.word === 'hello');
+        expect(word?.incorrectCount).toBeGreaterThan(0);
+      },
+      { timeout: 1500 },
+    );
+
+    // Verify word is still in pending (not completed)
+    const state = useGameState.getState();
+    expect(state.pendingWords.length).toBe(initialPendingCount);
+    const word = state.pendingWords.find((w) => w.word === 'hello');
+    expect(word).toBeDefined();
+    expect(word!.incorrectCount).toBe(1);
+  });
 });
