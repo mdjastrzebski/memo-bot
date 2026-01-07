@@ -194,4 +194,25 @@ describe('QuestionScreen', () => {
     // WordDiff should be rendered (it shows the expected word)
     expect(screen.getByText(/hello/i)).toBeInTheDocument();
   });
+
+  it('accepts answer with different accents when ignoreAccents is enabled', async () => {
+    const user = userEvent.setup();
+    // Start game with accented word
+    useGameState.getState().startGame(
+      [{ word: 'café', prompt: undefined }],
+      LANGUAGES[0],
+    );
+    // Set ignoreAccents to true AFTER startGame (since startGame resets it to false)
+    useGameState.setState({ ignoreAccents: true });
+
+    render(<QuestionScreen />);
+
+    const input = screen.getByPlaceholderText(/Type here/i);
+
+    // Type answer without accent (should be accepted when ignoreAccents is true)
+    await user.type(input, 'cafe{Enter}');
+
+    // Should be marked as correct due to accent-insensitive matching
+    expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
+  });
 });
