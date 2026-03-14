@@ -11,3 +11,11 @@ Quick, fun, effective spelling practice! ✨
 - Fun challenges replace dull drills 😊
 
 [Play with Memo Bot!](https://memo-bot.netlify.app) 🚀
+
+## Development
+
+- Install dependencies: `bun install`
+- Start dev server: `bun run dev`
+- Build: `bun run build`
+- Test: `bun run test`
+- Validate: `bun run validate`

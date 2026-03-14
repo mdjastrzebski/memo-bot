@@ -13,7 +13,7 @@
 - **State Management**: Zustand
 - **Icons**: Lucide React
 - **Testing**: Vitest
-- **Package Manager**: pnpm
+- **Package Manager**: Bun
 
 ## Architecture
 
@@ -34,14 +34,14 @@ The application is structured around a central "Game Status" state:
 
 ## Building and Running
 
-The project uses `pnpm` as the package manager.
+The project uses `bun` as the package manager.
 
-- **Start Development Server**: `pnpm dev`
-- **Build for Production**: `pnpm build`
-- **Run Tests**: `pnpm run test`
-- **Lint Code**: `pnpm lint`
-- **Type Check**: `pnpm typecheck`
-- **Validate All (Lint + Typecheck + Test)**: `pnpm validate`
+- **Start Development Server**: `bun run dev`
+- **Build for Production**: `bun run build`
+- **Run Tests**: `bun run test`
+- **Lint Code**: `bun run lint`
+- **Type Check**: `bun run typecheck`
+- **Validate All (Lint + Typecheck + Test)**: `bun run validate`
 
 ## Development Conventions
 
@@ -49,4 +49,4 @@ The project uses `pnpm` as the package manager.
 - **Styling**: Use Tailwind CSS utility classes.
 - **Components**: Prefer functional components. Reusable UI elements should go in `src/components/`.
 - **Imports**: Absolute imports are likely configured (check `tsconfig.json` paths if needed), but relative imports are currently observed in some files.
-- **Code Quality**: Ensure `pnpm validate` passes before committing.
+- **Code Quality**: Ensure `bun run validate` passes before committing.
