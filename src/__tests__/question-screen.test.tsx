@@ -41,10 +41,7 @@ describe('QuestionScreen', () => {
     vi.clearAllMocks();
     useGameState.getState().resetGame();
     // Start a game with test words
-    useGameState.getState().startGame(
-      [{ word: 'hello', prompt: undefined }],
-      LANGUAGES[0],
-    );
+    useGameState.getState().startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0]);
   });
 
   it('allows user to submit correct answer and see success feedback', async () => {
@@ -193,10 +190,7 @@ describe('QuestionScreen', () => {
 
   it('displays text prompt when word has prompt instead of speaking', () => {
     useGameState.getState().resetGame();
-    useGameState.getState().startGame(
-      [{ word: 'hello', prompt: 'Say hello' }],
-      LANGUAGES[0],
-    );
+    useGameState.getState().startGame([{ word: 'hello', prompt: 'Say hello' }], LANGUAGES[0]);
 
     render(<QuestionScreen />);
 
@@ -225,10 +219,7 @@ describe('QuestionScreen', () => {
   it('accepts answer with different accents when ignoreAccents is enabled', async () => {
     const user = userEvent.setup();
     // Start game with accented word
-    useGameState.getState().startGame(
-      [{ word: 'café', prompt: undefined }],
-      LANGUAGES[0],
-    );
+    useGameState.getState().startGame([{ word: 'café', prompt: undefined }], LANGUAGES[0]);
     // Set ignoreAccents to true AFTER startGame (since startGame resets it to false)
     useGameState.setState({ ignoreAccents: true });
 
@@ -284,10 +275,7 @@ describe('QuestionScreen', () => {
   it('inserts special character into input field when clicking special character button', async () => {
     const user = userEvent.setup();
     // Start game with word containing special character
-    useGameState.getState().startGame(
-      [{ word: 'café', prompt: undefined }],
-      LANGUAGES[0],
-    );
+    useGameState.getState().startGame([{ word: 'café', prompt: undefined }], LANGUAGES[0]);
 
     render(<QuestionScreen />);
 

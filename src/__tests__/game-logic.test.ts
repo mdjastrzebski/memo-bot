@@ -101,7 +101,9 @@ describe('Game Store Logic', () => {
     // Answer correctly once - should still be in pending (streak = 1, not enough)
     correctAnswer(wordAfterIncorrect);
     const afterFirstCorrect = useGameState.getState();
-    const wordAfterFirstCorrect = afterFirstCorrect.pendingWords.find((w) => w.id === challengeWord.id)!;
+    const wordAfterFirstCorrect = afterFirstCorrect.pendingWords.find(
+      (w) => w.id === challengeWord.id,
+    )!;
     expect(wordAfterFirstCorrect.correctStreak).toBe(1);
     expect(wordAfterFirstCorrect.incorrectCount).toBe(1);
     expect(afterFirstCorrect.completedWords).toHaveLength(0);

@@ -4,7 +4,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import ResultsScreen from '../screens/results-screen';
 import { useGameState } from '../stores/game-store';
-import { LANGUAGES } from '../utils/languages';
 
 // Mock sounds
 vi.mock('../utils/sounds', () => ({

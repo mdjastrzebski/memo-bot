@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App from '../app';
 import { useGameState } from '../stores/game-store';
+import { LANGUAGES } from '../utils/languages';
 
 // Mock the hooks
 vi.mock('./hooks/use-before-unload', () => ({
@@ -49,10 +50,7 @@ describe('App', () => {
 
   it('displays QuestionScreen when game status is learning', () => {
     // Start a game to enter learning state
-    useGameState.getState().startGame(
-      [{ word: 'hello', prompt: undefined }],
-      { code: 'en', name: 'English', flag: '🇬🇧' },
-    );
+    useGameState.getState().startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[1]);
 
     render(<App />);
 

@@ -7,9 +7,7 @@ import { SpecialCharactersKeyboard } from '../components/special-chars-keyboard'
 describe('SpecialCharactersKeyboard', () => {
   it('displays special character buttons when word contains non-Latin characters', () => {
     const onCharacterClick = vi.fn();
-    render(
-      <SpecialCharactersKeyboard word="café résumé" onCharacterClick={onCharacterClick} />,
-    );
+    render(<SpecialCharactersKeyboard word="café résumé" onCharacterClick={onCharacterClick} />);
 
     // Should show buttons for é characters
     const buttons = screen.getAllByRole('button');
@@ -30,9 +28,7 @@ describe('SpecialCharactersKeyboard', () => {
   it('allows user to click special character button to insert character', async () => {
     const user = userEvent.setup();
     const onCharacterClick = vi.fn();
-    render(
-      <SpecialCharactersKeyboard word="naïve" onCharacterClick={onCharacterClick} />,
-    );
+    render(<SpecialCharactersKeyboard word="naïve" onCharacterClick={onCharacterClick} />);
 
     // Find and click the ï button
     const iButton = screen.getByRole('button', { name: 'ï' });
