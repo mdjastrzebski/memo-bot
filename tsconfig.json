@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom"],
     "incremental": true,
     "plugins": [
       {
@@ -20,5 +21,5 @@
     ]
   },
   "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "exclude": ["coverage", "dist", "node_modules"]
 }
