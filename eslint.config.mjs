@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 
 export default tseslint.config(
-  { ignores: ['dist', '*.config.{js,mjs,ts}'] },
+  { ignores: ['coverage', 'dist', '*.config.{js,mjs,ts}'] },
   {
     extends: [
       js.configs.recommended,
@@ -29,6 +29,11 @@ export default tseslint.config(
       'react': pluginReact,
       'react-refresh': reactRefresh,
       'simple-import-sort': simpleImportSort,
+    },
+    settings: {
+      react: {
+        version: 'detect',
+      },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
