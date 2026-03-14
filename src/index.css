@@ -1,9 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700;9..144,800&family=Manrope:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
-  font-family: Helvetica, Arial, sans-serif;
+  font-family: 'Manrope', sans-serif;
 }
 
 @layer utilities {
@@ -14,39 +16,39 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 41 71% 94%;
+    --foreground: 14 23% 13%;
+    --card: 43 80% 97%;
+    --card-foreground: 14 23% 13%;
+    --popover: 43 80% 97%;
+    --popover-foreground: 14 23% 13%;
+    --primary: 10 72% 53%;
+    --primary-foreground: 43 80% 97%;
+    --secondary: 41 46% 88%;
+    --secondary-foreground: 14 23% 13%;
+    --muted: 41 38% 86%;
+    --muted-foreground: 15 16% 35%;
+    --accent: 46 86% 68%;
+    --accent-foreground: 14 23% 13%;
+    --destructive: 0 70% 52%;
+    --destructive-foreground: 43 80% 97%;
+    --border: 26 30% 76%;
+    --input: 38 36% 82%;
+    --ring: 10 72% 53%;
+    --chart-1: 10 72% 53%;
+    --chart-2: 46 86% 58%;
+    --chart-3: 196 48% 34%;
+    --chart-4: 142 30% 40%;
+    --chart-5: 347 63% 46%;
+    --radius: 1.25rem;
+    --sidebar-background: 43 80% 97%;
+    --sidebar-foreground: 14 23% 13%;
+    --sidebar-primary: 10 72% 53%;
+    --sidebar-primary-foreground: 43 80% 97%;
+    --sidebar-accent: 41 46% 88%;
+    --sidebar-accent-foreground: 14 23% 13%;
+    --sidebar-border: 26 30% 76%;
+    --sidebar-ring: 10 72% 53%;
   }
 
   .dark {
@@ -91,6 +93,44 @@ body {
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    background-image:
+      linear-gradient(180deg, rgba(255, 250, 242, 0.92), rgba(244, 226, 199, 0.96)),
+      radial-gradient(circle at top left, rgba(246, 196, 83, 0.32), transparent 28%),
+      radial-gradient(circle at bottom right, rgba(222, 90, 55, 0.18), transparent 36%);
+    min-height: 100vh;
+  }
+
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .app-shell {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgba(255, 252, 244, 0.78), rgba(255, 244, 224, 0.52)),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
+  }
+
+  .mission-panel {
+    @apply rounded-[2rem] border border-black/10 bg-[rgba(255,251,245,0.84)] shadow-[0_22px_80px_rgba(98,61,31,0.16)] backdrop-blur;
+  }
+
+  .eyebrow {
+    @apply inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/60 px-3 py-1 text-[0.7rem] font-extrabold uppercase tracking-[0.28em] text-[#7d3d20];
+  }
+
+  .display-title {
+    font-family: 'Fraunces', serif;
+    font-variation-settings:
+      'SOFT' 100,
+      'WONK' 0;
+  }
+
+  .stage-card {
+    @apply mission-panel relative overflow-hidden p-5 sm:p-7;
   }
 }
