@@ -10,6 +10,7 @@ import { useGameState } from '../stores/game-store';
 import { useCurrentWord } from '../stores/selectors';
 import { playCorrect } from '../utils/sounds';
 import { speak } from '../utils/speak';
+import { normalizeAnswerText } from '../utils/text-normalization';
 
 const CORRECT_STATE_DURATION = 1000;
 
@@ -99,8 +100,8 @@ export default function QuestionScreen() {
       return;
     }
 
-    const normalizedInput = normalizeInput(input);
-    const normalizedWord = normalizeInput(word);
+    const normalizedInput = normalizeAnswerText(input);
+    const normalizedWord = normalizeAnswerText(word);
 
     // Use accent-insensitive comparison if ignoreAccents is true
     const isCorrect = ignoreAccents
@@ -239,21 +240,3 @@ export default function QuestionScreen() {
     </div>
   );
 }
-
-// Function to normalize text by:
-// - trimming
-// - replacing multiple spaces with single spaces
-// - normalizing space before and after punctuation
-// - removing trailing dot, question mark, exclamation mark
-const normalizeInput = (input: string): string => {
-  let current = input.trim();
-  if (current.endsWith('.') || current.endsWith('?') || current.endsWith('!')) {
-    current = current.slice(0, -1);
-  }
-
-  current = current.replace(/([.,!?])([^\s])/g, '$1 $2');
-  current = current.replace(/\s+([.,!?])/g, '$1');
-  current = current.replace(/\s+/g, ' ').replace(/\.+$/, '');
-
-  return current.trim();
-};
