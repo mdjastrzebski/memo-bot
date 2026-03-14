@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { BotIcon as Robot, Play, Volume2, X } from 'lucide-react';
+import { Play, Volume2, X } from 'lucide-react';
 import type React from 'react';
 
 import { AppShell } from '../components/app-shell';
@@ -145,84 +145,71 @@ export default function QuestionScreen() {
   };
 
   const progressPercentage = (completed / (remaining + completed)) * 100;
-
   const showPlayButton = prompt == null || status !== 'question';
 
   return (
     <AppShell className="items-center">
-      <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[0.72fr_1.28fr]">
-        <section className="stage-card flex flex-col justify-between bg-[rgba(246,196,83,0.16)]">
-          <div className="space-y-6">
-            <div className="eyebrow">Live Round</div>
-            <div>
-              <Robot className="h-20 w-20 text-[#de5a37]" />
-              <h2 className="display-title mt-4 text-4xl font-black leading-tight text-[#22170f]">
-                Type what you hear!
-              </h2>
-              <p className="mt-3 text-base leading-7 text-[#5f4b3b]">
-                Listen closely, type the word, and Memo Bot will bring missed words back sooner.
-              </p>
+      <div className="w-full max-w-4xl space-y-5">
+        <section className="stage-card bg-[rgba(246,196,83,0.18)]">
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="rounded-[1.25rem] border border-black/10 bg-white/65 px-5 py-3 text-center sm:min-w-[148px]">
+              <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#7d3d20]">
+                Done
+              </div>
+              <div className="text-3xl font-black text-[#22170f]">{completed}</div>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-              <div className="rounded-[1.5rem] border border-black/10 bg-white/65 p-4">
-                <div className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#7d3d20]">
-                  Queue
-                </div>
-                <div className="mt-2 text-4xl font-black text-[#22170f]">{remaining}</div>
-                <div className="text-sm text-[#6a503b]">words still ahead</div>
-              </div>
-              <div className="rounded-[1.5rem] border border-black/10 bg-white/65 p-4">
-                <div className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#7d3d20]">
-                  Cleared
-                </div>
-                <div className="mt-2 text-4xl font-black text-[#22170f]">{completed}</div>
-                <div className="text-sm text-[#6a503b]">words completed</div>
+            <div className="flex-1 px-1">
+              <div className="h-10 rounded-full bg-[#ead9c4] p-1.5">
+                <div
+                  className="h-full rounded-full bg-[linear-gradient(90deg,#de5a37,#f6c453)] transition-all duration-300"
+                  style={{ width: `${Math.max(progressPercentage, 8)}%` }}
+                />
               </div>
             </div>
-          </div>
 
-          <div className="mt-6 rounded-[1.5rem] border border-black/10 bg-white/55 p-4">
-            <div className="mb-3 flex items-center justify-between text-sm font-bold uppercase tracking-[0.18em] text-[#7d3d20]">
-              <span>Mission progress</span>
-              <span>{Math.round(progressPercentage)}%</span>
-            </div>
-            <div className="h-3 rounded-full bg-[#ead9c4]">
-              <div
-                className="h-full rounded-full bg-[linear-gradient(90deg,#de5a37,#f6c453)] transition-all duration-300"
-                style={{ width: `${progressPercentage}%` }}
-              />
+            <div className="rounded-[1.25rem] border border-black/10 bg-white/65 px-5 py-3 text-center sm:min-w-[148px]">
+              <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#7d3d20]">
+                Left
+              </div>
+              <div className="text-3xl font-black text-[#22170f]">{remaining}</div>
             </div>
           </div>
         </section>
 
         <section className="stage-card bg-[rgba(255,251,245,0.92)]">
-          <div className="space-y-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-sm font-extrabold uppercase tracking-[0.28em] text-[#7d3d20]">
-                  Current prompt
+          <div className="space-y-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="text-[#de5a37]">
+                  <Volume2 className="h-8 w-8" />
                 </div>
-                {prompt != null ? (
-                  <div className="mt-3 rounded-[1.5rem] border border-black/10 bg-[#fff7e8] px-5 py-4 text-3xl font-extrabold text-[#2f2218] shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
-                    {prompt}
-                  </div>
-                ) : (
-                  <p className="mt-3 max-w-md text-base leading-7 text-[#5f4b3b]">
-                    No visual hint this round. Press play and spell the word from audio.
-                  </p>
-                )}
-              </div>
-
-              <div className="flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-black/10 bg-[#f6c453]/60 text-[#7d3d20]">
-                <Volume2 className="h-7 w-7" />
+                <h2 className="display-title text-3xl font-black leading-tight text-[#22170f] sm:text-4xl">
+                  {prompt != null ? 'Type the word!' : 'Type what you hear!'}
+                </h2>
               </div>
             </div>
+
+            {prompt != null ? (
+              <div className="py-2 text-center text-3xl font-black text-[#2f2218] sm:text-4xl">
+                {prompt}
+              </div>
+            ) : (
+              <Button
+                type="button"
+                onClick={handleSpeak}
+                aria-label="Play word"
+                className="h-16 w-full rounded-[1.5rem] border border-black/10 bg-[#de5a37] text-xl font-extrabold text-white shadow-[0_16px_30px_rgba(222,90,55,0.28)] hover:bg-[#c94d2d]"
+              >
+                <Play className="h-6 w-6" />
+                Play word
+              </Button>
+            )}
 
             {status !== 'question' && (
               <div className="rounded-[1.5rem] border border-black/10 bg-white/60 px-5 py-4">
                 <div
-                  className={`text-center text-xl font-black ${
+                  className={`text-center text-2xl font-black ${
                     status === 'correct' ? 'text-[#2f7a45]' : 'text-[#b24328]'
                   }`}
                 >
@@ -234,14 +221,14 @@ export default function QuestionScreen() {
               </div>
             )}
 
-            {showPlayButton && (
+            {showPlayButton && prompt != null && (
               <Button
                 type="button"
                 onClick={handleSpeak}
                 aria-label="Play word"
-                className="h-16 w-full rounded-[1.5rem] border border-black/10 bg-[#de5a37] text-base font-extrabold text-white shadow-[0_16px_30px_rgba(222,90,55,0.28)] hover:bg-[#c94d2d]"
+                className="h-16 w-full rounded-[1.5rem] border border-black/10 bg-[#de5a37] text-xl font-extrabold text-white shadow-[0_16px_30px_rgba(222,90,55,0.28)] hover:bg-[#c94d2d]"
               >
-                <Play className="h-5 w-5" />
+                <Play className="h-6 w-6" />
                 Play word
               </Button>
             )}
@@ -268,9 +255,9 @@ export default function QuestionScreen() {
               type="button"
               onClick={handleSkip}
               variant="ghost"
-              className="h-12 w-full rounded-[1.25rem] border border-black/10 bg-white/40 font-bold text-[#7d3d20] hover:bg-white/70 hover:text-[#2f2218]"
+              className="h-12 w-full rounded-[1.25rem] border border-black/10 bg-white/40 text-lg font-bold text-[#7d3d20] hover:bg-white/70 hover:text-[#2f2218]"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
               Skip
             </Button>
           </div>

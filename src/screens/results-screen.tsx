@@ -32,19 +32,15 @@ export default function ResultsScreen() {
     <AppShell className="items-center">
       <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[0.78fr_1.22fr]">
         <section className="stage-card flex flex-col justify-between bg-[rgba(246,196,83,0.18)]">
-          <div className="space-y-5">
+          <div className="space-y-7">
             <div className="eyebrow">Results Deck</div>
             <Trophy className="h-20 w-20 text-[#de5a37]" />
             <h2 className="display-title text-5xl font-black leading-[0.96] text-[#22170f]">
               Mission Complete! {getEmoji(percentage)}
             </h2>
-            <p className="max-w-sm text-base leading-7 text-[#5f4b3b]">
-              Your score reflects accuracy and recovery. Tricky words stay visible so the next round
-              is easier to target.
-            </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
             <div className="rounded-[1.5rem] border border-black/10 bg-white/65 p-4">
               <div className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#7d3d20]">
                 Accuracy
@@ -71,17 +67,12 @@ export default function ResultsScreen() {
         </section>
 
         <section className="stage-card bg-[rgba(255,251,245,0.92)]">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <div className="text-sm font-extrabold uppercase tracking-[0.28em] text-[#7d3d20]">
-                Word Review:
-              </div>
-              <p className="mt-2 text-base leading-7 text-[#5f4b3b]">
-                Review the list from strongest performance to the ones that still need another lap.
-              </p>
-            </div>
-            <div className="flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-black/10 bg-[#f6c453]/60 text-[#7d3d20]">
+          <div className="flex items-center gap-4">
+            <div className="text-[#b4832f] opacity-80">
               <Award className="h-7 w-7" />
+            </div>
+            <div className="text-sm font-extrabold uppercase tracking-[0.28em] text-[#7d3d20]">
+              Word Review:
             </div>
           </div>
 

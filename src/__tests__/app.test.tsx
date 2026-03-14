@@ -45,7 +45,7 @@ describe('App', () => {
     // Should show InputScreen (check for unique InputScreen elements, not footer text)
     expect(screen.getByPlaceholderText(/Enter words here/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Launch Mission/i })).toBeInTheDocument();
-    expect(screen.getByText(/Enter your spelling words below/i)).toBeInTheDocument();
+    expect(screen.getByText(/Type your spelling words/i)).toBeInTheDocument();
   });
 
   it('displays QuestionScreen when game status is learning', () => {
