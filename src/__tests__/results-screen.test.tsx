@@ -94,7 +94,7 @@ describe('ResultsScreen', () => {
     });
 
     const { unmount } = render(<ResultsScreen />);
-    expect(screen.getByText(/🏆/)).toBeInTheDocument();
+    expect(screen.getAllByText(/🏆/).length).toBeGreaterThan(0);
     unmount();
 
     // Test 80% score (need multiple words to average 80%+)
@@ -120,7 +120,7 @@ describe('ResultsScreen', () => {
     });
     render(<ResultsScreen />);
     // 100 + 75 = 175 / 200 = 87.5% should show 🌟
-    expect(screen.getByText(/🌟/)).toBeInTheDocument();
+    expect(screen.getAllByText(/🌟/).length).toBeGreaterThan(0);
   });
 
   it('allows user to restart game by clicking Start New Mission button', async () => {

@@ -155,7 +155,7 @@ describe('QuestionScreen', () => {
     const user = userEvent.setup();
     render(<QuestionScreen />);
 
-    const playButton = screen.getByRole('button');
+    const playButton = screen.getByRole('button', { name: /Play word/i });
     await user.click(playButton);
 
     expect(mockSpeak).toHaveBeenCalled();

@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { BotIcon as Robot, Play, X } from 'lucide-react';
+import { Play, Volume2, X } from 'lucide-react';
 import type React from 'react';
 
+import { AppShell } from '../components/app-shell';
 import { SpecialCharactersKeyboard } from '../components/special-chars-keyboard';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -144,99 +145,131 @@ export default function QuestionScreen() {
   };
 
   const progressPercentage = (completed / (remaining + completed)) * 100;
-
   const showPlayButton = prompt == null || status !== 'question';
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-indigo-900 p-4">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="text-center">
-          <Robot className="w-24 h-24 mx-auto text-purple-300 animate-bounce" />
-          <h2 className="text-2xl font-bold text-white mb-4">Type what you hear!</h2>
+    <AppShell className="items-center">
+      <div className="w-full max-w-4xl space-y-5">
+        <section className="stage-card bg-[rgba(246,196,83,0.18)] dark:bg-[rgba(59,50,22,0.42)]">
+          <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="rounded-[1.25rem] border border-black/10 bg-white/65 px-5 py-3 text-center dark:border-white/15 dark:bg-[rgba(255,255,255,0.1)] sm:min-w-[148px]">
+              <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#7d3d20] dark:text-[#f7d27a]">
+                Done
+              </div>
+              <div className="text-3xl font-black text-[#22170f] dark:text-[#f8f1e6]">
+                {completed}
+              </div>
+            </div>
 
-          <div className="flex justify-between text-purple-200 text-sm mb-4">
-            <span>To do: {remaining}</span>
-            <span>Done: {completed}</span>
-          </div>
-          <div className="bg-white/10 rounded-full h-2 mb-4">
-            <div
-              className="bg-purple-500 h-full rounded-full transition-all duration-300"
-              style={{ width: `${progressPercentage}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 shadow-xl border border-white/20">
-          <div className="space-y-4">
-            {status !== 'question' && (
-              <div className="text-center space-y-6 py-2">
+            <div className="flex-1 px-1">
+              <div className="h-10 rounded-full bg-[#ead9c4] p-1.5 dark:bg-[#3a404d]">
                 <div
-                  className={`text-xl font-bold ${
-                    status === 'correct' ? 'text-green-400' : 'text-red-400'
-                  }`}
-                >
-                  {status === 'correct' ? 'Correct! 🎉' : 'Try again! 🙈'}
+                  className="h-full rounded-full bg-[linear-gradient(90deg,#de5a37,#f6c453)] transition-all duration-300"
+                  style={{ width: `${Math.max(progressPercentage, 8)}%` }}
+                />
+              </div>
+              <div className="mt-2 text-center text-xl font-black text-[#7d3d20] dark:text-[#f4c15d]">
+                {Math.round(progressPercentage)}%
+              </div>
+            </div>
+
+            <div className="rounded-[1.25rem] border border-black/10 bg-white/65 px-5 py-3 text-center dark:border-white/15 dark:bg-[rgba(255,255,255,0.1)] sm:min-w-[148px]">
+              <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#7d3d20] dark:text-[#f7d27a]">
+                Left
+              </div>
+              <div className="text-3xl font-black text-[#22170f] dark:text-[#f8f1e6]">
+                {remaining}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="stage-card bg-[rgba(255,251,245,0.92)] dark:bg-[rgba(29,34,46,0.92)]">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="text-[#de5a37]">
+                  <Volume2 className="h-8 w-8" />
                 </div>
+                <h2 className="display-title text-3xl font-black leading-tight text-[#22170f] dark:text-[#f8f1e6] sm:text-4xl">
+                  {prompt != null ? 'Type the word!' : 'Type what you hear!'}
+                </h2>
               </div>
-            )}
+            </div>
 
-            {prompt != null && (
-              <div className="text-3xl text-center text-purple-100 my-4">{prompt}</div>
-            )}
-
-            {status !== 'question' && (
-              <div className="text-center space-y-6 py-2">
-                <WordDiff expected={word} actual={answer} />
+            {prompt != null ? (
+              <div className="py-2 text-center text-3xl font-black text-[#2f2218] dark:text-[#f3eadf] sm:text-4xl">
+                {prompt}
               </div>
-            )}
-
-            {showPlayButton && (
+            ) : (
               <Button
                 type="button"
                 onClick={handleSpeak}
                 aria-label="Play word"
-                className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-xl flex items-center justify-center"
+                className="h-16 w-full rounded-[1.5rem] border border-black/10 bg-[#de5a37] text-xl font-extrabold text-white shadow-[0_16px_30px_rgba(222,90,55,0.28)] hover:bg-[#c94d2d]"
               >
-                <Play className="mr-2" style={{ height: '24', width: '24' }} />
+                <Play className="h-6 w-6" />
+                Play word
               </Button>
             )}
 
-            <div className="h-2" />
-
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-3">
-                <Input
-                  ref={inputRef}
-                  type="text"
-                  value={input}
-                  onChange={handleInputChange}
-                  onSelect={(e) => {
-                    cursorPositionRef.current = e.currentTarget.selectionStart;
-                  }}
-                  className="w-full text-center text-3xl h-16 bg-white/20 text-white placeholder:text-purple-200"
-                  placeholder={status === 'retry' ? 'Type it again...' : 'Type here...'}
-                  disabled={status === 'correct'}
-                  spellCheck={false}
-                />
-
-                <SpecialCharactersKeyboard word={word} onCharacterClick={handleSpecialCharClick} />
+            {status !== 'question' && (
+              <div className="rounded-[1.5rem] border border-black/10 bg-white/60 px-5 py-4 dark:border-white/10 dark:bg-white/5">
+                <div
+                  className={`text-center text-2xl font-black ${
+                    status === 'correct' ? 'text-[#2f7a45]' : 'text-[#b24328]'
+                  }`}
+                >
+                  {status === 'correct' ? 'Correct! 🎉' : 'Try again! 🙈'}
+                </div>
+                <div className="mt-4 text-center">
+                  <WordDiff expected={word} actual={answer} />
+                </div>
               </div>
-            </form>
+            )}
 
-            <div className="h-4" />
+            {showPlayButton && prompt != null && (
+              <Button
+                type="button"
+                onClick={handleSpeak}
+                aria-label="Play word"
+                className="h-16 w-full rounded-[1.5rem] border border-black/10 bg-[#de5a37] text-xl font-extrabold text-white shadow-[0_16px_30px_rgba(222,90,55,0.28)] hover:bg-[#c94d2d]"
+              >
+                <Play className="h-6 w-6" />
+                Play word
+              </Button>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={handleInputChange}
+                onSelect={(e) => {
+                  cursorPositionRef.current = e.currentTarget.selectionStart;
+                }}
+                className="h-20 rounded-[1.75rem] border-black/10 bg-white px-6 text-center text-3xl font-bold tracking-[0.08em] text-[#22170f] shadow-[inset_0_2px_0_rgba(255,255,255,0.65)] placeholder:text-[#9d8a79] focus-visible:ring-[#de5a37] dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf] dark:placeholder:text-[#8b8f9a] dark:shadow-none"
+                placeholder={status === 'retry' ? 'Type it again...' : 'Type here...'}
+                disabled={status === 'correct'}
+                spellCheck={false}
+              />
+
+              <SpecialCharactersKeyboard word={word} onCharacterClick={handleSpecialCharClick} />
+            </form>
 
             <Button
               type="button"
               onClick={handleSkip}
               variant="ghost"
-              className="w-full text-purple-300 hover:bg-purple-800/30 hover:text-white border border-purple-500/30"
+              className="h-12 w-full rounded-[1.25rem] border border-black/10 bg-white/40 text-lg font-bold text-[#7d3d20] hover:bg-white/70 hover:text-[#2f2218] dark:border-white/10 dark:bg-white/5 dark:text-[#d7b780] dark:hover:bg-white/10 dark:hover:text-[#f3eadf]"
             >
-              <X className="mr-2" style={{ height: '20', width: '20' }} />
+              <X className="h-5 w-5" />
               Skip
             </Button>
           </div>
-        </div>
+        </section>
       </div>
-    </div>
+    </AppShell>
   );
 }
