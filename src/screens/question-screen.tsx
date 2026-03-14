@@ -150,48 +150,55 @@ export default function QuestionScreen() {
   return (
     <AppShell className="items-center">
       <div className="w-full max-w-4xl space-y-5">
-        <section className="stage-card bg-[rgba(246,196,83,0.18)]">
+        <section className="stage-card bg-[rgba(246,196,83,0.18)] dark:bg-[rgba(59,50,22,0.42)]">
           <div className="mb-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="rounded-[1.25rem] border border-black/10 bg-white/65 px-5 py-3 text-center sm:min-w-[148px]">
-              <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#7d3d20]">
+            <div className="rounded-[1.25rem] border border-black/10 bg-white/65 px-5 py-3 text-center dark:border-white/15 dark:bg-[rgba(255,255,255,0.1)] sm:min-w-[148px]">
+              <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#7d3d20] dark:text-[#f7d27a]">
                 Done
               </div>
-              <div className="text-3xl font-black text-[#22170f]">{completed}</div>
+              <div className="text-3xl font-black text-[#22170f] dark:text-[#f8f1e6]">
+                {completed}
+              </div>
             </div>
 
             <div className="flex-1 px-1">
-              <div className="h-10 rounded-full bg-[#ead9c4] p-1.5">
+              <div className="h-10 rounded-full bg-[#ead9c4] p-1.5 dark:bg-[#3a404d]">
                 <div
                   className="h-full rounded-full bg-[linear-gradient(90deg,#de5a37,#f6c453)] transition-all duration-300"
                   style={{ width: `${Math.max(progressPercentage, 8)}%` }}
                 />
               </div>
+              <div className="mt-2 text-center text-xl font-black text-[#7d3d20] dark:text-[#f4c15d]">
+                {Math.round(progressPercentage)}%
+              </div>
             </div>
 
-            <div className="rounded-[1.25rem] border border-black/10 bg-white/65 px-5 py-3 text-center sm:min-w-[148px]">
-              <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#7d3d20]">
+            <div className="rounded-[1.25rem] border border-black/10 bg-white/65 px-5 py-3 text-center dark:border-white/15 dark:bg-[rgba(255,255,255,0.1)] sm:min-w-[148px]">
+              <div className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#7d3d20] dark:text-[#f7d27a]">
                 Left
               </div>
-              <div className="text-3xl font-black text-[#22170f]">{remaining}</div>
+              <div className="text-3xl font-black text-[#22170f] dark:text-[#f8f1e6]">
+                {remaining}
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="stage-card bg-[rgba(255,251,245,0.92)]">
+        <section className="stage-card bg-[rgba(255,251,245,0.92)] dark:bg-[rgba(29,34,46,0.92)]">
           <div className="space-y-6">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="text-[#de5a37]">
                   <Volume2 className="h-8 w-8" />
                 </div>
-                <h2 className="display-title text-3xl font-black leading-tight text-[#22170f] sm:text-4xl">
+                <h2 className="display-title text-3xl font-black leading-tight text-[#22170f] dark:text-[#f8f1e6] sm:text-4xl">
                   {prompt != null ? 'Type the word!' : 'Type what you hear!'}
                 </h2>
               </div>
             </div>
 
             {prompt != null ? (
-              <div className="py-2 text-center text-3xl font-black text-[#2f2218] sm:text-4xl">
+              <div className="py-2 text-center text-3xl font-black text-[#2f2218] dark:text-[#f3eadf] sm:text-4xl">
                 {prompt}
               </div>
             ) : (
@@ -207,7 +214,7 @@ export default function QuestionScreen() {
             )}
 
             {status !== 'question' && (
-              <div className="rounded-[1.5rem] border border-black/10 bg-white/60 px-5 py-4">
+              <div className="rounded-[1.5rem] border border-black/10 bg-white/60 px-5 py-4 dark:border-white/10 dark:bg-white/5">
                 <div
                   className={`text-center text-2xl font-black ${
                     status === 'correct' ? 'text-[#2f7a45]' : 'text-[#b24328]'
@@ -242,7 +249,7 @@ export default function QuestionScreen() {
                 onSelect={(e) => {
                   cursorPositionRef.current = e.currentTarget.selectionStart;
                 }}
-                className="h-20 rounded-[1.75rem] border-black/10 bg-white px-6 text-center text-3xl font-bold tracking-[0.08em] text-[#22170f] shadow-[inset_0_2px_0_rgba(255,255,255,0.65)] placeholder:text-[#9d8a79] focus-visible:ring-[#de5a37]"
+                className="h-20 rounded-[1.75rem] border-black/10 bg-white px-6 text-center text-3xl font-bold tracking-[0.08em] text-[#22170f] shadow-[inset_0_2px_0_rgba(255,255,255,0.65)] placeholder:text-[#9d8a79] focus-visible:ring-[#de5a37] dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf] dark:placeholder:text-[#8b8f9a] dark:shadow-none"
                 placeholder={status === 'retry' ? 'Type it again...' : 'Type here...'}
                 disabled={status === 'correct'}
                 spellCheck={false}
@@ -255,7 +262,7 @@ export default function QuestionScreen() {
               type="button"
               onClick={handleSkip}
               variant="ghost"
-              className="h-12 w-full rounded-[1.25rem] border border-black/10 bg-white/40 text-lg font-bold text-[#7d3d20] hover:bg-white/70 hover:text-[#2f2218]"
+              className="h-12 w-full rounded-[1.25rem] border border-black/10 bg-white/40 text-lg font-bold text-[#7d3d20] hover:bg-white/70 hover:text-[#2f2218] dark:border-white/10 dark:bg-white/5 dark:text-[#d7b780] dark:hover:bg-white/10 dark:hover:text-[#f3eadf]"
             >
               <X className="h-5 w-5" />
               Skip

@@ -55,10 +55,10 @@ describe('ResultsScreen', () => {
     expect(screen.getByText(/Mission Complete!/i)).toBeInTheDocument();
 
     // Should show score percentage (perfect: 100, good: 75, okay: 50 = 225/300 = 75%)
-    expect(screen.getAllByText(/75%/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/75%/i)).toBeInTheDocument();
 
     // Should show score breakdown
-    expect(screen.getAllByText(/225 \/ 300/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/225 \/ 300/i)).toBeInTheDocument();
 
     // Should show word review section
     expect(screen.getByText(/Word Review:/i)).toBeInTheDocument();

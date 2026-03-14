@@ -13,7 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest --no-watch",
     "coverage": "vitest --no-watch --coverage",
-    "validate": "prettier --check . && bun run lint && bun run typecheck && bun run test",
+    "validate": "bun run test && bun run typecheck && bun run lint && prettier --check .",
     "validate:fix": "prettier --write . && bun run lint --fix && bun run typecheck && bun run test -u"
   },
   "dependencies": {

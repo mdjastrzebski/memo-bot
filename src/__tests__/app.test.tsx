@@ -50,7 +50,7 @@ describe('App', () => {
 
   it('displays QuestionScreen when game status is learning', () => {
     // Start a game to enter learning state
-    useGameState.getState().startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[1]);
+    useGameState.getState().startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0]);
 
     render(<App />);
 

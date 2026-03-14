@@ -6,8 +6,8 @@ export type Language = {
 };
 
 export const LANGUAGES: Language[] = [
-  { code: 'en-US', name: 'English (US)', voice: 'en-US', flag: '🇺🇸' },
   { code: 'en-GB', name: 'English (UK)', voice: 'en-GB', flag: '🇬🇧' },
+  { code: 'en-US', name: 'English (US)', voice: 'en-US', flag: '🇺🇸' },
   { code: 'es-ES', name: 'Spanish', voice: 'es-ES', flag: '🇪🇸' },
   { code: 'fr-FR', name: 'French', voice: 'fr-FR', flag: '🇫🇷' },
   { code: 'de-DE', name: 'German', voice: 'de-DE', flag: '🇩🇪' },
