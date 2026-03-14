@@ -80,4 +80,26 @@ describe('InputScreen', () => {
       expectedWords.sort((a, b) => a.word.localeCompare(b.word)),
     );
   });
+
+  it('normalizes smart quotes in words and prompts before starting the game', async () => {
+    const user = userEvent.setup();
+    render(<InputScreen />);
+
+    const textarea = screen.getByPlaceholderText(/Enter words here/i);
+    await user.type(textarea, 'don’t|Spell “don’t”\n“hello”|Say “hello”');
+
+    const launchButton = screen.getByRole('button', { name: /Launch Mission/i });
+    await user.click(launchButton);
+
+    const state = useGameState.getState();
+    const words = state.pendingWords.map((word) => ({ word: word.word, prompt: word.prompt }));
+    const expectedWords = [
+      { word: "don't", prompt: 'Spell "don\'t"' },
+      { word: '"hello"', prompt: 'Say "hello"' },
+    ];
+
+    expect(words.sort((a, b) => a.word.localeCompare(b.word))).toEqual(
+      expectedWords.sort((a, b) => a.word.localeCompare(b.word)),
+    );
+  });
 });

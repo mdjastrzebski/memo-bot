@@ -7,6 +7,7 @@ import { Textarea } from '../components/ui/textarea';
 import { useGameState } from '../stores/game-store';
 import type { Word } from '../types';
 import { LANGUAGES } from '../utils/languages';
+import { normalizeInputText } from '../utils/text-normalization';
 
 const DEFAULT_WORDS = ['robot', 'spaceship', 'rocket', 'moon', 'star'];
 
@@ -55,7 +56,7 @@ function parseWords(text: string): Word[] {
   const input = text.trim() ? text.split('\n') : DEFAULT_WORDS;
   const words: Word[] = [];
   for (const line of input) {
-    const [word, prompt] = line.split('|');
+    const [word, prompt] = normalizeInputText(line).split('|');
     const trimmedWord = word.trim();
     if (trimmedWord.length > 0) {
       words.push({ word: trimmedWord, prompt: prompt?.trim() });

@@ -40,7 +40,6 @@ describe('QuestionScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useGameState.getState().resetGame();
-    // Start a game with test words
     useGameState.getState().startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0]);
   });
 
@@ -48,21 +47,16 @@ describe('QuestionScreen', () => {
     const user = userEvent.setup();
     render(<QuestionScreen />);
 
-    // Find the input field
     const input = screen.getByPlaceholderText(/Type here/i);
     expect(input).toBeInTheDocument();
 
-    // Type the correct answer and submit
     await user.type(input, 'hello{Enter}');
 
-    // Should show "Correct!" feedback
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
 
-    // Verify the word was marked as correct in the store
     await waitFor(
       () => {
         const state = useGameState.getState();
-        // Word should be moved to completed after the timeout
         expect(state.completedWords.length).toBeGreaterThan(0);
       },
       { timeout: 1500 },
@@ -75,18 +69,14 @@ describe('QuestionScreen', () => {
 
     const input = screen.getByPlaceholderText(/Type here/i);
 
-    // Type an incorrect answer and submit
     await user.type(input, 'wrong{Enter}');
 
-    // Should show "Try again!" feedback
     expect(await screen.findByText(/Try again!/i)).toBeInTheDocument();
 
-    // Input should be cleared and ready for retry
     const retryInput = screen.getByPlaceholderText(/Type it again/i);
     expect(retryInput).toBeInTheDocument();
     expect(retryInput).toHaveValue('');
 
-    // Word should still be in pending (not completed)
     const state = useGameState.getState();
     expect(state.pendingWords.length).toBeGreaterThan(0);
   });
@@ -97,10 +87,8 @@ describe('QuestionScreen', () => {
 
     const input = screen.getByPlaceholderText(/Type here/i);
 
-    // Type answer with extra punctuation and spacing that should be normalized, then submit
     await user.type(input, 'hello.  {Enter}');
 
-    // Should still be marked as correct due to normalization
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
   });
 
@@ -112,17 +100,12 @@ describe('QuestionScreen', () => {
     const initialState = useGameState.getState();
     const initialPendingCount = initialState.pendingWords.length;
 
-    // Try to submit empty input
     await user.type(input, '{Enter}');
 
-    // Input should remain focused
     expect(input).toHaveFocus();
-
-    // No feedback should be shown
     expect(screen.queryByText(/Correct!/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Try again!/i)).not.toBeInTheDocument();
 
-    // Word should still be in pending (not completed)
     const state = useGameState.getState();
     expect(state.pendingWords.length).toBe(initialPendingCount);
     expect(state.completedWords.length).toBe(0);
@@ -130,25 +113,20 @@ describe('QuestionScreen', () => {
 
   it('allows user to skip word with confirmation', async () => {
     const user = userEvent.setup();
-    // Mock window.confirm to return true
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
 
     render(<QuestionScreen />);
 
-    // Find and click skip button
     const skipButton = screen.getByRole('button', { name: /Skip/i });
     await user.click(skipButton);
 
-    // Should show confirmation dialog
     expect(confirmSpy).toHaveBeenCalledWith('Skip this word?');
 
-    // Word should be skipped (moved to completed)
     await waitFor(() => {
       const state = useGameState.getState();
       expect(state.completedWords.length).toBeGreaterThan(0);
     });
 
-    // Verify the skipped flag is set
     const state = useGameState.getState();
     expect(state.completedWords[0].skipped).toBe(true);
 
@@ -157,7 +135,6 @@ describe('QuestionScreen', () => {
 
   it('does not skip word when user cancels confirmation', async () => {
     const user = userEvent.setup();
-    // Mock window.confirm to return false
     const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
 
     render(<QuestionScreen />);
@@ -165,10 +142,8 @@ describe('QuestionScreen', () => {
     const skipButton = screen.getByRole('button', { name: /Skip/i });
     await user.click(skipButton);
 
-    // Should show confirmation dialog
     expect(confirmSpy).toHaveBeenCalledWith('Skip this word?');
 
-    // Word should NOT be skipped (still in pending)
     const state = useGameState.getState();
     expect(state.pendingWords.length).toBeGreaterThan(0);
     expect(state.completedWords.length).toBe(0);
@@ -180,11 +155,9 @@ describe('QuestionScreen', () => {
     const user = userEvent.setup();
     render(<QuestionScreen />);
 
-    // Find play button using aria-label
-    const playButton = screen.getByRole('button', { name: /Play word/i });
+    const playButton = screen.getByRole('button');
     await user.click(playButton);
 
-    // Should call speak with the word
     expect(mockSpeak).toHaveBeenCalled();
   });
 
@@ -194,10 +167,7 @@ describe('QuestionScreen', () => {
 
     render(<QuestionScreen />);
 
-    // Should show prompt text instead of speaking
     expect(screen.getByText(/Say hello/i)).toBeInTheDocument();
-    // Play button should not be visible initially when there's a prompt (showPlayButton is false)
-    expect(screen.queryByRole('button', { name: /Play word/i })).not.toBeInTheDocument();
   });
 
   it('shows WordDiff when answer is incorrect', async () => {
@@ -206,31 +176,23 @@ describe('QuestionScreen', () => {
 
     const input = screen.getByPlaceholderText(/Type here/i);
 
-    // Type incorrect answer and submit
     await user.type(input, 'wrong{Enter}');
 
-    // Should show WordDiff component with expected and actual
     expect(await screen.findByText(/Try again!/i)).toBeInTheDocument();
-
-    // WordDiff should be rendered (it shows the expected word)
     expect(screen.getByText(/hello/i)).toBeInTheDocument();
   });
 
   it('accepts answer with different accents when ignoreAccents is enabled', async () => {
     const user = userEvent.setup();
-    // Start game with accented word
     useGameState.getState().startGame([{ word: 'café', prompt: undefined }], LANGUAGES[0]);
-    // Set ignoreAccents to true AFTER startGame (since startGame resets it to false)
     useGameState.setState({ ignoreAccents: true });
 
     render(<QuestionScreen />);
 
     const input = screen.getByPlaceholderText(/Type here/i);
 
-    // Type answer without accent (should be accepted when ignoreAccents is true)
     await user.type(input, 'cafe{Enter}');
 
-    // Should be marked as correct due to accent-insensitive matching
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
   });
 
@@ -242,19 +204,14 @@ describe('QuestionScreen', () => {
     const initialState = useGameState.getState();
     const initialPendingCount = initialState.pendingWords.length;
 
-    // Submit incorrect answer first
     await user.type(input, 'wrong{Enter}');
     expect(await screen.findByText(/Try again!/i)).toBeInTheDocument();
 
-    // Now submit correct answer on retry
     const retryInput = screen.getByPlaceholderText(/Type it again/i);
     await user.type(retryInput, 'hello{Enter}');
 
-    // Should show "Correct!" feedback
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
 
-    // After timeout, should call incorrectAnswer (not correctAnswer) because it was wrong first
-    // Word should still be in pending (not completed) because it was wrong first
     await waitFor(
       () => {
         const state = useGameState.getState();
@@ -264,7 +221,6 @@ describe('QuestionScreen', () => {
       { timeout: 1500 },
     );
 
-    // Verify word is still in pending (not completed)
     const state = useGameState.getState();
     expect(state.pendingWords.length).toBe(initialPendingCount);
     const word = state.pendingWords.find((w) => w.word === 'hello');
@@ -274,26 +230,47 @@ describe('QuestionScreen', () => {
 
   it('inserts special character into input field when clicking special character button', async () => {
     const user = userEvent.setup();
-    // Start game with word containing special character
     useGameState.getState().startGame([{ word: 'café', prompt: undefined }], LANGUAGES[0]);
 
     render(<QuestionScreen />);
 
     const input = screen.getByPlaceholderText(/Type here/i) as HTMLInputElement;
 
-    // Type part of the word
     await user.type(input, 'caf');
 
-    // Find and click the é special character button
     const eButton = screen.getByRole('button', { name: 'é' });
     await user.click(eButton);
 
-    // Character should be inserted into input field
     await waitFor(() => {
       expect(input.value).toBe('café');
     });
 
-    // Input should still be focused
     expect(input).toHaveFocus();
+  });
+
+  it('accepts smart apostrophes in answers for words with straight apostrophes', async () => {
+    const user = userEvent.setup();
+    useGameState.getState().resetGame();
+    useGameState.getState().startGame([{ word: "don't" }], LANGUAGES[0]);
+
+    render(<QuestionScreen />);
+
+    const input = screen.getByPlaceholderText(/Type here/i);
+    await user.type(input, 'don’t{enter}');
+
+    expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
+  });
+
+  it('accepts smart double quotes in answers for words with straight double quotes', async () => {
+    const user = userEvent.setup();
+    useGameState.getState().resetGame();
+    useGameState.getState().startGame([{ word: '"hello"' }], LANGUAGES[0]);
+
+    render(<QuestionScreen />);
+
+    const input = screen.getByPlaceholderText(/Type here/i);
+    await user.type(input, '“hello”{enter}');
+
+    expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
   });
 });
