@@ -28,10 +28,10 @@ export default function ResultsScreen() {
 
   const sortedWords = [...words].sort(compareWordScores);
 
-  return (
-    <AppShell className="items-center">
-      <div className="grid w-full max-w-5xl gap-6 lg:grid-cols-[0.78fr_1.22fr]">
-        <section className="stage-card flex flex-col justify-between bg-[rgba(246,196,83,0.18)]">
+    return (
+      <AppShell className="items-center">
+      <div className="grid w-full max-w-5xl items-start gap-6 lg:grid-cols-[0.78fr_1.22fr]">
+        <section className="stage-card flex h-fit flex-col gap-8 bg-[rgba(246,196,83,0.18)] lg:max-h-[50rem]">
           <div className="space-y-7">
             <div className="eyebrow">Results Deck</div>
             <Trophy className="h-20 w-20 text-[#de5a37]" />
@@ -45,15 +45,7 @@ export default function ResultsScreen() {
               <div className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#7d3d20]">
                 Accuracy
               </div>
-              <div className="mt-2 text-4xl font-black text-[#2f7a45]">
-                {percentage === 100
-                  ? 'Perfect'
-                  : percentage >= 80
-                    ? 'Sharp'
-                    : percentage >= 60
-                      ? 'Solid'
-                      : 'Building'}
-              </div>
+              <div className="mt-2 text-4xl font-black text-[#2f7a45]">{percentage}%</div>
             </div>
             <div className="rounded-[1.5rem] border border-black/10 bg-white/65 p-4">
               <div className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#7d3d20]">
@@ -78,10 +70,11 @@ export default function ResultsScreen() {
 
           <div className="mt-6 rounded-[1.75rem] border border-black/10 bg-white/55 p-5">
             <div className="text-center space-y-3">
-              <div className="display-title text-6xl font-black text-[#2f7a45]">{percentage}%</div>
-              <p className="text-[#6a503b]">
-                Score: {actualScore} / {totalPossibleScore}
-              </p>
+              <div className="text-sm font-extrabold uppercase tracking-[0.28em] text-[#7d3d20]">
+                Great job {getEmoji(percentage)}
+              </div>
+              <div className="display-title text-6xl font-black text-[#2f7a45]">{actualScore}!</div>
+              <p className="text-xl font-bold text-[#6a503b]">points</p>
             </div>
           </div>
 
