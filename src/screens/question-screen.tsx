@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
 import { Play, Volume2, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import type React from 'react';
 
 import { AppShell } from '../components/app-shell';

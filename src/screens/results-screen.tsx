@@ -1,5 +1,5 @@
-import * as React from 'react';
 import { Award, RotateCcw, Trophy } from 'lucide-react';
+import * as React from 'react';
 
 import { AppShell } from '../components/app-shell';
 import { Button } from '../components/ui/button';

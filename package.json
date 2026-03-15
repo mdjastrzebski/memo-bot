@@ -1,10 +1,10 @@
 {
   "name": "memo-bot",
   "version": "0.2.0",
+  "private": true,
   "description": "Memo Bot is a fun and engaging spelling practice tool for children.",
   "license": "MIT",
   "type": "module",
-  "private": true,
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit -p tsconfig.build.json && vite build",
@@ -13,8 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest --no-watch",
     "coverage": "vitest --no-watch --coverage",
-    "validate": "bun run test && bun run typecheck && bun run lint && prettier --check .",
-    "validate:fix": "prettier --write . && bun run lint --fix && bun run typecheck && bun run test -u"
+    "validate": "bun run test && bun run typecheck && bun run lint && oxfmt --check .",
+    "validate:fix": "oxfmt --write . && bun run lint --fix && bun run typecheck && bun run test -u"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.2",
@@ -69,11 +69,10 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.18",
-    "eslint-plugin-simple-import-sort": "^12.1.1",
     "globals": "^15.14.0",
     "jsdom": "^27.4.0",
+    "oxfmt": "^0.40.0",
     "postcss": "^8.5.1",
-    "prettier": "^3.4.2",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.2",
