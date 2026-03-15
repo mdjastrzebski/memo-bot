@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { ArrowRight, BotIcon as Robot, Rocket } from 'lucide-react';
+import { useState } from 'react';
 
 import { AppShell } from '../components/app-shell';
 import { LanguageSelector } from '../components/language-selector';
