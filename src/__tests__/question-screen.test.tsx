@@ -40,7 +40,9 @@ describe('QuestionScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0]);
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed');
   });
 
   it('allows user to submit correct answer and see success feedback', async () => {
@@ -163,7 +165,9 @@ describe('QuestionScreen', () => {
 
   it('displays text prompt when word has prompt instead of speaking', () => {
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: 'hello', prompt: 'Say hello' }], LANGUAGES[0]);
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello', prompt: 'Say hello' }], LANGUAGES[0], 'relaxed');
 
     render(<QuestionScreen />);
 
@@ -182,10 +186,11 @@ describe('QuestionScreen', () => {
     expect(screen.getByText(/hello/i)).toBeInTheDocument();
   });
 
-  it('accepts answer with different accents when ignoreAccents is enabled', async () => {
+  it('accepts answer with different casing and accents in relaxed mode', async () => {
     const user = userEvent.setup();
-    useGameState.getState().startGame([{ word: 'café', prompt: undefined }], LANGUAGES[0]);
-    useGameState.setState({ ignoreAccents: true });
+    useGameState
+      .getState()
+      .startGame([{ word: 'Café', prompt: undefined }], LANGUAGES[0], 'relaxed');
 
     render(<QuestionScreen />);
 
@@ -194,6 +199,19 @@ describe('QuestionScreen', () => {
     await user.type(input, 'cafe{Enter}');
 
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
+  });
+
+  it('rejects answer with different casing or accents in strict mode', async () => {
+    const user = userEvent.setup();
+    useGameState.getState().resetGame();
+    useGameState.getState().startGame([{ word: 'Café' }], LANGUAGES[0], 'strict');
+
+    render(<QuestionScreen />);
+
+    const input = screen.getByPlaceholderText(/Type here/i);
+    await user.type(input, 'cafe{Enter}');
+
+    expect(await screen.findByText(/Try again!/i)).toBeInTheDocument();
   });
 
   it('calls incorrectAnswer when user corrects answer on retry', async () => {
@@ -230,7 +248,9 @@ describe('QuestionScreen', () => {
 
   it('inserts special character into input field when clicking special character button', async () => {
     const user = userEvent.setup();
-    useGameState.getState().startGame([{ word: 'café', prompt: undefined }], LANGUAGES[0]);
+    useGameState
+      .getState()
+      .startGame([{ word: 'café', prompt: undefined }], LANGUAGES[0], 'relaxed');
 
     render(<QuestionScreen />);
 
@@ -251,7 +271,7 @@ describe('QuestionScreen', () => {
   it('accepts smart apostrophes in answers for words with straight apostrophes', async () => {
     const user = userEvent.setup();
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: "don't" }], LANGUAGES[0]);
+    useGameState.getState().startGame([{ word: "don't" }], LANGUAGES[0], 'relaxed');
 
     render(<QuestionScreen />);
 
@@ -264,7 +284,7 @@ describe('QuestionScreen', () => {
   it('accepts smart double quotes in answers for words with straight double quotes', async () => {
     const user = userEvent.setup();
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: '"hello"' }], LANGUAGES[0]);
+    useGameState.getState().startGame([{ word: '"hello"' }], LANGUAGES[0], 'relaxed');
 
     render(<QuestionScreen />);
 
@@ -272,5 +292,14 @@ describe('QuestionScreen', () => {
     await user.type(input, '“hello”{enter}');
 
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
+  });
+
+  it('hides the special-characters keyboard in strict mode', () => {
+    useGameState.getState().resetGame();
+    useGameState.getState().startGame([{ word: 'café' }], LANGUAGES[0], 'strict');
+
+    render(<QuestionScreen />);
+
+    expect(screen.queryByRole('button', { name: 'é' })).not.toBeInTheDocument();
   });
 });

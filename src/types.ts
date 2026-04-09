@@ -3,6 +3,8 @@ export interface Word {
   prompt?: string;
 }
 
+export type ExerciseType = 'relaxed' | 'strict';
+
 export interface WordState extends Word {
   id: string;
   correctStreak: number;

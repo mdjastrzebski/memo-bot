@@ -20,7 +20,7 @@ type QuestionStatus = 'question' | 'retry' | 'correct';
 export default function QuestionScreen() {
   const currentWord = useCurrentWord();
   const language = useGameState((state) => state.language);
-  const ignoreAccents = useGameState((state) => state.ignoreAccents);
+  const exerciseType = useGameState((state) => state.exerciseType);
   const remaining = useGameState((state) => state.pendingWords.length);
   const completed = useGameState((state) => state.completedWords.length);
   const correctAnswer = useGameState((state) => state.correctAnswer);
@@ -104,8 +104,8 @@ export default function QuestionScreen() {
     const normalizedInput = normalizeAnswerText(input);
     const normalizedWord = normalizeAnswerText(word);
 
-    // Use accent-insensitive comparison if ignoreAccents is true
-    const isCorrect = ignoreAccents
+    // Relaxed mode ignores case and accent marks; strict mode requires an exact match.
+    const isCorrect = exerciseType === 'relaxed'
       ? normalizedInput.localeCompare(normalizedWord, undefined, { sensitivity: 'base' }) === 0
       : normalizedInput === normalizedWord;
 
@@ -146,6 +146,7 @@ export default function QuestionScreen() {
 
   const progressPercentage = (completed / (remaining + completed)) * 100;
   const showPlayButton = prompt == null || status !== 'question';
+  const showSpecialCharactersKeyboard = exerciseType !== 'strict';
 
   return (
     <AppShell className="items-center">
@@ -255,7 +256,9 @@ export default function QuestionScreen() {
                 spellCheck={false}
               />
 
-              <SpecialCharactersKeyboard word={word} onCharacterClick={handleSpecialCharClick} />
+              {showSpecialCharactersKeyboard && (
+                <SpecialCharactersKeyboard word={word} onCharacterClick={handleSpecialCharClick} />
+              )}
             </form>
 
             <Button

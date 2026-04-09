@@ -43,14 +43,16 @@ describe('App', () => {
     render(<App />);
 
     // Should show InputScreen (check for unique InputScreen elements, not footer text)
-    expect(screen.getByPlaceholderText(/Enter words here/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Enter one word per line/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Launch Mission/i })).toBeInTheDocument();
-    expect(screen.getByText(/Type your spelling words/i)).toBeInTheDocument();
+    expect(screen.getByText(/Build a spelling mission/i)).toBeInTheDocument();
   });
 
   it('displays QuestionScreen when game status is learning', () => {
     // Start a game to enter learning state
-    useGameState.getState().startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0]);
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed');
 
     render(<App />);
 
@@ -83,7 +85,7 @@ describe('App', () => {
   });
 
   it('returns null when status is learning but no current word exists', () => {
-    // This edge case shouldn't happen in practice, but test the guard clause
+    // This edge case shouldn't happen in normal use, but test the guard clause
     // Set state to learning (pendingWords.length > 0) but then manually clear it
     // Actually, if pendingWords is empty, status becomes 'finished' or 'initial'
     // So we need to mock the selector to return 'learning' with no currentWord
@@ -97,6 +99,6 @@ describe('App', () => {
     render(<App />);
 
     // Should show InputScreen (status is 'initial', not 'learning')
-    expect(screen.getByPlaceholderText(/Enter words here/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Enter one word per line/i)).toBeInTheDocument();
   });
 });
