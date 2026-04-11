@@ -187,4 +187,35 @@ describe('ResultsScreen', () => {
     // Check that the status label exists
     expect(screen.getByText(/skipped/i, { selector: 'span.text-yellow-400' })).toBeInTheDocument();
   });
+
+  it('shows session duration when timing data is available', () => {
+    const endedAt = new Date('2026-04-11T14:37:00Z').getTime();
+
+    useGameState.setState({
+      completedWords: [
+        {
+          id: '1',
+          word: 'hello',
+          prompt: undefined,
+          correctStreak: 2,
+          incorrectCount: 0,
+          skipped: false,
+        },
+      ],
+      session: {
+        startedAt: endedAt - 134_000,
+        endedAt,
+        accumulatedActiveMs: 134_000,
+        activeSince: null,
+        lastActivityAt: endedAt - 5_000,
+        isPaused: true,
+      },
+    });
+
+    render(<ResultsScreen />);
+
+    expect(screen.getByText(/Time spent/i)).toBeInTheDocument();
+    expect(screen.getByText('2m 14s')).toBeInTheDocument();
+    expect(screen.queryByText(/Ended at/i)).not.toBeInTheDocument();
+  });
 });

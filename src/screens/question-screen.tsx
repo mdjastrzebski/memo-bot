@@ -26,6 +26,7 @@ export default function QuestionScreen() {
   const correctAnswer = useGameState((state) => state.correctAnswer);
   const incorrectAnswer = useGameState((state) => state.incorrectAnswer);
   const skipWord = useGameState((state) => state.skipWord);
+  const recordSessionActivity = useGameState((state) => state.recordSessionActivity);
 
   const [status, setStatus] = useState<QuestionStatus>('question');
   const [input, setInput] = useState('');
@@ -62,18 +63,21 @@ export default function QuestionScreen() {
   }
 
   const handleSpeak = () => {
+    recordSessionActivity();
     speak(word, language);
     inputRef.current?.focus();
   };
 
   // Track cursor position when input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    recordSessionActivity();
     setInput(e.target.value);
     cursorPositionRef.current = e.target.selectionStart;
   };
 
   // Handle special character insertion
   const handleSpecialCharClick = (char: string) => {
+    recordSessionActivity();
     const position = cursorPositionRef.current !== null ? cursorPositionRef.current : input.length;
 
     // Insert the character at cursor position
@@ -100,6 +104,8 @@ export default function QuestionScreen() {
       inputRef.current?.focus();
       return;
     }
+
+    recordSessionActivity();
 
     const normalizedInput = normalizeAnswerText(input);
     const normalizedWord = normalizeAnswerText(word);
@@ -134,6 +140,8 @@ export default function QuestionScreen() {
   };
 
   const handleSkip = () => {
+    recordSessionActivity();
+
     // Show confirmation dialog before skipping
     const confirmed = confirm('Skip this word?');
     if (!confirmed) {

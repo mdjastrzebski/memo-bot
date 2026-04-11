@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useGameState } from '../stores/game-store';
 import type { Word } from '../types';
@@ -16,6 +16,10 @@ if (!global.crypto) {
 describe('Game Store Logic', () => {
   beforeEach(() => {
     useGameState.getState().resetGame();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('should handle duplicate words correctly by ID', () => {
@@ -116,5 +120,48 @@ describe('Game Store Logic', () => {
     expect(afterSecondCorrect.completedWords[0].id).toBe(challengeWord.id);
     expect(afterSecondCorrect.completedWords[0].correctStreak).toBe(2);
     expect(afterSecondCorrect.completedWords[0].incorrectCount).toBe(1);
+  });
+
+  it('starts a running session when the game starts', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-04-11T10:00:00Z'));
+
+    useGameState.getState().startGame([{ word: 'hello' }], LANGUAGES[0], 'relaxed', 'manual');
+
+    const { session } = useGameState.getState();
+    expect(session.startedAt).toBe(Date.now());
+    expect(session.endedAt).toBeNull();
+    expect(session.accumulatedActiveMs).toBe(0);
+    expect(session.activeSince).toBe(Date.now());
+    expect(session.lastActivityAt).toBe(Date.now());
+    expect(session.isPaused).toBe(false);
+  });
+
+  it('tracks active session time across pause, resume, and finish', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-04-11T10:00:00Z'));
+
+    useGameState.getState().startGame([{ word: 'hello' }], LANGUAGES[0], 'relaxed', 'manual');
+
+    vi.advanceTimersByTime(10_000);
+    useGameState.getState().pauseSession();
+
+    let session = useGameState.getState().session;
+    expect(session.accumulatedActiveMs).toBe(10_000);
+    expect(session.isPaused).toBe(true);
+    expect(session.activeSince).toBeNull();
+
+    vi.advanceTimersByTime(60_000);
+    useGameState.getState().resumeSession();
+
+    vi.advanceTimersByTime(5_000);
+    const currentWord = useGameState.getState().pendingWords[0];
+    useGameState.getState().correctAnswer(currentWord);
+
+    session = useGameState.getState().session;
+    expect(session.accumulatedActiveMs).toBe(15_000);
+    expect(session.isPaused).toBe(true);
+    expect(session.activeSince).toBeNull();
+    expect(session.endedAt).toBe(Date.now());
   });
 });

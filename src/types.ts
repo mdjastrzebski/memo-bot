@@ -14,3 +14,12 @@ export interface WordState extends Word {
 }
 
 export type GameStatus = 'initial' | 'learning' | 'finished';
+
+export interface SessionState {
+  startedAt: number | null;
+  endedAt: number | null;
+  accumulatedActiveMs: number;
+  activeSince: number | null;
+  lastActivityAt: number | null;
+  isPaused: boolean;
+}
