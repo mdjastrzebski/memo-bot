@@ -2,6 +2,7 @@ import * as matchers from '@testing-library/jest-dom/matchers';
 import { cleanup } from '@testing-library/react';
 import { afterEach, beforeEach, expect, vi } from 'vitest';
 
+import { resetSpeechServiceForTests } from '../utils/speech-service';
 import { resetWordSetCache } from '../utils/word-sets';
 
 // Extend Vitest's expect with jest-dom matchers
@@ -10,10 +11,12 @@ expect.extend(matchers);
 // Cleanup after each test
 afterEach(() => {
   cleanup();
+  resetSpeechServiceForTests();
 });
 
 beforeEach(() => {
   resetWordSetCache();
+  resetSpeechServiceForTests();
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: string | URL | Request) => {
@@ -51,5 +54,17 @@ if (!global.ResizeObserver) {
       unobserve() {}
       disconnect() {}
     },
+  });
+}
+
+if (!global.URL.createObjectURL) {
+  Object.defineProperty(global.URL, 'createObjectURL', {
+    value: vi.fn(() => 'blob:mock-audio'),
+  });
+}
+
+if (!global.URL.revokeObjectURL) {
+  Object.defineProperty(global.URL, 'revokeObjectURL', {
+    value: vi.fn(),
   });
 }

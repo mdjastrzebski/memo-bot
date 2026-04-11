@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { cn } from '../lib/utils';
+import { useSpeechStatus } from '../utils/speech-service';
 import { Toggle } from './ui/toggle';
 
 type AppShellProps = {
@@ -12,6 +13,7 @@ type AppShellProps = {
 
 export function AppShell({ children, className }: AppShellProps) {
   const [isDark, setIsDark] = useState(false);
+  const { isElevenLabsActive } = useSpeechStatus();
 
   useEffect(() => {
     const storedTheme = window.localStorage.getItem('memo-bot-theme');
@@ -41,7 +43,8 @@ export function AppShell({ children, className }: AppShellProps) {
           className,
         )}
       >
-        <div className="fixed right-4 top-4 z-30 flex justify-end sm:right-6 lg:right-10">
+        <div className="fixed right-4 top-4 z-30 flex items-center justify-end gap-2 sm:right-6 lg:right-10">
+          {isElevenLabsActive && <div className="eyebrow">ElevenLabs TTS</div>}
           <Toggle
             pressed={isDark}
             onPressedChange={handleThemeChange}
