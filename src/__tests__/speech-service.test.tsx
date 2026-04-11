@@ -119,7 +119,7 @@ describe('speech service', () => {
     expect(requestInit.body).toContain('"language_code":"pl"');
     expect(requestInit.body).toContain('"model_id":"eleven_multilingual_v2"');
     expect(requestInit.body).toContain('"previous_text":"Następne słowo jest po polsku."');
-    expect(requestInit.body).not.toContain('"next_text"');
+    expect(requestInit.body).toContain('"next_text":"."');
   });
 
   it('uses the per-language mapped voice when no explicit voice id is configured', async () => {
