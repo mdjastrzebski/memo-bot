@@ -1,4 +1,5 @@
 import { Footer } from './components/footer';
+import { Toaster } from './components/ui/toaster';
 import { useBeforeUnload } from './hooks/use-before-unload';
 import InputScreen from './screens/input-screen';
 import QuestionScreen from './screens/question-screen';
@@ -16,6 +17,7 @@ export default function App() {
       <>
         <InputScreen />
         <Footer />
+        <Toaster />
       </>
     );
   }
@@ -25,6 +27,7 @@ export default function App() {
       <>
         <ResultsScreen />
         <Footer />
+        <Toaster />
       </>
     );
   }
@@ -40,6 +43,7 @@ export default function App() {
         key={`${currentWord.word}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
       />
       <Footer />
+      <Toaster />
     </>
   );
 }

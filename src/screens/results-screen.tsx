@@ -90,26 +90,27 @@ export default function ResultsScreen() {
                 key={word.id}
                 className="rounded-[1.5rem] border border-black/10 bg-white/70 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] dark:border-white/10 dark:bg-white/5 dark:shadow-none"
               >
-                <div
-                  className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
-                  data-testid={`word-score-${word.word}`}
-                >
-                  <div className="text-lg font-bold text-[#22170f] dark:text-[#f3eadf]">
-                    {word.word} {word.prompt && `(${word.prompt})`}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 text-sm">
-                    <span className="rounded-full bg-[#f6c453]/35 px-3 py-1 font-bold text-[#6b4812] dark:bg-[rgba(246,196,83,0.18)] dark:text-[#f7d27a]">
-                      Score: {calculateWordScore(word)}
+                <div className="flex items-start gap-4" data-testid={`word-score-${word.word}`}>
+                  <div className="min-w-0 flex-1 text-lg font-bold text-[#22170f] dark:text-[#f3eadf]">
+                    <span>
+                      {word.word} {word.prompt && `(${word.prompt})`}
                     </span>
-
                     {word.incorrectCount > 0 && !word.skipped && (
-                      <span className="text-sm text-[#b24328] dark:text-[#ef8d73]">
+                      <span className="ml-2 text-sm font-medium text-[#b24328] dark:text-[#ef8d73]">
                         ({word.incorrectCount} mistakes)
                       </span>
                     )}
                     {word.skipped && (
-                      <span className="text-sm text-yellow-400 dark:text-[#f4c15d]">skipped</span>
+                      <span className="ml-2 text-sm font-medium text-yellow-400 dark:text-[#f4c15d]">
+                        skipped
+                      </span>
                     )}
+                  </div>
+
+                  <div className="ml-auto shrink-0 text-sm">
+                    <span className="rounded-full bg-[#f6c453]/35 px-3 py-1 font-bold text-[#6b4812] dark:bg-[rgba(246,196,83,0.18)] dark:text-[#f7d27a]">
+                      Score: {calculateWordScore(word)}
+                    </span>
                   </div>
                 </div>
               </div>

@@ -10,6 +10,7 @@
     "build": "tsc --noEmit -p tsconfig.build.json && vite build",
     "preview": "vite preview",
     "lint": "eslint .",
+    "sort:word-sets": "bun run scripts/sort-word-sets.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest --no-watch",
     "coverage": "vitest --no-watch --coverage",

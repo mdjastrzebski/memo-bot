@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { Word, WordState } from '../types';
+import type { ExerciseType, InputSource, Word, WordState } from '../types';
 import { shuffleArray } from '../utils/data';
 import { generateId } from '../utils/id';
 import { type Language, LANGUAGES } from '../utils/languages';
@@ -13,11 +13,17 @@ export interface GameState {
   pendingWords: WordState[];
   completedWords: WordState[];
   language: Language;
-  ignoreAccents: boolean;
+  exerciseType: ExerciseType;
+  source: InputSource;
 }
 
 export interface GameActions {
-  startGame: (words: Word[], language: Language) => void;
+  startGame: (
+    words: Word[],
+    language: Language,
+    exerciseType: ExerciseType,
+    source: InputSource,
+  ) => void;
   resetGame: () => void;
   correctAnswer: (word: WordState) => void;
   incorrectAnswer: (word: WordState) => void;
@@ -28,9 +34,10 @@ export const useGameState = create<GameState & GameActions>((set) => ({
   pendingWords: [],
   completedWords: [],
   language: LANGUAGES[0],
-  ignoreAccents: false,
+  exerciseType: 'relaxed',
+  source: 'manual',
 
-  startGame: (words, language) => {
+  startGame: (words, language, exerciseType, source) => {
     const initialQueue = shuffleArray(
       words.map(({ word, prompt }) => ({
         id: generateId(),
@@ -45,15 +52,19 @@ export const useGameState = create<GameState & GameActions>((set) => ({
       pendingWords: initialQueue,
       completedWords: [],
       language,
-      ignoreAccents: false,
+      exerciseType,
+      source,
     });
   },
 
   resetGame: () => {
-    set({
+    set((state) => ({
       pendingWords: [],
       completedWords: [],
-    });
+      language: state.language,
+      exerciseType: state.exerciseType,
+      source: state.source,
+    }));
   },
 
   correctAnswer: (word: WordState) => {

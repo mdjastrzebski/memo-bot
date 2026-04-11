@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -17,89 +17,174 @@ global.speechSynthesis = {
 
 describe('InputScreen', () => {
   beforeEach(() => {
-    // Reset the game state before each test
     useGameState.getState().resetGame();
+    useGameState.setState({
+      language: LANGUAGES[0],
+      exerciseType: 'relaxed',
+      source: 'manual',
+    });
   });
 
-  it('allows user to enter words and start the game', async () => {
+  it('allows user to enter words and start the game in relaxed mode', async () => {
     const user = userEvent.setup();
     render(<InputScreen />);
 
-    // Find the textarea and enter words
-    const textarea = screen.getByPlaceholderText(/Enter words here/i);
-    await user.type(textarea, 'hello\nworld\ntest');
-
-    // Find and click the launch button
+    const textarea = screen.getByPlaceholderText(/Enter one word per line/i);
     const launchButton = screen.getByRole('button', { name: /Launch Mission/i });
+
+    expect(launchButton).toBeDisabled();
+    expect(screen.queryByRole('radio', { name: /Word set/i })).not.toBeInTheDocument();
+
+    await user.type(textarea, 'hello\nworld\ntest');
     await user.click(launchButton);
 
-    // Verify the game was started with the correct words (order may be shuffled)
     const state = useGameState.getState();
     expect(state.pendingWords).toHaveLength(3);
-    const words = state.pendingWords.map((w) => w.word);
-    expect(words.sort()).toEqual(['hello', 'test', 'world'].sort());
+    expect(state.pendingWords.map((word) => word.word).sort()).toEqual(['hello', 'test', 'world']);
     expect(state.language).toEqual(LANGUAGES[0]);
+    expect(state.exerciseType).toBe('relaxed');
   });
 
-  it('uses default words when textarea is empty', async () => {
+  it('parses words with optional prompts in relaxed mode', async () => {
     const user = userEvent.setup();
     render(<InputScreen />);
 
-    // Don't enter any text, just click launch
-    const launchButton = screen.getByRole('button', { name: /Launch Mission/i });
-    await user.click(launchButton);
-
-    // Verify the game was started with default words (order may be shuffled)
-    const state = useGameState.getState();
-    expect(state.pendingWords).toHaveLength(5);
-    const words = state.pendingWords.map((w) => w.word);
-    expect(words.sort()).toEqual(['moon', 'robot', 'rocket', 'spaceship', 'star'].sort());
-  });
-
-  it('parses words with optional prompts using pipe separator', async () => {
-    const user = userEvent.setup();
-    render(<InputScreen />);
-
-    const textarea = screen.getByPlaceholderText(/Enter words here/i);
+    const textarea = screen.getByPlaceholderText(/Enter one word per line/i);
     await user.type(textarea, 'hello|Say hello\nworld\nbonjour|Say bonjour');
 
-    const launchButton = screen.getByRole('button', { name: /Launch Mission/i });
-    await user.click(launchButton);
-
-    // Verify words with prompts are parsed correctly (order may be shuffled)
-    const state = useGameState.getState();
-    expect(state.pendingWords).toHaveLength(3);
-    const words = state.pendingWords.map((w) => ({ word: w.word, prompt: w.prompt }));
-    const expectedWords = [
-      { word: 'hello', prompt: 'Say hello' },
-      { word: 'world', prompt: undefined },
-      { word: 'bonjour', prompt: 'Say bonjour' },
-    ];
-    // Sort by word to compare regardless of shuffle order
-    expect(words.sort((a, b) => a.word.localeCompare(b.word))).toEqual(
-      expectedWords.sort((a, b) => a.word.localeCompare(b.word)),
-    );
-  });
-
-  it('normalizes smart quotes in words and prompts before starting the game', async () => {
-    const user = userEvent.setup();
-    render(<InputScreen />);
-
-    const textarea = screen.getByPlaceholderText(/Enter words here/i);
-    await user.type(textarea, 'don’t|Spell “don’t”\n“hello”|Say “hello”');
-
-    const launchButton = screen.getByRole('button', { name: /Launch Mission/i });
-    await user.click(launchButton);
+    await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
 
     const state = useGameState.getState();
     const words = state.pendingWords.map((word) => ({ word: word.word, prompt: word.prompt }));
-    const expectedWords = [
-      { word: "don't", prompt: 'Spell "don\'t"' },
-      { word: '"hello"', prompt: 'Say "hello"' },
-    ];
-
     expect(words.sort((a, b) => a.word.localeCompare(b.word))).toEqual(
-      expectedWords.sort((a, b) => a.word.localeCompare(b.word)),
+      [
+        { word: 'bonjour', prompt: 'Say bonjour' },
+        { word: 'hello', prompt: 'Say hello' },
+        { word: 'world', prompt: undefined },
+      ].sort((a, b) => a.word.localeCompare(b.word)),
     );
+  });
+
+  it('ignores prompts in strict mode', async () => {
+    const user = userEvent.setup();
+    render(<InputScreen />);
+
+    await user.click(screen.getByLabelText(/Strict/i));
+
+    const textarea = screen.getByPlaceholderText(/Enter one word per line/i);
+    await user.type(textarea, 'żółw|Helpful hint');
+    await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
+
+    const state = useGameState.getState();
+    expect(state.exerciseType).toBe('strict');
+    expect(state.pendingWords).toHaveLength(1);
+    expect(state.pendingWords[0].word).toBe('żółw');
+    expect(state.pendingWords[0].prompt).toBeUndefined();
+  });
+
+  it('shows word-set controls for languages with configured sets and starts from the selected set', async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch).mockImplementation(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.endsWith('/word-sets/config.json')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => [
+            {
+              id: 'en-set',
+              name: 'Common tricky words',
+              url: '/word-sets/en-set.txt',
+              languageCode: 'en-GB',
+            },
+          ],
+        } as Response;
+      }
+
+      if (url.endsWith('/word-sets/en-set.txt')) {
+        return {
+          ok: true,
+          status: 200,
+          text: async () => 'colour\nfriend\nenough',
+        } as Response;
+      }
+
+      return {
+        ok: false,
+        status: 404,
+        text: async () => '',
+      } as Response;
+    });
+
+    render(<InputScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('radio', { name: /Word set/i })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('radio', { name: /Word set/i }));
+    expect(screen.getAllByText(/Common tricky words/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('slider', { name: /Session Size/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/5 words/i).length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
+
+    await waitFor(() => {
+      expect(useGameState.getState().pendingWords).toHaveLength(3);
+    });
+
+    const state = useGameState.getState();
+    expect(state.language.code).toBe('en-GB');
+    expect(state.pendingWords.map((word) => word.word).sort()).toEqual([
+      'colour',
+      'enough',
+      'friend',
+    ]);
+  });
+
+  it('unmounts manual controls when the word-set source is selected', async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch).mockImplementation(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.endsWith('/word-sets/config.json')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => [
+            {
+              id: 'en-set',
+              name: 'Common tricky words',
+              url: '/word-sets/en-set.txt',
+              languageCode: 'en-GB',
+            },
+          ],
+        } as Response;
+      }
+
+      return {
+        ok: false,
+        status: 404,
+        text: async () => '',
+      } as Response;
+    });
+
+    render(<InputScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('radio', { name: /Word set/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByPlaceholderText(/Enter one word per line/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: /Word set/i }));
+
+    expect(screen.queryByPlaceholderText(/Enter one word per line/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('slider', { name: /Session Size/i })).toBeInTheDocument();
+  });
+
+  it('disables manual start when no words are entered', () => {
+    render(<InputScreen />);
+
+    expect(screen.getByRole('button', { name: /Launch Mission/i })).toBeDisabled();
   });
 });
