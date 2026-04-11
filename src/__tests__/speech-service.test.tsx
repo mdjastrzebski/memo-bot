@@ -122,6 +122,42 @@ describe('speech service', () => {
     expect(requestInit.body).not.toContain('"next_text"');
   });
 
+  it('uses the per-language mapped voice when no explicit voice id is configured', async () => {
+    window.history.pushState({}, '', '/?elevenlabs-api-key=test-key');
+    initializeSpeech();
+
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(new Blob(['audio'], { type: 'audio/mpeg' }), { status: 200 }),
+    );
+
+    speak('friend', LANGUAGES[0]);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    const [requestUrl] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    expect(requestUrl).toContain('/JBFqnCBsd6RMkjVDRZzb');
+  });
+
+  it('prefers an explicitly configured voice id over the per-language mapping', async () => {
+    window.history.pushState({}, '', '/?elevenlabs-api-key=test-key&elevenlabs-voice-id=voice-123');
+    initializeSpeech();
+
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(new Blob(['audio'], { type: 'audio/mpeg' }), { status: 200 }),
+    );
+
+    speak('friend', LANGUAGES[0]);
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+
+    const [requestUrl] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
+    expect(requestUrl).toContain('/voice-123');
+  });
+
   it('queues only the newest request while browser speech is in progress', async () => {
     speak('first', LANGUAGES[0]);
     speak('second', LANGUAGES[0]);

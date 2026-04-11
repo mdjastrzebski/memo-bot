@@ -62,7 +62,7 @@ const speechCache = new Map<string, SpeechCacheEntry>();
 
 let hasInitialized = false;
 let elevenLabsApiKey: string | null = null;
-let configuredVoiceId = DEFAULT_ELEVENLABS_VOICE_ID;
+let configuredVoiceId: string | null = null;
 let isElevenLabsDisabled = false;
 let currentPlaybackToken: number | null = null;
 let currentAudio: HTMLAudioElement | null = null;
@@ -305,7 +305,7 @@ export function initializeSpeech() {
   const hadHiddenParam = removedApiKey || removedVoiceId;
 
   elevenLabsApiKey = apiKey || null;
-  configuredVoiceId = voiceId || DEFAULT_ELEVENLABS_VOICE_ID;
+  configuredVoiceId = voiceId || null;
   isElevenLabsDisabled = false;
   speechStatus = {
     isElevenLabsActive: false,
@@ -345,7 +345,7 @@ export function resetSpeechServiceForTests() {
   nextPlaybackToken = 0;
   hasInitialized = false;
   elevenLabsApiKey = null;
-  configuredVoiceId = DEFAULT_ELEVENLABS_VOICE_ID;
+  configuredVoiceId = null;
   isElevenLabsDisabled = false;
   speechStatus = {
     isElevenLabsActive: false,
