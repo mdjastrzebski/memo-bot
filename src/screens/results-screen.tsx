@@ -5,11 +5,13 @@ import { AppShell } from '../components/app-shell';
 import { Button } from '../components/ui/button';
 import { useGameState } from '../stores/game-store';
 import { calculateWordScore, compareWordScores } from '../utils/score';
+import { formatSessionDuration } from '../utils/session-format';
 import { playCompleted } from '../utils/sounds';
 
 export default function ResultsScreen() {
   const words = useGameState((state) => state.completedWords);
   const restart = useGameState((state) => state.resetGame);
+  const session = useGameState((state) => state.session);
 
   React.useEffect(() => {
     playCompleted();
@@ -18,6 +20,8 @@ export default function ResultsScreen() {
   const totalPossibleScore = words.length * 100;
   const actualScore = words.reduce((sum, word) => sum + calculateWordScore(word), 0);
   const percentage = Math.round((actualScore / totalPossibleScore) * 100);
+  const hasSessionSummary = session.startedAt != null;
+  const sessionDuration = formatSessionDuration(session.accumulatedActiveMs);
 
   const getEmoji = (percentage: number) => {
     if (percentage === 100) return '🏆';
@@ -59,6 +63,16 @@ export default function ResultsScreen() {
                 </span>
               </div>
             </div>
+            {hasSessionSummary && (
+              <div className="rounded-[1.5rem] border border-black/10 bg-white/65 p-4 dark:border-white/10 dark:bg-white/5">
+                <div className="text-xs font-extrabold uppercase tracking-[0.28em] text-[#7d3d20] dark:text-[#f7d27a]">
+                  Time spent
+                </div>
+                <div className="mt-2 text-2xl font-black text-[#22170f] dark:text-[#f8f1e6]">
+                  {sessionDuration}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 

@@ -17,30 +17,38 @@ const ELEVENLABS_VOICE_IDS_BY_LANGUAGE: Record<string, string> = {
   'pl-PL': 'TX3LPaxmHKxFdv7VOQHJ',
   'pt-PT': 'SAz9YHcvj6GT2YYXdXww',
 };
-const ELEVENLABS_CONTEXT_BY_LANGUAGE: Record<string, { previousText: string }> = {
+const ELEVENLABS_CONTEXT_BY_LANGUAGE: Record<string, { previousText: string; nextText: string }> = {
   'de-DE': {
     previousText: 'Das nächste Wort ist auf Deutsch.',
+    nextText: '.',
   },
   'en-GB': {
     previousText: 'The next word is in British English.',
+    nextText: '.',
   },
   'en-US': {
     previousText: 'The next word is in American English.',
+    nextText: '.',
   },
   'es-ES': {
     previousText: 'La siguiente palabra está en español.',
+    nextText: '.',
   },
   'fr-FR': {
     previousText: 'Le mot suivant est en français.',
+    nextText: '.',
   },
   'it-IT': {
     previousText: 'La prossima parola è in italiano.',
+    nextText: '.',
   },
   'pl-PL': {
     previousText: 'Następne słowo jest po polsku.',
+    nextText: '.',
   },
   'pt-PT': {
     previousText: 'A próxima palavra está em português.',
+    nextText: '.',
   },
 };
 
@@ -208,6 +216,7 @@ function getElevenLabsContext(language: Language) {
   return (
     ELEVENLABS_CONTEXT_BY_LANGUAGE[language.code] ?? {
       previousText: '',
+      nextText: '.',
     }
   );
 }
@@ -241,6 +250,7 @@ async function synthesizeWithElevenLabs(request: SpeechRequest) {
         model_id: ELEVENLABS_MODEL_ID,
         language_code: getElevenLabsLanguageCode(request.language),
         previous_text: context.previousText,
+        next_text: context.nextText,
       }),
     });
 

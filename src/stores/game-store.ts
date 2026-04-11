@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { ExerciseType, InputSource, Word, WordState } from '../types';
+import type { ExerciseType, InputSource, SessionState, Word, WordState } from '../types';
 import { shuffleArray } from '../utils/data';
 import { generateId } from '../utils/id';
 import { type Language, LANGUAGES } from '../utils/languages';
@@ -9,12 +9,96 @@ const STREAK_GOAL_AFTER_INCORRECT = 2;
 const SCHEDULE_AFTER_CORRECT = 5;
 const SCHEDULE_AFTER_INCORRECT = 0;
 
+function createInitialSessionState(): SessionState {
+  return {
+    startedAt: null,
+    endedAt: null,
+    accumulatedActiveMs: 0,
+    activeSince: null,
+    lastActivityAt: null,
+    isPaused: true,
+  };
+}
+
+function createRunningSessionState(now: number): SessionState {
+  return {
+    startedAt: now,
+    endedAt: null,
+    accumulatedActiveMs: 0,
+    activeSince: now,
+    lastActivityAt: now,
+    isPaused: false,
+  };
+}
+
+function getAccumulatedActiveMs(session: SessionState, now: number): number {
+  if (session.activeSince == null) {
+    return session.accumulatedActiveMs;
+  }
+
+  return session.accumulatedActiveMs + Math.max(0, now - session.activeSince);
+}
+
+function pauseSessionState(session: SessionState, now: number): SessionState {
+  if (session.startedAt == null || session.endedAt != null || session.isPaused) {
+    return session;
+  }
+
+  return {
+    ...session,
+    accumulatedActiveMs: getAccumulatedActiveMs(session, now),
+    activeSince: null,
+    isPaused: true,
+  };
+}
+
+function resumeSessionState(session: SessionState, now: number): SessionState {
+  if (session.startedAt == null || session.endedAt != null || !session.isPaused) {
+    return session;
+  }
+
+  return {
+    ...session,
+    activeSince: now,
+    lastActivityAt: now,
+    isPaused: false,
+  };
+}
+
+function recordSessionActivityState(session: SessionState, now: number): SessionState {
+  if (session.startedAt == null || session.endedAt != null) {
+    return session;
+  }
+
+  if (session.isPaused) {
+    return resumeSessionState(session, now);
+  }
+
+  return {
+    ...session,
+    lastActivityAt: now,
+  };
+}
+
+function finishSessionState(session: SessionState, now: number): SessionState {
+  if (session.startedAt == null || session.endedAt != null) {
+    return session;
+  }
+
+  const pausedSession = pauseSessionState(session, now);
+  return {
+    ...pausedSession,
+    endedAt: now,
+  };
+}
+
 export interface GameState {
   pendingWords: WordState[];
   completedWords: WordState[];
   language: Language;
   exerciseType: ExerciseType;
   source: InputSource;
+  session: SessionState;
 }
 
 export interface GameActions {
@@ -28,6 +112,9 @@ export interface GameActions {
   correctAnswer: (word: WordState) => void;
   incorrectAnswer: (word: WordState) => void;
   skipWord: (word: WordState) => void;
+  recordSessionActivity: () => void;
+  pauseSession: () => void;
+  resumeSession: () => void;
 }
 
 export const useGameState = create<GameState & GameActions>((set) => ({
@@ -36,8 +123,10 @@ export const useGameState = create<GameState & GameActions>((set) => ({
   language: LANGUAGES[0],
   exerciseType: 'relaxed',
   source: 'manual',
+  session: createInitialSessionState(),
 
   startGame: (words, language, exerciseType, source) => {
+    const now = Date.now();
     const initialQueue = shuffleArray(
       words.map(({ word, prompt }) => ({
         id: generateId(),
@@ -54,6 +143,7 @@ export const useGameState = create<GameState & GameActions>((set) => ({
       language,
       exerciseType,
       source,
+      session: createRunningSessionState(now),
     });
   },
 
@@ -64,11 +154,13 @@ export const useGameState = create<GameState & GameActions>((set) => ({
       language: state.language,
       exerciseType: state.exerciseType,
       source: state.source,
+      session: createInitialSessionState(),
     }));
   },
 
   correctAnswer: (word: WordState) => {
     set((state: GameState & GameActions) => {
+      const now = Date.now();
       const updatedWord = { ...word, correctStreak: word.correctStreak + 1 };
       const otherWords = state.pendingWords.filter((w) => w.id !== word.id);
 
@@ -76,10 +168,12 @@ export const useGameState = create<GameState & GameActions>((set) => ({
         updatedWord.incorrectCount === 0 ||
         updatedWord.correctStreak >= STREAK_GOAL_AFTER_INCORRECT;
       if (isCompleted) {
+        const nextCompletedWords = [...state.completedWords, updatedWord];
         return {
           ...state,
           pendingWords: otherWords,
-          completedWords: [...state.completedWords, updatedWord],
+          completedWords: nextCompletedWords,
+          session: otherWords.length === 0 ? finishSessionState(state.session, now) : state.session,
         };
       }
 
@@ -123,11 +217,36 @@ export const useGameState = create<GameState & GameActions>((set) => ({
   skipWord: (word: WordState) => {
     set((state: GameState & GameActions) => {
       const skippedWord: WordState = { ...word, skipped: true };
+      const now = Date.now();
+      const nextPendingWords = state.pendingWords.filter((w) => w.id !== word.id);
       return {
         ...state,
-        pendingWords: state.pendingWords.filter((w) => w.id !== word.id),
+        pendingWords: nextPendingWords,
         completedWords: [...state.completedWords, skippedWord],
+        session:
+          nextPendingWords.length === 0 ? finishSessionState(state.session, now) : state.session,
       };
     });
+  },
+
+  recordSessionActivity: () => {
+    set((state) => ({
+      ...state,
+      session: recordSessionActivityState(state.session, Date.now()),
+    }));
+  },
+
+  pauseSession: () => {
+    set((state) => ({
+      ...state,
+      session: pauseSessionState(state.session, Date.now()),
+    }));
+  },
+
+  resumeSession: () => {
+    set((state) => ({
+      ...state,
+      session: resumeSessionState(state.session, Date.now()),
+    }));
   },
 }));

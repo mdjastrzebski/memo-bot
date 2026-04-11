@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App from '../app';
 import { useGameState } from '../stores/game-store';
@@ -39,6 +39,10 @@ describe('App', () => {
     useGameState.getState().resetGame();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('displays InputScreen when game status is initial', () => {
     // Game starts in initial state (no words)
     render(<App />);
@@ -60,6 +64,45 @@ describe('App', () => {
     // Should show QuestionScreen
     expect(screen.getByText(/Type what you hear!/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/Type here/i)).toBeInTheDocument();
+  });
+
+  it('auto-pauses after inactivity and when the tab becomes hidden', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-04-11T12:00:00Z'));
+
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+
+    render(<App />);
+
+    await vi.advanceTimersByTimeAsync(30_000);
+
+    let session = useGameState.getState().session;
+    expect(session.isPaused).toBe(true);
+    expect(session.accumulatedActiveMs).toBe(30_000);
+
+    useGameState.getState().recordSessionActivity();
+
+    session = useGameState.getState().session;
+    expect(session.isPaused).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(5_000);
+
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: true,
+    });
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    session = useGameState.getState().session;
+    expect(session.isPaused).toBe(true);
+    expect(session.accumulatedActiveMs).toBe(35_000);
+
+    Object.defineProperty(document, 'hidden', {
+      configurable: true,
+      value: false,
+    });
   });
 
   it('displays ResultsScreen when game status is finished', () => {
