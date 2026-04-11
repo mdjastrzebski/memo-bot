@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App from '../app';
@@ -52,7 +53,7 @@ describe('App', () => {
     // Start a game to enter learning state
     useGameState
       .getState()
-      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed');
+      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
 
     render(<App />);
 
@@ -82,6 +83,64 @@ describe('App', () => {
     // Should show ResultsScreen
     expect(screen.getByText(/Mission Complete!/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Start New Mission/i })).toBeInTheDocument();
+  });
+
+  it('returns to setup with the same language, mode, and source after restarting from results', async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch).mockImplementation(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.endsWith('/word-sets/config.json')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => [
+            {
+              id: 'en-set',
+              name: 'Common tricky words',
+              url: '/word-sets/en-set.txt',
+              languageCode: 'en-GB',
+            },
+          ],
+        } as Response;
+      }
+
+      return {
+        ok: false,
+        status: 404,
+        text: async () => '',
+      } as Response;
+    });
+
+    useGameState.setState({
+      pendingWords: [],
+      completedWords: [
+        {
+          id: '1',
+          word: 'czesc',
+          prompt: undefined,
+          correctStreak: 2,
+          incorrectCount: 0,
+          skipped: false,
+        },
+      ],
+      language: LANGUAGES[0],
+      exerciseType: 'strict',
+      source: 'word-set',
+    });
+
+    render(<App />);
+
+    await user.click(screen.getByRole('button', { name: /Start New Mission/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('radio', { name: /Word set/i })).toHaveAttribute(
+        'aria-checked',
+        'true',
+      );
+    });
+
+    expect(screen.getByText(LANGUAGES[0].name)).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /Strict/i })).toHaveAttribute('aria-checked', 'true');
   });
 
   it('returns null when status is learning but no current word exists', () => {

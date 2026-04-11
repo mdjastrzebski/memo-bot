@@ -105,9 +105,10 @@ export default function QuestionScreen() {
     const normalizedWord = normalizeAnswerText(word);
 
     // Relaxed mode ignores case and accent marks; strict mode requires an exact match.
-    const isCorrect = exerciseType === 'relaxed'
-      ? normalizedInput.localeCompare(normalizedWord, undefined, { sensitivity: 'base' }) === 0
-      : normalizedInput === normalizedWord;
+    const isCorrect =
+      exerciseType === 'relaxed'
+        ? normalizedInput.localeCompare(normalizedWord, undefined, { sensitivity: 'base' }) === 0
+        : normalizedInput === normalizedWord;
 
     if (!isCorrect) {
       speak(word, language);

@@ -27,7 +27,12 @@ export async function getWordSetConfigs(): Promise<WordSetConfig[]> {
     wordSetConfigsPromise = loadWordSetConfigs();
   }
 
-  return wordSetConfigsPromise;
+  try {
+    return await wordSetConfigsPromise;
+  } catch (error) {
+    wordSetConfigsPromise = null;
+    throw error;
+  }
 }
 
 export async function getWordSetWords(config: WordSetConfig): Promise<string[]> {

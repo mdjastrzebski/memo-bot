@@ -18,6 +18,11 @@ global.speechSynthesis = {
 describe('InputScreen', () => {
   beforeEach(() => {
     useGameState.getState().resetGame();
+    useGameState.setState({
+      language: LANGUAGES[0],
+      exerciseType: 'relaxed',
+      source: 'manual',
+    });
   });
 
   it('allows user to enter words and start the game in relaxed mode', async () => {
@@ -135,6 +140,46 @@ describe('InputScreen', () => {
       'enough',
       'friend',
     ]);
+  });
+
+  it('unmounts manual controls when the word-set source is selected', async () => {
+    const user = userEvent.setup();
+    vi.mocked(fetch).mockImplementation(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.endsWith('/word-sets/config.json')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => [
+            {
+              id: 'en-set',
+              name: 'Common tricky words',
+              url: '/word-sets/en-set.txt',
+              languageCode: 'en-GB',
+            },
+          ],
+        } as Response;
+      }
+
+      return {
+        ok: false,
+        status: 404,
+        text: async () => '',
+      } as Response;
+    });
+
+    render(<InputScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('radio', { name: /Word set/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByPlaceholderText(/Enter one word per line/i)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('radio', { name: /Word set/i }));
+
+    expect(screen.queryByPlaceholderText(/Enter one word per line/i)).not.toBeInTheDocument();
+    expect(screen.getByRole('slider', { name: /Session Size/i })).toBeInTheDocument();
   });
 
   it('disables manual start when no words are entered', () => {

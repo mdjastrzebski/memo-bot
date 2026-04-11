@@ -69,4 +69,47 @@ describe('word sets', () => {
 
     vi.useRealTimers();
   });
+
+  it('allows config loading to recover after an initial failure', async () => {
+    let configAttempts = 0;
+
+    vi.mocked(fetch).mockImplementation(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (!url.endsWith('/word-sets/config.json')) {
+        return {
+          ok: false,
+          status: 404,
+          text: async () => '',
+        } as Response;
+      }
+
+      configAttempts += 1;
+      if (configAttempts === 1) {
+        throw new Error('temporary failure');
+      }
+
+      return {
+        ok: true,
+        status: 200,
+        json: async () => [
+          {
+            id: 'pl-set',
+            name: 'Polish set',
+            url: '/word-sets/pl-set.txt',
+            languageCode: 'pl-PL',
+          },
+        ],
+      } as Response;
+    });
+
+    await expect(getWordSetConfigs()).rejects.toThrow('temporary failure');
+    await expect(getWordSetConfigs()).resolves.toEqual([
+      {
+        id: 'pl-set',
+        name: 'Polish set',
+        url: '/word-sets/pl-set.txt',
+        languageCode: 'pl-PL',
+      },
+    ]);
+  });
 });

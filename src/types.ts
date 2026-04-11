@@ -4,6 +4,7 @@ export interface Word {
 }
 
 export type ExerciseType = 'relaxed' | 'strict';
+export type InputSource = 'manual' | 'word-set';
 
 export interface WordState extends Word {
   id: string;

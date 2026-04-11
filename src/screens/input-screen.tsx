@@ -1,5 +1,5 @@
 import { ArrowRight, BookOpen, BotIcon as Robot, Rocket, Sparkles } from 'lucide-react';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { AppShell } from '../components/app-shell';
@@ -19,8 +19,7 @@ import { Textarea } from '../components/ui/textarea';
 import { toast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
-import type { ExerciseType, Word } from '../types';
-import { LANGUAGES } from '../utils/languages';
+import type { ExerciseType, InputSource, Word } from '../types';
 import { normalizeInputText } from '../utils/text-normalization';
 import {
   type WordSetConfig,
@@ -30,24 +29,23 @@ import {
   WORD_SET_SAMPLE_SIZES,
 } from '../utils/word-sets';
 
-type InputSource = 'manual' | 'word-set';
 type WordSetLoadState = 'loading' | 'ready' | 'error';
 type SampleSize = (typeof WORD_SET_SAMPLE_SIZES)[number];
 
 export default function InputScreen() {
+  const savedLanguage = useGameState((state) => state.language);
+  const savedExerciseType = useGameState((state) => state.exerciseType);
+  const savedSource = useGameState((state) => state.source);
   const [text, setText] = useState('');
-  const [language, setLanguage] = useState(LANGUAGES[0]);
-  const [exerciseType, setExerciseType] = useState<ExerciseType>('relaxed');
-  const [source, setSource] = useState<InputSource>('manual');
+  const [language, setLanguage] = useState(savedLanguage);
+  const [exerciseType, setExerciseType] = useState<ExerciseType>(savedExerciseType);
+  const [source, setSource] = useState<InputSource>(savedSource);
   const [sampleSize, setSampleSize] = useState<SampleSize>(WORD_SET_SAMPLE_SIZES[0]);
   const [selectedWordSetId, setSelectedWordSetId] = useState('');
   const [wordSetConfigs, setWordSetConfigs] = useState<WordSetConfig[]>([]);
   const [wordSetLoadState, setWordSetLoadState] = useState<WordSetLoadState>('loading');
   const [isStartingWordSet, setIsStartingWordSet] = useState(false);
-  const [sourcePanelHeight, setSourcePanelHeight] = useState<number | null>(null);
   const startGame = useGameState((state) => state.startGame);
-  const manualPanelRef = useRef<HTMLDivElement>(null);
-  const wordSetPanelRef = useRef<HTMLDivElement>(null);
   const sampleSizeIndex = WORD_SET_SAMPLE_SIZES.indexOf(sampleSize);
 
   useEffect(() => {
@@ -84,6 +82,10 @@ export default function InputScreen() {
 
   useEffect(() => {
     if (availableWordSets.length === 0) {
+      if (wordSetLoadState === 'loading') {
+        return;
+      }
+
       setSource('manual');
       setSelectedWordSetId('');
       return;
@@ -93,43 +95,7 @@ export default function InputScreen() {
       const matchingWordSet = availableWordSets.find((config) => config.id === currentId);
       return matchingWordSet?.id ?? availableWordSets[0].id;
     });
-  }, [availableWordSets]);
-
-  useLayoutEffect(() => {
-    const activePanel =
-      showSourceSelector && source === 'word-set'
-        ? wordSetPanelRef.current
-        : manualPanelRef.current;
-
-    if (!activePanel) {
-      return;
-    }
-
-    const updateHeight = () => {
-      setSourcePanelHeight(activePanel.offsetHeight);
-    };
-
-    updateHeight();
-
-    if (typeof ResizeObserver === 'undefined') {
-      return;
-    }
-
-    const observer = new ResizeObserver(updateHeight);
-    observer.observe(activePanel);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [
-    exerciseType,
-    preparedWords.length,
-    sampleSize,
-    selectedWordSet?.name,
-    showSourceSelector,
-    source,
-    text,
-  ]);
+  }, [availableWordSets, wordSetLoadState]);
 
   const handleSourceChange = (nextSource: InputSource) => {
     if (nextSource === 'word-set') {
@@ -146,7 +112,7 @@ export default function InputScreen() {
         return;
       }
 
-      startGame(preparedWords, language, exerciseType);
+      startGame(preparedWords, language, exerciseType, source);
       return;
     }
 
@@ -170,7 +136,7 @@ export default function InputScreen() {
         return;
       }
 
-      startGame(sampledWords, language, exerciseType);
+      startGame(sampledWords, language, exerciseType, source);
     } catch {
       toast({
         title: 'Could not load word set',
@@ -258,21 +224,8 @@ export default function InputScreen() {
               </div>
             </div>
 
-            <div
-              className="relative overflow-hidden transition-[height] duration-500 ease-in-out"
-              style={sourcePanelHeight == null ? undefined : { height: sourcePanelHeight }}
-            >
-              <div
-                ref={manualPanelRef}
-                aria-hidden={showSourceSelector && source !== 'manual'}
-                className={cn(
-                  'transition-opacity duration-500 ease-in-out',
-                  showSourceSelector && 'absolute inset-x-0 top-0',
-                  source === 'manual' || !showSourceSelector
-                    ? 'relative z-10 opacity-100'
-                    : 'pointer-events-none z-0 opacity-0',
-                )}
-              >
+            <div>
+              {source === 'manual' || !showSourceSelector ? (
                 <div className="space-y-4 pb-1">
                   <Textarea
                     value={text}
@@ -290,122 +243,108 @@ export default function InputScreen() {
                     )}
                   </div>
                 </div>
-              </div>
+              ) : null}
 
-              {showSourceSelector && (
-                <div
-                  ref={wordSetPanelRef}
-                  aria-hidden={source !== 'word-set'}
-                  className={cn(
-                    'absolute inset-x-0 top-0 transition-opacity duration-500 ease-in-out',
-                    source === 'word-set'
-                      ? 'z-10 opacity-100'
-                      : 'pointer-events-none z-0 opacity-0',
-                  )}
-                >
-                  <div className="space-y-4 pb-1">
-                    <div className="space-y-3">
+              {showSourceSelector && source === 'word-set' ? (
+                <div className="space-y-4 pb-1">
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="word-set"
+                      className="text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]"
+                    >
+                      Word Set
+                    </Label>
+                    <Select value={selectedWordSet?.id ?? ''} onValueChange={setSelectedWordSetId}>
+                      <SelectTrigger
+                        id="word-set"
+                        className="h-14 rounded-[1.25rem] border-black/10 bg-white/80 text-base font-semibold text-[#2f2218] focus:ring-inset focus:ring-[#de5a37] focus:ring-offset-0 dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf]"
+                      >
+                        <SelectValue placeholder="Select a word set" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl border-black/10 bg-[rgba(255,251,245,0.98)] text-[#2f2218] dark:border-white/10 dark:bg-[rgba(29,34,46,0.98)] dark:text-[#f3eadf]">
+                        {availableWordSets.map((config) => (
+                          <SelectItem
+                            key={config.id}
+                            value={config.id}
+                            className="cursor-pointer rounded-xl"
+                          >
+                            {config.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-4 rounded-[1.25rem] border border-black/10 bg-white/60 px-4 py-4 dark:border-white/10 dark:bg-white/5">
+                    <div className="flex items-center justify-between gap-3">
                       <Label
-                        htmlFor="word-set"
+                        id="sample-size-label"
                         className="text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]"
                       >
-                        Word Set
+                        Session Size
                       </Label>
-                      <Select
-                        value={selectedWordSet?.id ?? ''}
-                        onValueChange={setSelectedWordSetId}
-                      >
-                        <SelectTrigger
-                          id="word-set"
-                          className="h-14 rounded-[1.25rem] border-black/10 bg-white/80 text-base font-semibold text-[#2f2218] focus:ring-inset focus:ring-[#de5a37] focus:ring-offset-0 dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf]"
-                        >
-                          <SelectValue placeholder="Select a word set" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-2xl border-black/10 bg-[rgba(255,251,245,0.98)] text-[#2f2218] dark:border-white/10 dark:bg-[rgba(29,34,46,0.98)] dark:text-[#f3eadf]">
-                          {availableWordSets.map((config) => (
-                            <SelectItem
-                              key={config.id}
-                              value={config.id}
-                              className="cursor-pointer rounded-xl"
-                            >
-                              {config.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="rounded-full bg-[rgba(222,90,55,0.12)] px-3 py-1 text-sm font-black text-[#7d3d20] dark:bg-[rgba(244,193,93,0.16)] dark:text-[#f7d27a]">
+                        {sampleSize} words
+                      </div>
                     </div>
 
-                    <div className="space-y-4 rounded-[1.25rem] border border-black/10 bg-white/60 px-4 py-4 dark:border-white/10 dark:bg-white/5">
-                      <div className="flex items-center justify-between gap-3">
-                        <Label
-                          id="sample-size-label"
-                          className="text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]"
-                        >
-                          Session Size
-                        </Label>
-                        <div className="rounded-full bg-[rgba(222,90,55,0.12)] px-3 py-1 text-sm font-black text-[#7d3d20] dark:bg-[rgba(244,193,93,0.16)] dark:text-[#f7d27a]">
-                          {sampleSize} words
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="relative px-2">
-                          <div className="pointer-events-none absolute inset-x-[0.5rem] top-1/2 h-2 -translate-y-1/2 rounded-full bg-[#ead9c4] dark:bg-[#3a404d]" />
-                          <div className="pointer-events-none absolute inset-x-[0.5rem] top-1/2 flex -translate-y-1/2 justify-between">
-                            {WORD_SET_SAMPLE_SIZES.map((size) => (
-                              <span
-                                key={size}
-                                className={cn(
-                                  'h-4 w-4 rounded-full border-2 border-white shadow-sm transition-colors dark:border-[rgba(29,34,46,0.95)]',
-                                  size <= sampleSize
-                                    ? 'bg-[#de5a37] dark:bg-[#f4c15d]'
-                                    : 'bg-[#d7c1a8] dark:bg-[#677087]',
-                                )}
-                              />
-                            ))}
-                          </div>
-                          <Slider
-                            thumbLabel="Session Size"
-                            value={[sampleSizeIndex < 0 ? 0 : sampleSizeIndex]}
-                            min={0}
-                            max={WORD_SET_SAMPLE_SIZES.length - 1}
-                            step={1}
-                            onValueChange={([nextIndex]) => {
-                              setSampleSize(
-                                WORD_SET_SAMPLE_SIZES[nextIndex] ?? WORD_SET_SAMPLE_SIZES[0],
-                              );
-                            }}
-                            className="relative z-10"
-                          />
-                        </div>
-
-                        <div className="flex justify-between gap-2 text-sm font-bold text-[#6a503b] dark:text-[#d4c5b3]">
+                    <div className="space-y-3">
+                      <div className="relative px-2">
+                        <div className="pointer-events-none absolute inset-x-[0.5rem] top-1/2 h-2 -translate-y-1/2 rounded-full bg-[#ead9c4] dark:bg-[#3a404d]" />
+                        <div className="pointer-events-none absolute inset-x-[0.5rem] top-1/2 flex -translate-y-1/2 justify-between">
                           {WORD_SET_SAMPLE_SIZES.map((size) => (
-                            <button
+                            <span
                               key={size}
-                              type="button"
-                              onClick={() => setSampleSize(size)}
                               className={cn(
-                                'min-w-0 flex-1 rounded-full px-2 py-1 text-center transition-colors',
-                                size === sampleSize
-                                  ? 'bg-[rgba(222,90,55,0.14)] text-[#7d3d20] dark:bg-[rgba(244,193,93,0.16)] dark:text-[#f7d27a]'
-                                  : 'hover:bg-black/5 dark:hover:bg-white/10',
+                                'h-4 w-4 rounded-full border-2 border-white shadow-sm transition-colors dark:border-[rgba(29,34,46,0.95)]',
+                                size <= sampleSize
+                                  ? 'bg-[#de5a37] dark:bg-[#f4c15d]'
+                                  : 'bg-[#d7c1a8] dark:bg-[#677087]',
                               )}
-                            >
-                              {size}
-                            </button>
+                            />
                           ))}
                         </div>
+                        <Slider
+                          thumbLabel="Session Size"
+                          value={[sampleSizeIndex < 0 ? 0 : sampleSizeIndex]}
+                          min={0}
+                          max={WORD_SET_SAMPLE_SIZES.length - 1}
+                          step={1}
+                          onValueChange={([nextIndex]) => {
+                            setSampleSize(
+                              WORD_SET_SAMPLE_SIZES[nextIndex] ?? WORD_SET_SAMPLE_SIZES[0],
+                            );
+                          }}
+                          className="relative z-10"
+                        />
                       </div>
-                    </div>
 
-                    <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/50 px-4 py-3 text-base font-semibold text-[#6a503b] dark:border-white/10 dark:bg-white/5 dark:text-[#d4c5b3]">
-                      Randomly sample up to {sampleSize} words from{' '}
-                      <span className="font-extrabold">{selectedWordSet?.name}</span>.
+                      <div className="flex justify-between gap-2 text-sm font-bold text-[#6a503b] dark:text-[#d4c5b3]">
+                        {WORD_SET_SAMPLE_SIZES.map((size) => (
+                          <button
+                            key={size}
+                            type="button"
+                            onClick={() => setSampleSize(size)}
+                            className={cn(
+                              'min-w-0 flex-1 rounded-full px-2 py-1 text-center transition-colors',
+                              size === sampleSize
+                                ? 'bg-[rgba(222,90,55,0.14)] text-[#7d3d20] dark:bg-[rgba(244,193,93,0.16)] dark:text-[#f7d27a]'
+                                : 'hover:bg-black/5 dark:hover:bg-white/10',
+                            )}
+                          >
+                            {size}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
+
+                  <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/50 px-4 py-3 text-base font-semibold text-[#6a503b] dark:border-white/10 dark:bg-white/5 dark:text-[#d4c5b3]">
+                    Randomly sample up to {sampleSize} words from{' '}
+                    <span className="font-extrabold">{selectedWordSet?.name}</span>.
+                  </div>
                 </div>
-              )}
+              ) : null}
             </div>
 
             <Button

@@ -25,7 +25,7 @@ describe('Game Store Logic', () => {
     ];
     const { startGame } = useGameState.getState();
 
-    startGame(wordList, LANGUAGES[0], 'relaxed');
+    startGame(wordList, LANGUAGES[0], 'relaxed', 'manual');
 
     const stateAfterStart = useGameState.getState();
     expect(stateAfterStart.pendingWords).toHaveLength(2);
@@ -63,7 +63,7 @@ describe('Game Store Logic', () => {
     ];
     const { startGame, incorrectAnswer } = useGameState.getState();
 
-    startGame(wordList, LANGUAGES[0], 'relaxed');
+    startGame(wordList, LANGUAGES[0], 'relaxed', 'manual');
     const initialState = useGameState.getState();
     const hardWord = initialState.pendingWords.find((w) => w.word === 'hard')!;
 
@@ -86,7 +86,7 @@ describe('Game Store Logic', () => {
     const wordList: Word[] = [{ word: 'challenge', prompt: undefined }];
     const { startGame, incorrectAnswer, correctAnswer } = useGameState.getState();
 
-    startGame(wordList, LANGUAGES[0], 'relaxed');
+    startGame(wordList, LANGUAGES[0], 'relaxed', 'manual');
     const initialState = useGameState.getState();
     const challengeWord = initialState.pendingWords[0];
 
