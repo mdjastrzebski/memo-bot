@@ -9,6 +9,7 @@ import { Input } from '../components/ui/input';
 import { WordDiff } from '../components/word-diff';
 import { useGameState } from '../stores/game-store';
 import { useCurrentWord } from '../stores/selectors';
+import { getLanguageByCode } from '../utils/languages';
 import { playCorrect } from '../utils/sounds';
 import { speak } from '../utils/speak';
 import { normalizeAnswerText } from '../utils/text-normalization';
@@ -19,8 +20,8 @@ type QuestionStatus = 'question' | 'retry' | 'correct';
 
 export default function QuestionScreen() {
   const currentWord = useCurrentWord();
-  const language = useGameState((state) => state.language);
-  const exerciseType = useGameState((state) => state.exerciseType);
+  const language = useGameState((state) => getLanguageByCode(state.setup.languageCode));
+  const exerciseType = useGameState((state) => state.setup.exerciseType);
   const remaining = useGameState((state) => state.pendingWords.length);
   const completed = useGameState((state) => state.completedWords.length);
   const correctAnswer = useGameState((state) => state.correctAnswer);

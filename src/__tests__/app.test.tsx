@@ -37,6 +37,7 @@ describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     useGameState.getState().resetGame();
+    useGameState.getState().resetSetupPreferences();
   });
 
   afterEach(() => {
@@ -166,9 +167,12 @@ describe('App', () => {
           skipped: false,
         },
       ],
-      language: LANGUAGES[0],
-      exerciseType: 'strict',
-      source: 'word-set',
+      setup: {
+        ...useGameState.getState().setup,
+        languageCode: LANGUAGES[0].code,
+        exerciseType: 'strict',
+        source: 'word-set',
+      },
     });
 
     render(<App />);

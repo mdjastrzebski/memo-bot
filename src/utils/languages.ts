@@ -15,3 +15,11 @@ export const LANGUAGES: Language[] = [
   { code: 'pt-PT', name: 'Portuguese', voice: 'pt-PT', flag: '🇵🇹' },
   { code: 'pl-PL', name: 'Polish', voice: 'pl-PL', flag: '🇵🇱' },
 ];
+
+export function getLanguageByCode(code: string): Language {
+  return LANGUAGES.find((language) => language.code === code) ?? LANGUAGES[0];
+}
+
+export function isSupportedLanguageCode(code: string): boolean {
+  return LANGUAGES.some((language) => language.code === code);
+}

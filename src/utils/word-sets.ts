@@ -16,6 +16,7 @@ let wordSetConfigsPromise: Promise<WordSetConfig[]> | null = null;
 const wordSetWordsCache = new Map<string, Promise<string[]>>();
 
 export const WORD_SET_SAMPLE_SIZES = [5, 10, 25, 50, 100] as const;
+export type WordSetSampleSize = (typeof WORD_SET_SAMPLE_SIZES)[number];
 
 export function resetWordSetCache() {
   wordSetConfigsPromise = null;
