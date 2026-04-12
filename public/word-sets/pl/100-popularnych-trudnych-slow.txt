@@ -1,5 +1,5 @@
 # Popularne trudne słowa dla dzieci w wieku szkolnym.
-będę
+ja będę
 bohater
 borówka
 burza
@@ -9,16 +9,16 @@ chodnik
 choinka
 chomik
 córka
-czuję
+ja czuję
 drużyna
 drzewo
 drzwi
 duch
 dziewięć
 dzięcioł
-dziękuję
+ja dziękuję
 gęś
-gotuję
+ja gotuję
 góra
 grzeczny
 grzyby
@@ -33,7 +33,7 @@ hokej
 hulajnoga
 humor
 huśtawka
-idę
+ja idę
 jarzyny
 język
 kałuża
@@ -51,7 +51,7 @@ który
 kuchnia
 lekarz
 lodówka
-maluję
+ja maluję
 marchewka
 marzenie
 mąka
@@ -69,14 +69,14 @@ piórnik
 podróż
 podwórko
 porządek
-pracuję
-próbuję
+ja pracuję
+ja próbuję
 przedszkole
 przyroda
 ręka
 rowerzysta
 róża
-rysuję
+ja rysuję
 rzeka
 rzeżucha
 samochód

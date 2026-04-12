@@ -16,6 +16,10 @@ describe('word sets', () => {
     expect(parseWordSetText('# comment\nżółw\n\nżółw\nwiewiórka\n')).toEqual(['żółw', 'wiewiórka']);
   });
 
+  it('preserves multi-word phrases in word-set files', () => {
+    expect(parseWordSetText('ja pracuję\nja rysuję\n')).toEqual(['ja pracuję', 'ja rysuję']);
+  });
+
   it('retries loading a word-set file before succeeding and caches the parsed words', async () => {
     vi.useFakeTimers();
 
