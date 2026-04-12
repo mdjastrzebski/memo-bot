@@ -20,9 +20,11 @@ import { toast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
 import type { ExerciseType, InputSource, Word } from '../types';
+import { getLanguageByCode } from '../utils/languages';
 import { normalizeInputText } from '../utils/text-normalization';
 import {
   type WordSetConfig,
+  type WordSetSampleSize,
   getWordSetConfigs,
   getWordSetWords,
   sampleWordSetWords,
@@ -30,18 +32,20 @@ import {
 } from '../utils/word-sets';
 
 type WordSetLoadState = 'loading' | 'ready' | 'error';
-type SampleSize = (typeof WORD_SET_SAMPLE_SIZES)[number];
 
 export default function InputScreen() {
-  const savedLanguage = useGameState((state) => state.language);
-  const savedExerciseType = useGameState((state) => state.exerciseType);
-  const savedSource = useGameState((state) => state.source);
-  const [text, setText] = useState('');
-  const [language, setLanguage] = useState(savedLanguage);
-  const [exerciseType, setExerciseType] = useState<ExerciseType>(savedExerciseType);
-  const [source, setSource] = useState<InputSource>(savedSource);
-  const [sampleSize, setSampleSize] = useState<SampleSize>(WORD_SET_SAMPLE_SIZES[0]);
-  const [selectedWordSetId, setSelectedWordSetId] = useState('');
+  const language = useGameState((state) => getLanguageByCode(state.setup.languageCode));
+  const exerciseType = useGameState((state) => state.setup.exerciseType);
+  const source = useGameState((state) => state.setup.source);
+  const text = useGameState((state) => state.setup.manualText);
+  const sampleSize = useGameState((state) => state.setup.sampleSize);
+  const selectedWordSetId = useGameState((state) => state.setup.selectedWordSetId);
+  const setLanguage = useGameState((state) => state.setLanguage);
+  const setExerciseType = useGameState((state) => state.setExerciseType);
+  const setSource = useGameState((state) => state.setSource);
+  const setManualText = useGameState((state) => state.setManualText);
+  const setSampleSize = useGameState((state) => state.setSampleSize);
+  const setSelectedWordSetId = useGameState((state) => state.setSelectedWordSetId);
   const [wordSetConfigs, setWordSetConfigs] = useState<WordSetConfig[]>([]);
   const [wordSetLoadState, setWordSetLoadState] = useState<WordSetLoadState>('loading');
   const [isStartingWordSet, setIsStartingWordSet] = useState(false);
@@ -86,21 +90,31 @@ export default function InputScreen() {
         return;
       }
 
-      setSource('manual');
-      setSelectedWordSetId('');
+      if (source !== 'manual') {
+        setSource('manual');
+      }
       return;
     }
 
-    setSelectedWordSetId((currentId) => {
-      const matchingWordSet = availableWordSets.find((config) => config.id === currentId);
-      return matchingWordSet?.id ?? availableWordSets[0].id;
-    });
-  }, [availableWordSets, wordSetLoadState]);
+    const nextSelectedWordSetId =
+      availableWordSets.find((config) => config.id === selectedWordSetId)?.id ??
+      availableWordSets[0].id;
+
+    if (nextSelectedWordSetId !== selectedWordSetId) {
+      setSelectedWordSetId(nextSelectedWordSetId);
+    }
+  }, [
+    availableWordSets,
+    selectedWordSetId,
+    setSelectedWordSetId,
+    setSource,
+    source,
+    wordSetLoadState,
+  ]);
 
   const handleSourceChange = (nextSource: InputSource) => {
-    if (nextSource === 'word-set') {
-      setSampleSize(WORD_SET_SAMPLE_SIZES[0]);
-      setSelectedWordSetId((currentId) => currentId || availableWordSets[0]?.id || '');
+    if (nextSource === 'word-set' && !selectedWordSetId) {
+      setSelectedWordSetId(availableWordSets[0]?.id || '');
     }
 
     setSource(nextSource);
@@ -229,7 +243,7 @@ export default function InputScreen() {
                 <div className="space-y-4 pb-1">
                   <Textarea
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    onChange={(e) => setManualText(e.target.value)}
                     placeholder={`Enter one word per line...\nYou can also add an optional prompt with |`}
                     className="min-h-[260px] rounded-[1.5rem] border-black/10 bg-white/80 px-5 py-4 text-lg leading-8 text-[#2f2218] placeholder:text-[#9d8a79] shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] focus-visible:ring-inset focus-visible:ring-[#de5a37] focus-visible:ring-offset-0 dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf] dark:placeholder:text-[#8b8f9a] dark:shadow-none"
                   />
@@ -312,7 +326,8 @@ export default function InputScreen() {
                           step={1}
                           onValueChange={([nextIndex]) => {
                             setSampleSize(
-                              WORD_SET_SAMPLE_SIZES[nextIndex] ?? WORD_SET_SAMPLE_SIZES[0],
+                              (WORD_SET_SAMPLE_SIZES[nextIndex] ??
+                                WORD_SET_SAMPLE_SIZES[0]) as WordSetSampleSize,
                             );
                           }}
                           className="relative z-10"

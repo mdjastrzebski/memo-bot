@@ -1,13 +1,25 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { ExerciseType, InputSource, SessionState, Word, WordState } from '../types';
 import { shuffleArray } from '../utils/data';
 import { generateId } from '../utils/id';
-import { type Language, LANGUAGES } from '../utils/languages';
+import { type Language, LANGUAGES, isSupportedLanguageCode } from '../utils/languages';
+import { WORD_SET_SAMPLE_SIZES, type WordSetSampleSize } from '../utils/word-sets';
 
 const STREAK_GOAL_AFTER_INCORRECT = 2;
 const SCHEDULE_AFTER_CORRECT = 5;
 const SCHEDULE_AFTER_INCORRECT = 0;
+const STORE_PERSISTENCE_KEY = 'memo-bot-setup-preferences';
+
+export interface SetupPreferences {
+  languageCode: string;
+  exerciseType: ExerciseType;
+  source: InputSource;
+  manualText: string;
+  sampleSize: WordSetSampleSize;
+  selectedWordSetId: string;
+}
 
 function createInitialSessionState(): SessionState {
   return {
@@ -92,12 +104,62 @@ function finishSessionState(session: SessionState, now: number): SessionState {
   };
 }
 
+function createInitialSetupPreferences(): SetupPreferences {
+  return {
+    languageCode: LANGUAGES[0].code,
+    exerciseType: 'relaxed',
+    source: 'manual',
+    manualText: '',
+    sampleSize: WORD_SET_SAMPLE_SIZES[0],
+    selectedWordSetId: '',
+  };
+}
+
+function isExerciseType(value: unknown): value is ExerciseType {
+  return value === 'relaxed' || value === 'strict';
+}
+
+function isInputSource(value: unknown): value is InputSource {
+  return value === 'manual' || value === 'word-set';
+}
+
+function isWordSetSampleSize(value: unknown): value is WordSetSampleSize {
+  return typeof value === 'number' && WORD_SET_SAMPLE_SIZES.includes(value as WordSetSampleSize);
+}
+
+function sanitizeSetupPreferences(value: unknown): SetupPreferences {
+  const defaults = createInitialSetupPreferences();
+  if (typeof value !== 'object' || value === null) {
+    return defaults;
+  }
+
+  const persisted = value as Record<string, unknown>;
+
+  return {
+    languageCode:
+      typeof persisted.languageCode === 'string' && isSupportedLanguageCode(persisted.languageCode)
+        ? persisted.languageCode
+        : defaults.languageCode,
+    exerciseType: isExerciseType(persisted.exerciseType)
+      ? persisted.exerciseType
+      : defaults.exerciseType,
+    source: isInputSource(persisted.source) ? persisted.source : defaults.source,
+    manualText:
+      typeof persisted.manualText === 'string' ? persisted.manualText : defaults.manualText,
+    sampleSize: isWordSetSampleSize(persisted.sampleSize)
+      ? persisted.sampleSize
+      : defaults.sampleSize,
+    selectedWordSetId:
+      typeof persisted.selectedWordSetId === 'string'
+        ? persisted.selectedWordSetId
+        : defaults.selectedWordSetId,
+  };
+}
+
 export interface GameState {
   pendingWords: WordState[];
   completedWords: WordState[];
-  language: Language;
-  exerciseType: ExerciseType;
-  source: InputSource;
+  setup: SetupPreferences;
   session: SessionState;
 }
 
@@ -109,6 +171,13 @@ export interface GameActions {
     source: InputSource,
   ) => void;
   resetGame: () => void;
+  resetSetupPreferences: () => void;
+  setLanguage: (language: Language) => void;
+  setExerciseType: (exerciseType: ExerciseType) => void;
+  setSource: (source: InputSource) => void;
+  setManualText: (text: string) => void;
+  setSampleSize: (sampleSize: WordSetSampleSize) => void;
+  setSelectedWordSetId: (wordSetId: string) => void;
   correctAnswer: (word: WordState) => void;
   incorrectAnswer: (word: WordState) => void;
   skipWord: (word: WordState) => void;
@@ -117,136 +186,225 @@ export interface GameActions {
   resumeSession: () => void;
 }
 
-export const useGameState = create<GameState & GameActions>((set) => ({
-  pendingWords: [],
-  completedWords: [],
-  language: LANGUAGES[0],
-  exerciseType: 'relaxed',
-  source: 'manual',
-  session: createInitialSessionState(),
-
-  startGame: (words, language, exerciseType, source) => {
-    const now = Date.now();
-    const initialQueue = shuffleArray(
-      words.map(({ word, prompt }) => ({
-        id: generateId(),
-        word,
-        prompt,
-        correctStreak: 0,
-        incorrectCount: 0,
-      })),
-    );
-
-    set({
-      pendingWords: initialQueue,
-      completedWords: [],
-      language,
-      exerciseType,
-      source,
-      session: createRunningSessionState(now),
-    });
-  },
-
-  resetGame: () => {
-    set((state) => ({
+export const useGameState = create<GameState & GameActions>()(
+  persist(
+    (set) => ({
       pendingWords: [],
       completedWords: [],
-      language: state.language,
-      exerciseType: state.exerciseType,
-      source: state.source,
+      setup: createInitialSetupPreferences(),
       session: createInitialSessionState(),
-    }));
-  },
 
-  correctAnswer: (word: WordState) => {
-    set((state: GameState & GameActions) => {
-      const now = Date.now();
-      const updatedWord = { ...word, correctStreak: word.correctStreak + 1 };
-      const otherWords = state.pendingWords.filter((w) => w.id !== word.id);
+      startGame: (words, language, exerciseType, source) => {
+        const now = Date.now();
+        const initialQueue = shuffleArray(
+          words.map(({ word, prompt }) => ({
+            id: generateId(),
+            word,
+            prompt,
+            correctStreak: 0,
+            incorrectCount: 0,
+          })),
+        );
 
-      const isCompleted =
-        updatedWord.incorrectCount === 0 ||
-        updatedWord.correctStreak >= STREAK_GOAL_AFTER_INCORRECT;
-      if (isCompleted) {
-        const nextCompletedWords = [...state.completedWords, updatedWord];
-        return {
+        set((state) => ({
+          pendingWords: initialQueue,
+          completedWords: [],
+          setup: {
+            ...state.setup,
+            languageCode: language.code,
+            exerciseType,
+            source,
+          },
+          session: createRunningSessionState(now),
+        }));
+      },
+
+      resetGame: () => {
+        set((state) => ({
+          pendingWords: [],
+          completedWords: [],
+          setup: state.setup,
+          session: createInitialSessionState(),
+        }));
+      },
+
+      resetSetupPreferences: () => {
+        set((state) => ({
           ...state,
-          pendingWords: otherWords,
-          completedWords: nextCompletedWords,
-          session: otherWords.length === 0 ? finishSessionState(state.session, now) : state.session,
-        };
-      }
+          setup: createInitialSetupPreferences(),
+        }));
+      },
 
-      const insertPosition = Math.min(SCHEDULE_AFTER_CORRECT, otherWords.length);
-      otherWords.splice(insertPosition, 0, updatedWord);
-
-      return {
-        ...state,
-        pendingWords: otherWords,
-      };
-    });
-  },
-
-  incorrectAnswer: (word: WordState) => {
-    set((state) => {
-      const otherWords = state.pendingWords.filter((w) => w.id !== word.id);
-      const updatedWord: WordState = {
-        ...word,
-        correctStreak: 0,
-        incorrectCount: word.incorrectCount + 1,
-      };
-
-      // In the first pass, go through all words. In subsequent passes, schedule the repetition closer.
-      const isFirstAttempt = word.incorrectCount === 0;
-      if (isFirstAttempt) {
-        return {
+      setLanguage: (language) => {
+        set((state) => ({
           ...state,
-          pendingWords: [...otherWords, updatedWord],
+          setup: {
+            ...state.setup,
+            languageCode: language.code,
+          },
+        }));
+      },
+
+      setExerciseType: (exerciseType) => {
+        set((state) => ({
+          ...state,
+          setup: {
+            ...state.setup,
+            exerciseType,
+          },
+        }));
+      },
+
+      setSource: (source) => {
+        set((state) => ({
+          ...state,
+          setup: {
+            ...state.setup,
+            source,
+          },
+        }));
+      },
+
+      setManualText: (manualText) => {
+        set((state) => ({
+          ...state,
+          setup: {
+            ...state.setup,
+            manualText,
+          },
+        }));
+      },
+
+      setSampleSize: (sampleSize) => {
+        set((state) => ({
+          ...state,
+          setup: {
+            ...state.setup,
+            sampleSize,
+          },
+        }));
+      },
+
+      setSelectedWordSetId: (selectedWordSetId) => {
+        set((state) => ({
+          ...state,
+          setup: {
+            ...state.setup,
+            selectedWordSetId,
+          },
+        }));
+      },
+
+      correctAnswer: (word: WordState) => {
+        set((state: GameState & GameActions) => {
+          const now = Date.now();
+          const updatedWord = { ...word, correctStreak: word.correctStreak + 1 };
+          const otherWords = state.pendingWords.filter((w) => w.id !== word.id);
+
+          const isCompleted =
+            updatedWord.incorrectCount === 0 ||
+            updatedWord.correctStreak >= STREAK_GOAL_AFTER_INCORRECT;
+          if (isCompleted) {
+            const nextCompletedWords = [...state.completedWords, updatedWord];
+            return {
+              ...state,
+              pendingWords: otherWords,
+              completedWords: nextCompletedWords,
+              session:
+                otherWords.length === 0 ? finishSessionState(state.session, now) : state.session,
+            };
+          }
+
+          const insertPosition = Math.min(SCHEDULE_AFTER_CORRECT, otherWords.length);
+          otherWords.splice(insertPosition, 0, updatedWord);
+
+          return {
+            ...state,
+            pendingWords: otherWords,
+          };
+        });
+      },
+
+      incorrectAnswer: (word: WordState) => {
+        set((state) => {
+          const otherWords = state.pendingWords.filter((w) => w.id !== word.id);
+          const updatedWord: WordState = {
+            ...word,
+            correctStreak: 0,
+            incorrectCount: word.incorrectCount + 1,
+          };
+
+          // In the first pass, go through all words. In subsequent passes, schedule the repetition closer.
+          const isFirstAttempt = word.incorrectCount === 0;
+          if (isFirstAttempt) {
+            return {
+              ...state,
+              pendingWords: [...otherWords, updatedWord],
+            };
+          }
+
+          const insertPosition = Math.min(SCHEDULE_AFTER_INCORRECT, otherWords.length);
+          otherWords.splice(insertPosition, 0, updatedWord);
+          return {
+            ...state,
+            pendingWords: otherWords,
+          };
+        });
+      },
+
+      skipWord: (word: WordState) => {
+        set((state: GameState & GameActions) => {
+          const skippedWord: WordState = { ...word, skipped: true };
+          const now = Date.now();
+          const nextPendingWords = state.pendingWords.filter((w) => w.id !== word.id);
+          return {
+            ...state,
+            pendingWords: nextPendingWords,
+            completedWords: [...state.completedWords, skippedWord],
+            session:
+              nextPendingWords.length === 0
+                ? finishSessionState(state.session, now)
+                : state.session,
+          };
+        });
+      },
+
+      recordSessionActivity: () => {
+        set((state) => ({
+          ...state,
+          session: recordSessionActivityState(state.session, Date.now()),
+        }));
+      },
+
+      pauseSession: () => {
+        set((state) => ({
+          ...state,
+          session: pauseSessionState(state.session, Date.now()),
+        }));
+      },
+
+      resumeSession: () => {
+        set((state) => ({
+          ...state,
+          session: resumeSessionState(state.session, Date.now()),
+        }));
+      },
+    }),
+    {
+      name: STORE_PERSISTENCE_KEY,
+      storage: createJSONStorage(() => window.localStorage),
+      partialize: (state) => ({
+        setup: state.setup,
+      }),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as Partial<GameState> | undefined;
+        const current = currentState as GameState & GameActions;
+
+        return {
+          ...current,
+          setup: sanitizeSetupPreferences(persisted?.setup),
         };
-      }
-
-      const insertPosition = Math.min(SCHEDULE_AFTER_INCORRECT, otherWords.length);
-      otherWords.splice(insertPosition, 0, updatedWord);
-      return {
-        ...state,
-        pendingWords: otherWords,
-      };
-    });
-  },
-
-  skipWord: (word: WordState) => {
-    set((state: GameState & GameActions) => {
-      const skippedWord: WordState = { ...word, skipped: true };
-      const now = Date.now();
-      const nextPendingWords = state.pendingWords.filter((w) => w.id !== word.id);
-      return {
-        ...state,
-        pendingWords: nextPendingWords,
-        completedWords: [...state.completedWords, skippedWord],
-        session:
-          nextPendingWords.length === 0 ? finishSessionState(state.session, now) : state.session,
-      };
-    });
-  },
-
-  recordSessionActivity: () => {
-    set((state) => ({
-      ...state,
-      session: recordSessionActivityState(state.session, Date.now()),
-    }));
-  },
-
-  pauseSession: () => {
-    set((state) => ({
-      ...state,
-      session: pauseSessionState(state.session, Date.now()),
-    }));
-  },
-
-  resumeSession: () => {
-    set((state) => ({
-      ...state,
-      session: resumeSessionState(state.session, Date.now()),
-    }));
-  },
-}));
+      },
+    },
+  ),
+);

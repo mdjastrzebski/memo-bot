@@ -1,11 +1,11 @@
 import { useSyncExternalStore } from 'react';
 
+import { toast } from '../hooks/use-toast';
 import type { Language } from './languages';
 
-const ELEVENLABS_API_KEY_PARAM = 'elevenlabs-api-key';
-const ELEVENLABS_VOICE_ID_PARAM = 'elevenlabs-voice-id';
 const ELEVENLABS_MODEL_ID = 'eleven_multilingual_v2';
 const ELEVENLABS_TTS_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
+const ELEVENLABS_API_KEY_STORAGE_KEY = 'memo-bot-elevenlabs-api-key';
 const DEFAULT_ELEVENLABS_VOICE_ID = 'TX3LPaxmHKxFdv7VOQHJ';
 const ELEVENLABS_VOICE_IDS_BY_LANGUAGE: Record<string, string> = {
   'de-DE': 'TX3LPaxmHKxFdv7VOQHJ',
@@ -58,6 +58,8 @@ type SpeechRequest = {
 };
 
 type SpeechStatus = {
+  hasElevenLabsApiKey: boolean;
+  hasElevenLabsError: boolean;
   isElevenLabsActive: boolean;
 };
 
@@ -70,18 +72,21 @@ const speechCache = new Map<string, SpeechCacheEntry>();
 
 let hasInitialized = false;
 let elevenLabsApiKey: string | null = null;
-let configuredVoiceId: string | null = null;
 let isElevenLabsDisabled = false;
 let currentPlaybackToken: number | null = null;
 let currentAudio: HTMLAudioElement | null = null;
 let queuedRequest: SpeechRequest | null = null;
 let nextPlaybackToken = 0;
 let speechStatus: SpeechStatus = {
+  hasElevenLabsApiKey: false,
+  hasElevenLabsError: false,
   isElevenLabsActive: false,
 };
 
 function emitStatusChange() {
   speechStatus = {
+    hasElevenLabsApiKey: elevenLabsApiKey != null,
+    hasElevenLabsError: elevenLabsApiKey != null && isElevenLabsDisabled,
     isElevenLabsActive: elevenLabsApiKey != null && !isElevenLabsDisabled,
   };
   listeners.forEach((listener) => listener());
@@ -99,17 +104,39 @@ function subscribeToSpeechStatus(listener: () => void) {
   };
 }
 
+function canRequestElevenLabs() {
+  return elevenLabsApiKey != null && !isElevenLabsDisabled;
+}
+
 function getCacheKey({ language, text }: SpeechRequest) {
   return `${language.code}::${text}`;
 }
 
-function getUrlWithoutHiddenParams(url: URL) {
-  const nextSearch = url.searchParams.toString();
-  return `${url.pathname}${nextSearch ? `?${nextSearch}` : ''}${url.hash}`;
+function clearSpeechCache() {
+  for (const entry of speechCache.values()) {
+    URL.revokeObjectURL?.(entry.objectUrl);
+  }
+
+  speechCache.clear();
 }
 
-function canRequestElevenLabs() {
-  return elevenLabsApiKey != null && !isElevenLabsDisabled;
+function setApiKeyState(apiKey: string | null) {
+  elevenLabsApiKey = apiKey;
+  isElevenLabsDisabled = false;
+  clearSpeechCache();
+  emitStatusChange();
+}
+
+function readStoredApiKey() {
+  if (typeof window === 'undefined') {
+    return null;
+  }
+
+  try {
+    return window.localStorage.getItem(ELEVENLABS_API_KEY_STORAGE_KEY)?.trim() || null;
+  } catch {
+    return null;
+  }
 }
 
 function finishPlayback(playbackToken: number) {
@@ -181,6 +208,11 @@ function disableElevenLabs() {
 
   isElevenLabsDisabled = true;
   emitStatusChange();
+  toast({
+    title: 'ElevenLabs TTS needs attention',
+    description:
+      'The saved key was rejected or ran out of credits. Update or remove it in TTS settings.',
+  });
 }
 
 async function readErrorText(response: Response) {
@@ -205,11 +237,7 @@ function getElevenLabsLanguageCode(language: Language) {
 }
 
 function getElevenLabsVoiceId(language: Language) {
-  return (
-    configuredVoiceId ??
-    ELEVENLABS_VOICE_IDS_BY_LANGUAGE[language.code] ??
-    DEFAULT_ELEVENLABS_VOICE_ID
-  );
+  return ELEVENLABS_VOICE_IDS_BY_LANGUAGE[language.code] ?? DEFAULT_ELEVENLABS_VOICE_ID;
 }
 
 function getElevenLabsContext(language: Language) {
@@ -274,14 +302,14 @@ async function playSpeechRequest(request: SpeechRequest) {
   const playbackToken = ++nextPlaybackToken;
   currentPlaybackToken = playbackToken;
 
-  const cachedAudio = speechCache.get(getCacheKey(request));
-  if (cachedAudio != null) {
-    playObjectUrl(cachedAudio.objectUrl, playbackToken);
+  if (!canRequestElevenLabs()) {
+    playWithBrowserSpeech(request, playbackToken);
     return;
   }
 
-  if (!canRequestElevenLabs()) {
-    playWithBrowserSpeech(request, playbackToken);
+  const cachedAudio = speechCache.get(getCacheKey(request));
+  if (cachedAudio != null) {
+    playObjectUrl(cachedAudio.objectUrl, playbackToken);
     return;
   }
 
@@ -304,28 +332,7 @@ export function initializeSpeech() {
   }
 
   hasInitialized = true;
-
-  const url = new URL(window.location.href);
-  const apiKey = url.searchParams.get(ELEVENLABS_API_KEY_PARAM)?.trim();
-  const voiceId = url.searchParams.get(ELEVENLABS_VOICE_ID_PARAM)?.trim();
-  const removedApiKey = url.searchParams.has(ELEVENLABS_API_KEY_PARAM);
-  const removedVoiceId = url.searchParams.has(ELEVENLABS_VOICE_ID_PARAM);
-  url.searchParams.delete(ELEVENLABS_API_KEY_PARAM);
-  url.searchParams.delete(ELEVENLABS_VOICE_ID_PARAM);
-  const hadHiddenParam = removedApiKey || removedVoiceId;
-
-  elevenLabsApiKey = apiKey || null;
-  configuredVoiceId = voiceId || null;
-  isElevenLabsDisabled = false;
-  speechStatus = {
-    isElevenLabsActive: false,
-  };
-
-  if (hadHiddenParam) {
-    window.history.replaceState(window.history.state, '', getUrlWithoutHiddenParams(url));
-  }
-
-  emitStatusChange();
+  setApiKeyState(readStoredApiKey());
 }
 
 export function speak(text: string, language: Language) {
@@ -347,6 +354,35 @@ export function useSpeechStatus() {
   return useSyncExternalStore(subscribeToSpeechStatus, getSpeechStatus, getSpeechStatus);
 }
 
+export function setElevenLabsApiKey(apiKey: string) {
+  const nextApiKey = apiKey.trim();
+  if (!nextApiKey || typeof window === 'undefined') {
+    return false;
+  }
+
+  try {
+    window.localStorage.setItem(ELEVENLABS_API_KEY_STORAGE_KEY, nextApiKey);
+    setApiKeyState(nextApiKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export function clearElevenLabsApiKey() {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  try {
+    window.localStorage.removeItem(ELEVENLABS_API_KEY_STORAGE_KEY);
+    setApiKeyState(null);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function resetSpeechServiceForTests() {
   currentAudio?.pause?.();
   currentAudio = null;
@@ -355,17 +391,13 @@ export function resetSpeechServiceForTests() {
   nextPlaybackToken = 0;
   hasInitialized = false;
   elevenLabsApiKey = null;
-  configuredVoiceId = null;
   isElevenLabsDisabled = false;
   speechStatus = {
+    hasElevenLabsApiKey: false,
+    hasElevenLabsError: false,
     isElevenLabsActive: false,
   };
-
-  for (const entry of speechCache.values()) {
-    URL.revokeObjectURL?.(entry.objectUrl);
-  }
-
-  speechCache.clear();
+  clearSpeechCache();
   window.speechSynthesis?.cancel?.();
   emitStatusChange();
 }

@@ -1,10 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { AppShell } from '../components/app-shell';
+import { Toaster } from '../components/ui/toaster';
 import { LANGUAGES } from '../utils/languages';
 import { getSpeechStatusForTests, initializeSpeech, speak } from '../utils/speech-service';
 
+const ELEVENLABS_API_KEY_STORAGE_KEY = 'memo-bot-elevenlabs-api-key';
 const mockSpeechSynthesisSpeak = vi.fn();
 const mockSpeechSynthesisCancel = vi.fn();
 
@@ -67,17 +70,20 @@ describe('speech service', () => {
     window.history.pushState({}, '', '/');
   });
 
-  it('reads the hidden ElevenLabs params once and removes them from the URL', () => {
-    window.history.pushState({}, '', '/?elevenlabs-api-key=test-key&elevenlabs-voice-id=voice-123');
+  it('reads a saved ElevenLabs key from local storage during initialization', () => {
+    window.localStorage.setItem(ELEVENLABS_API_KEY_STORAGE_KEY, 'test-key');
 
     initializeSpeech();
 
-    expect(window.location.search).toBe('');
-    expect(getSpeechStatusForTests().isElevenLabsActive).toBe(true);
+    expect(getSpeechStatusForTests()).toEqual({
+      hasElevenLabsApiKey: true,
+      hasElevenLabsError: false,
+      isElevenLabsActive: true,
+    });
   });
 
   it('reuses cached ElevenLabs audio for the same locale and text', async () => {
-    window.history.pushState({}, '', '/?elevenlabs-api-key=test-key&elevenlabs-voice-id=voice-123');
+    window.localStorage.setItem(ELEVENLABS_API_KEY_STORAGE_KEY, 'test-key');
     initializeSpeech();
 
     vi.mocked(fetch).mockResolvedValue(
@@ -101,7 +107,7 @@ describe('speech service', () => {
   });
 
   it('uses the mapped Polish voice and forces the Polish language code', async () => {
-    window.history.pushState({}, '', '/?elevenlabs-api-key=test-key');
+    window.localStorage.setItem(ELEVENLABS_API_KEY_STORAGE_KEY, 'test-key');
     initializeSpeech();
 
     vi.mocked(fetch).mockResolvedValue(
@@ -122,8 +128,8 @@ describe('speech service', () => {
     expect(requestInit.body).toContain('"next_text":"."');
   });
 
-  it('uses the per-language mapped voice when no explicit voice id is configured', async () => {
-    window.history.pushState({}, '', '/?elevenlabs-api-key=test-key');
+  it('uses the per-language mapped voice', async () => {
+    window.localStorage.setItem(ELEVENLABS_API_KEY_STORAGE_KEY, 'test-key');
     initializeSpeech();
 
     vi.mocked(fetch).mockResolvedValue(
@@ -138,24 +144,6 @@ describe('speech service', () => {
 
     const [requestUrl] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
     expect(requestUrl).toContain('/JBFqnCBsd6RMkjVDRZzb');
-  });
-
-  it('prefers an explicitly configured voice id over the per-language mapping', async () => {
-    window.history.pushState({}, '', '/?elevenlabs-api-key=test-key&elevenlabs-voice-id=voice-123');
-    initializeSpeech();
-
-    vi.mocked(fetch).mockResolvedValue(
-      new Response(new Blob(['audio'], { type: 'audio/mpeg' }), { status: 200 }),
-    );
-
-    speak('friend', LANGUAGES[0]);
-
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledTimes(1);
-    });
-
-    const [requestUrl] = vi.mocked(fetch).mock.calls[0] as [string, RequestInit];
-    expect(requestUrl).toContain('/voice-123');
   });
 
   it('queues only the newest request while browser speech is in progress', async () => {
@@ -178,10 +166,19 @@ describe('speech service', () => {
   });
 
   it('disables ElevenLabs after a hard failure and falls back to browser speech', async () => {
-    window.history.pushState({}, '', '/?elevenlabs-api-key=test-key&elevenlabs-voice-id=voice-123');
+    window.localStorage.setItem(ELEVENLABS_API_KEY_STORAGE_KEY, 'test-key');
     initializeSpeech();
 
     vi.mocked(fetch).mockResolvedValue(new Response('Unauthorized', { status: 401 }));
+
+    render(
+      <>
+        <AppShell>
+          <div>child</div>
+        </AppShell>
+        <Toaster />
+      </>,
+    );
 
     speak('kot', LANGUAGES[7]);
 
@@ -189,7 +186,12 @@ describe('speech service', () => {
       expect(mockSpeechSynthesisSpeak).toHaveBeenCalledTimes(1);
     });
 
-    expect(getSpeechStatusForTests().isElevenLabsActive).toBe(false);
+    expect(getSpeechStatusForTests()).toEqual({
+      hasElevenLabsApiKey: true,
+      hasElevenLabsError: true,
+      isElevenLabsActive: false,
+    });
+    expect(screen.getByText('ElevenLabs TTS needs attention')).toBeInTheDocument();
 
     const firstUtterance = vi.mocked(SpeechSynthesisUtterance).mock.results[0]
       .value as MockUtterance;
@@ -203,9 +205,8 @@ describe('speech service', () => {
     });
   });
 
-  it('shows the active badge only when ElevenLabs is enabled for new requests', () => {
-    window.history.pushState({}, '', '/?elevenlabs-api-key=test-key');
-    initializeSpeech();
+  it('saves and removes the ElevenLabs key from the TTS dialog without showing the current value', async () => {
+    const user = userEvent.setup();
 
     render(
       <AppShell>
@@ -213,6 +214,25 @@ describe('speech service', () => {
       </AppShell>,
     );
 
-    expect(screen.getByText('ElevenLabs TTS')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Open TTS settings/i }));
+    expect(screen.getByText('No key configured')).toBeInTheDocument();
+
+    const input = screen.getByLabelText(/New API key/i);
+    await user.type(input, 'super-secret-key');
+    await user.click(screen.getByRole('button', { name: /Save key/i }));
+
+    await waitFor(() => {
+      expect(window.localStorage.getItem(ELEVENLABS_API_KEY_STORAGE_KEY)).toBe('super-secret-key');
+    });
+
+    await user.click(screen.getByRole('button', { name: /Open TTS settings/i }));
+    expect(screen.getByText('Key configured on this device')).toBeInTheDocument();
+    expect(screen.getByLabelText(/New API key/i)).toHaveValue('');
+
+    await user.click(screen.getByRole('button', { name: /Remove key/i }));
+
+    await waitFor(() => {
+      expect(window.localStorage.getItem(ELEVENLABS_API_KEY_STORAGE_KEY)).toBeNull();
+    });
   });
 });

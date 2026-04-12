@@ -15,6 +15,7 @@ afterEach(() => {
 });
 
 beforeEach(() => {
+  window.localStorage.clear();
   resetWordSetCache();
   resetSpeechServiceForTests();
   vi.stubGlobal(
