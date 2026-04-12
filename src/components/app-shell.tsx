@@ -1,9 +1,25 @@
-import { Moon, Sun } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Moon, Sun, Volume2 } from 'lucide-react';
+import { useEffect, useId, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { toast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
-import { useSpeechStatus } from '../utils/speech-service';
+import {
+  clearElevenLabsApiKey,
+  setElevenLabsApiKey,
+  useSpeechStatus,
+} from '../utils/speech-service';
+import { Button } from './ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 import { Toggle } from './ui/toggle';
 
 type AppShellProps = {
@@ -13,7 +29,10 @@ type AppShellProps = {
 
 export function AppShell({ children, className }: AppShellProps) {
   const [isDark, setIsDark] = useState(false);
-  const { isElevenLabsActive } = useSpeechStatus();
+  const [isTtsDialogOpen, setIsTtsDialogOpen] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const { hasElevenLabsApiKey, hasElevenLabsError, isElevenLabsActive } = useSpeechStatus();
+  const apiKeyInputId = useId();
 
   useEffect(() => {
     const storedTheme = window.localStorage.getItem('memo-bot-theme');
@@ -26,6 +45,54 @@ export function AppShell({ children, className }: AppShellProps) {
     setIsDark(pressed);
     document.documentElement.classList.toggle('dark', pressed);
     window.localStorage.setItem('memo-bot-theme', pressed ? 'dark' : 'light');
+  };
+
+  useEffect(() => {
+    if (isTtsDialogOpen) {
+      setApiKeyInput('');
+    }
+  }, [isTtsDialogOpen]);
+
+  const ttsStatusLabel = hasElevenLabsError
+    ? 'Saved key needs attention'
+    : hasElevenLabsApiKey
+      ? 'Key configured on this device'
+      : 'No key configured';
+  const ttsButtonClassName = hasElevenLabsError
+    ? 'border-amber-400/50 bg-amber-100/80 text-amber-900 hover:bg-amber-100 dark:border-amber-300/25 dark:bg-amber-300/10 dark:text-amber-100 dark:hover:bg-amber-300/15'
+    : isElevenLabsActive
+      ? 'border-emerald-500/35 bg-emerald-100/80 text-emerald-900 hover:bg-emerald-100 dark:border-emerald-300/25 dark:bg-emerald-300/10 dark:text-emerald-100 dark:hover:bg-emerald-300/15'
+      : 'border-black/10 bg-white/75 text-[#5b4636] hover:bg-white dark:border-white/10 dark:bg-[rgba(255,255,255,0.08)] dark:text-[#d4c5b3] dark:hover:bg-[rgba(255,255,255,0.12)]';
+
+  const handleSaveTtsKey = () => {
+    const nextApiKey = apiKeyInput.trim();
+    if (!nextApiKey) {
+      return;
+    }
+
+    if (!setElevenLabsApiKey(nextApiKey)) {
+      toast({
+        title: 'Could not save ElevenLabs key',
+        description: 'Please try again on this device.',
+      });
+      return;
+    }
+
+    setIsTtsDialogOpen(false);
+    setApiKeyInput('');
+  };
+
+  const handleRemoveTtsKey = () => {
+    if (!clearElevenLabsApiKey()) {
+      toast({
+        title: 'Could not remove ElevenLabs key',
+        description: 'Please try again on this device.',
+      });
+      return;
+    }
+
+    setIsTtsDialogOpen(false);
+    setApiKeyInput('');
   };
 
   return (
@@ -44,7 +111,31 @@ export function AppShell({ children, className }: AppShellProps) {
         )}
       >
         <div className="fixed right-4 top-4 z-30 flex items-center justify-end gap-2 sm:right-6 lg:right-10">
-          {isElevenLabsActive && <div className="eyebrow">ElevenLabs TTS</div>}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            aria-label="Open TTS settings"
+            onClick={() => setIsTtsDialogOpen(true)}
+            className={cn(
+              'h-10 rounded-full px-3 text-sm font-semibold shadow-sm transition-colors',
+              ttsButtonClassName,
+            )}
+          >
+            <Volume2 className="h-4 w-4" />
+            <span>TTS</span>
+            <span
+              aria-hidden="true"
+              className={cn(
+                'h-2.5 w-2.5 rounded-full',
+                hasElevenLabsError
+                  ? 'bg-amber-500'
+                  : isElevenLabsActive
+                    ? 'bg-emerald-500'
+                    : 'bg-[#b89f8a] dark:bg-[#6f6558]',
+              )}
+            />
+          </Button>
           <Toggle
             pressed={isDark}
             onPressedChange={handleThemeChange}
@@ -56,6 +147,70 @@ export function AppShell({ children, className }: AppShellProps) {
             <span>{isDark ? 'Dark' : 'Light'}</span>
           </Toggle>
         </div>
+        <Dialog open={isTtsDialogOpen} onOpenChange={setIsTtsDialogOpen}>
+          <DialogContent className="rounded-[1.75rem] border-black/10 bg-[rgba(255,251,245,0.98)] sm:max-w-md dark:border-white/10 dark:bg-[rgba(29,34,46,0.98)]">
+            <DialogHeader className="space-y-2 text-left">
+              <DialogTitle className="text-2xl font-black text-[#22170f] dark:text-[#f8f1e6]">
+                ElevenLabs TTS
+              </DialogTitle>
+              <DialogDescription className="text-sm font-medium text-[#5b4636] dark:text-[#d4c5b3]">
+                Add a key to use ElevenLabs voice playback on this device. The key stays in local
+                storage and is never shown back to you here.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div
+                className={cn(
+                  'rounded-[1.2rem] border px-4 py-3 text-sm font-semibold',
+                  hasElevenLabsError
+                    ? 'border-amber-500/30 bg-amber-100/75 text-amber-900 dark:border-amber-300/20 dark:bg-amber-300/10 dark:text-amber-100'
+                    : hasElevenLabsApiKey
+                      ? 'border-emerald-500/25 bg-emerald-100/70 text-emerald-900 dark:border-emerald-300/20 dark:bg-emerald-300/10 dark:text-emerald-100'
+                      : 'border-black/10 bg-white/70 text-[#5b4636] dark:border-white/10 dark:bg-white/5 dark:text-[#d4c5b3]',
+                )}
+              >
+                {ttsStatusLabel}
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor={apiKeyInputId}
+                  className="text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]"
+                >
+                  New API key
+                </Label>
+                <Input
+                  id={apiKeyInputId}
+                  type="password"
+                  value={apiKeyInput}
+                  onChange={(event) => setApiKeyInput(event.target.value)}
+                  placeholder="Paste ElevenLabs API key"
+                  autoComplete="off"
+                  className="h-12 rounded-[1rem] border-black/10 bg-white/80 text-base dark:border-white/10 dark:bg-white/5"
+                />
+              </div>
+            </div>
+
+            <DialogFooter className="gap-2 sm:justify-between sm:space-x-0">
+              <div className="flex justify-start">
+                {hasElevenLabsApiKey && (
+                  <Button type="button" variant="ghost" onClick={handleRemoveTtsKey}>
+                    Remove key
+                  </Button>
+                )}
+              </div>
+              <div className="flex flex-col-reverse gap-2 sm:flex-row">
+                <Button type="button" variant="outline" onClick={() => setIsTtsDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="button" onClick={handleSaveTtsKey} disabled={!apiKeyInput.trim()}>
+                  Save key
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
         {children}
       </div>
     </div>
