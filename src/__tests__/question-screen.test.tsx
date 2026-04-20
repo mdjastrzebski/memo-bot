@@ -42,7 +42,13 @@ describe('QuestionScreen', () => {
     useGameState.getState().resetGame();
     useGameState
       .getState()
-      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame(
+        [{ word: 'hello', prompt: undefined }],
+        LANGUAGES[0],
+        'relaxed',
+        'typing',
+        'manual',
+      );
   });
 
   it('allows user to submit correct answer and see success feedback', async () => {
@@ -167,7 +173,13 @@ describe('QuestionScreen', () => {
     useGameState.getState().resetGame();
     useGameState
       .getState()
-      .startGame([{ word: 'hello', prompt: 'Say hello' }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame(
+        [{ word: 'hello', prompt: 'Say hello' }],
+        LANGUAGES[0],
+        'relaxed',
+        'typing',
+        'manual',
+      );
 
     render(<QuestionScreen />);
 
@@ -190,7 +202,13 @@ describe('QuestionScreen', () => {
     const user = userEvent.setup();
     useGameState
       .getState()
-      .startGame([{ word: 'Café', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame(
+        [{ word: 'Café', prompt: undefined }],
+        LANGUAGES[0],
+        'relaxed',
+        'typing',
+        'manual',
+      );
 
     render(<QuestionScreen />);
 
@@ -204,7 +222,9 @@ describe('QuestionScreen', () => {
   it('rejects answer with different casing or accents in strict mode', async () => {
     const user = userEvent.setup();
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: 'Café' }], LANGUAGES[0], 'strict', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: 'Café' }], LANGUAGES[0], 'strict', 'typing', 'manual');
 
     render(<QuestionScreen />);
 
@@ -250,7 +270,13 @@ describe('QuestionScreen', () => {
     const user = userEvent.setup();
     useGameState
       .getState()
-      .startGame([{ word: 'café', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame(
+        [{ word: 'café', prompt: undefined }],
+        LANGUAGES[0],
+        'relaxed',
+        'typing',
+        'manual',
+      );
 
     render(<QuestionScreen />);
 
@@ -271,7 +297,9 @@ describe('QuestionScreen', () => {
   it('accepts smart apostrophes in answers for words with straight apostrophes', async () => {
     const user = userEvent.setup();
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: "don't" }], LANGUAGES[0], 'relaxed', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: "don't" }], LANGUAGES[0], 'relaxed', 'typing', 'manual');
 
     render(<QuestionScreen />);
 
@@ -284,7 +312,9 @@ describe('QuestionScreen', () => {
   it('accepts smart double quotes in answers for words with straight double quotes', async () => {
     const user = userEvent.setup();
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: '"hello"' }], LANGUAGES[0], 'relaxed', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: '"hello"' }], LANGUAGES[0], 'relaxed', 'typing', 'manual');
 
     render(<QuestionScreen />);
 
@@ -296,10 +326,75 @@ describe('QuestionScreen', () => {
 
   it('hides the special-characters keyboard in strict mode', () => {
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: 'café' }], LANGUAGES[0], 'strict', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: 'café' }], LANGUAGES[0], 'strict', 'typing', 'manual');
 
     render(<QuestionScreen />);
 
     expect(screen.queryByRole('button', { name: 'é' })).not.toBeInTheDocument();
+  });
+
+  it('shows pronunciation controls and does not autoplay in strict mode', async () => {
+    const user = userEvent.setup();
+    useGameState.getState().resetGame();
+    useGameState
+      .getState()
+      .startGame(
+        [{ word: 'bonjour', prompt: 'ignored prompt' }],
+        LANGUAGES[0],
+        'strict',
+        'pronunciation',
+        'manual',
+      );
+
+    render(<QuestionScreen />);
+
+    expect(screen.getByText('bonjour')).toBeInTheDocument();
+    expect(screen.queryByText(/ignored prompt/i)).not.toBeInTheDocument();
+    expect(mockSpeak).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: /Play/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /Answer/i }));
+    expect(mockSpeak).toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: /Answer/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Good/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Wrong/i })).toBeInTheDocument();
+  });
+
+  it('autoplays in pronunciation relaxed mode', () => {
+    useGameState.getState().resetGame();
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello' }], LANGUAGES[0], 'relaxed', 'pronunciation', 'manual');
+
+    render(<QuestionScreen />);
+
+    expect(mockSpeak).toHaveBeenCalled();
+  });
+
+  it('grades pronunciation flow with good and wrong buttons', async () => {
+    const user = userEvent.setup();
+    useGameState.getState().resetGame();
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello' }], LANGUAGES[0], 'strict', 'pronunciation', 'manual');
+
+    render(<QuestionScreen />);
+
+    await user.click(screen.getByRole('button', { name: /Answer/i }));
+    await user.click(screen.getByRole('button', { name: /Wrong/i }));
+
+    let state = useGameState.getState();
+    expect(state.pendingWords).toHaveLength(1);
+    expect(state.pendingWords[0].incorrectCount).toBe(1);
+
+    await user.click(screen.getByRole('button', { name: /Answer/i }));
+    await user.click(screen.getByRole('button', { name: /Good/i }));
+
+    state = useGameState.getState();
+    expect(state.pendingWords).toHaveLength(1);
+    expect(state.pendingWords[0].incorrectCount).toBe(1);
+    expect(state.pendingWords[0].correctStreak).toBe(1);
   });
 });

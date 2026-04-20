@@ -21,7 +21,8 @@ type QuestionStatus = 'question' | 'retry' | 'correct';
 export default function QuestionScreen() {
   const currentWord = useCurrentWord();
   const language = useGameState((state) => getLanguageByCode(state.setup.languageCode));
-  const exerciseType = useGameState((state) => state.setup.exerciseType);
+  const difficulty = useGameState((state) => state.setup.difficulty);
+  const mode = useGameState((state) => state.setup.mode);
   const remaining = useGameState((state) => state.pendingWords.length);
   const completed = useGameState((state) => state.completedWords.length);
   const correctAnswer = useGameState((state) => state.correctAnswer);
@@ -32,6 +33,7 @@ export default function QuestionScreen() {
   const [status, setStatus] = useState<QuestionStatus>('question');
   const [input, setInput] = useState('');
   const [answer, setAnswer] = useState('');
+  const [pronunciationReadyToGrade, setPronunciationReadyToGrade] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const cursorPositionRef = useRef<number | null>(null);
 
@@ -47,17 +49,24 @@ export default function QuestionScreen() {
     setStatus('question');
     setInput('');
     setAnswer('');
+    setPronunciationReadyToGrade(false);
 
-    // Prevent initial sound from playing twice in strict mode for the same word
-    if (initialSoundPlayed.current === word) return;
-    initialSoundPlayed.current = word;
+    const initialSoundKey = `${currentWord.id}:${mode}:${difficulty}`;
+    if (initialSoundPlayed.current === initialSoundKey) return;
+    initialSoundPlayed.current = initialSoundKey;
 
-    if (prompt == null) {
+    if (mode === 'pronunciation') {
+      if (difficulty === 'relaxed') {
+        speak(word, language);
+      }
+    } else if (prompt == null) {
       speak(word, language);
     }
 
-    inputRef.current?.focus();
-  }, [word, language, prompt, currentWord]);
+    if (mode === 'typing') {
+      inputRef.current?.focus();
+    }
+  }, [word, language, prompt, currentWord, mode, difficulty]);
 
   if (!currentWord || !word) {
     return null;
@@ -113,7 +122,7 @@ export default function QuestionScreen() {
 
     // Relaxed mode ignores case and accent marks; strict mode requires an exact match.
     const isCorrect =
-      exerciseType === 'relaxed'
+      difficulty === 'relaxed'
         ? normalizedInput.localeCompare(normalizedWord, undefined, { sensitivity: 'base' }) === 0
         : normalizedInput === normalizedWord;
 
@@ -156,7 +165,23 @@ export default function QuestionScreen() {
 
   const progressPercentage = (completed / (remaining + completed)) * 100;
   const showPlayButton = prompt == null || status !== 'question';
-  const showSpecialCharactersKeyboard = exerciseType !== 'strict';
+  const showSpecialCharactersKeyboard = mode === 'typing' && difficulty !== 'strict';
+
+  const handleRevealAnswer = () => {
+    recordSessionActivity();
+    speak(word, language);
+    setPronunciationReadyToGrade(true);
+  };
+
+  const handlePronunciationGood = () => {
+    recordSessionActivity();
+    correctAnswer(currentWord);
+  };
+
+  const handlePronunciationWrong = () => {
+    recordSessionActivity();
+    incorrectAnswer(currentWord);
+  };
 
   return (
     <AppShell className="items-center">
@@ -203,12 +228,20 @@ export default function QuestionScreen() {
                   <Volume2 className="h-8 w-8" />
                 </div>
                 <h2 className="display-title text-3xl font-black leading-tight text-[#22170f] dark:text-[#f8f1e6] sm:text-4xl">
-                  {prompt != null ? 'Type the word!' : 'Type what you hear!'}
+                  {mode === 'pronunciation'
+                    ? 'Read and say the word'
+                    : prompt != null
+                      ? 'Type the word!'
+                      : 'Type what you hear!'}
                 </h2>
               </div>
             </div>
 
-            {prompt != null ? (
+            {mode === 'pronunciation' ? (
+              <div className="py-2 text-center text-5xl font-black tracking-[0.04em] text-[#2f2218] dark:text-[#f3eadf] sm:text-6xl">
+                {word}
+              </div>
+            ) : prompt != null ? (
               <div className="py-2 text-center text-3xl font-black text-[#2f2218] dark:text-[#f3eadf] sm:text-4xl">
                 {prompt}
               </div>
@@ -224,7 +257,7 @@ export default function QuestionScreen() {
               </Button>
             )}
 
-            {status !== 'question' && (
+            {mode === 'typing' && status !== 'question' && (
               <div className="rounded-[1.5rem] border border-black/10 bg-white/60 px-5 py-4 dark:border-white/10 dark:bg-white/5">
                 <div
                   className={`text-center text-2xl font-black ${
@@ -239,7 +272,7 @@ export default function QuestionScreen() {
               </div>
             )}
 
-            {showPlayButton && prompt != null && (
+            {mode === 'typing' && showPlayButton && prompt != null && (
               <Button
                 type="button"
                 onClick={handleSpeak}
@@ -251,25 +284,69 @@ export default function QuestionScreen() {
               </Button>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                ref={inputRef}
-                type="text"
-                value={input}
-                onChange={handleInputChange}
-                onSelect={(e) => {
-                  cursorPositionRef.current = e.currentTarget.selectionStart;
-                }}
-                className="h-20 rounded-[1.75rem] border-black/10 bg-white px-6 text-center text-3xl font-bold tracking-[0.08em] text-[#22170f] shadow-[inset_0_2px_0_rgba(255,255,255,0.65)] placeholder:text-[#9d8a79] focus-visible:ring-[#de5a37] dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf] dark:placeholder:text-[#8b8f9a] dark:shadow-none"
-                placeholder={status === 'retry' ? 'Type it again...' : 'Type here...'}
-                disabled={status === 'correct'}
-                spellCheck={false}
-              />
+            {mode === 'typing' ? (
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <Input
+                  ref={inputRef}
+                  type="text"
+                  value={input}
+                  onChange={handleInputChange}
+                  onSelect={(e) => {
+                    cursorPositionRef.current = e.currentTarget.selectionStart;
+                  }}
+                  className="h-20 rounded-[1.75rem] border-black/10 bg-white px-6 text-center text-3xl font-bold tracking-[0.08em] text-[#22170f] shadow-[inset_0_2px_0_rgba(255,255,255,0.65)] placeholder:text-[#9d8a79] focus-visible:ring-[#de5a37] dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf] dark:placeholder:text-[#8b8f9a] dark:shadow-none"
+                  placeholder={status === 'retry' ? 'Type it again...' : 'Type here...'}
+                  disabled={status === 'correct'}
+                  spellCheck={false}
+                />
 
-              {showSpecialCharactersKeyboard && (
-                <SpecialCharactersKeyboard word={word} onCharacterClick={handleSpecialCharClick} />
-              )}
-            </form>
+                {showSpecialCharactersKeyboard && (
+                  <SpecialCharactersKeyboard
+                    word={word}
+                    onCharacterClick={handleSpecialCharClick}
+                  />
+                )}
+              </form>
+            ) : (
+              <div className="space-y-4">
+                <Button
+                  type="button"
+                  onClick={handleSpeak}
+                  aria-label="Play word"
+                  className="h-16 w-full rounded-[1.5rem] border border-black/10 bg-[#de5a37] text-xl font-extrabold text-white shadow-[0_16px_30px_rgba(222,90,55,0.28)] hover:bg-[#c94d2d]"
+                >
+                  <Play className="h-6 w-6" />
+                  Play
+                </Button>
+
+                {!pronunciationReadyToGrade ? (
+                  <Button
+                    type="button"
+                    onClick={handleRevealAnswer}
+                    className="h-16 w-full rounded-[1.5rem] border border-black/10 bg-[#f6c453] text-xl font-extrabold text-[#3b2515] shadow-[0_16px_30px_rgba(246,196,83,0.28)] hover:bg-[#efb931]"
+                  >
+                    Answer
+                  </Button>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <Button
+                      type="button"
+                      onClick={handlePronunciationGood}
+                      className="h-16 rounded-[1.5rem] border border-black/10 bg-[#2f7a45] text-xl font-extrabold text-white shadow-[0_16px_30px_rgba(47,122,69,0.28)] hover:bg-[#28693b]"
+                    >
+                      Good
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={handlePronunciationWrong}
+                      className="h-16 rounded-[1.5rem] border border-black/10 bg-[#b24328] text-xl font-extrabold text-white shadow-[0_16px_30px_rgba(178,67,40,0.28)] hover:bg-[#9d3b23]"
+                    >
+                      Wrong
+                    </Button>
+                  </div>
+                )}
+              </div>
+            )}
 
             <Button
               type="button"

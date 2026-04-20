@@ -29,7 +29,7 @@ describe('Game Store Logic', () => {
     ];
     const { startGame } = useGameState.getState();
 
-    startGame(wordList, LANGUAGES[0], 'relaxed', 'manual');
+    startGame(wordList, LANGUAGES[0], 'relaxed', 'typing', 'manual');
 
     const stateAfterStart = useGameState.getState();
     expect(stateAfterStart.pendingWords).toHaveLength(2);
@@ -67,7 +67,7 @@ describe('Game Store Logic', () => {
     ];
     const { startGame, incorrectAnswer } = useGameState.getState();
 
-    startGame(wordList, LANGUAGES[0], 'relaxed', 'manual');
+    startGame(wordList, LANGUAGES[0], 'relaxed', 'typing', 'manual');
     const initialState = useGameState.getState();
     const hardWord = initialState.pendingWords.find((w) => w.word === 'hard')!;
 
@@ -90,7 +90,7 @@ describe('Game Store Logic', () => {
     const wordList: Word[] = [{ word: 'challenge', prompt: undefined }];
     const { startGame, incorrectAnswer, correctAnswer } = useGameState.getState();
 
-    startGame(wordList, LANGUAGES[0], 'relaxed', 'manual');
+    startGame(wordList, LANGUAGES[0], 'relaxed', 'typing', 'manual');
     const initialState = useGameState.getState();
     const challengeWord = initialState.pendingWords[0];
 
@@ -126,7 +126,9 @@ describe('Game Store Logic', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-04-11T10:00:00Z'));
 
-    useGameState.getState().startGame([{ word: 'hello' }], LANGUAGES[0], 'relaxed', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello' }], LANGUAGES[0], 'relaxed', 'typing', 'manual');
 
     const { session } = useGameState.getState();
     expect(session.startedAt).toBe(Date.now());
@@ -141,7 +143,9 @@ describe('Game Store Logic', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-04-11T10:00:00Z'));
 
-    useGameState.getState().startGame([{ word: 'hello' }], LANGUAGES[0], 'relaxed', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello' }], LANGUAGES[0], 'relaxed', 'typing', 'manual');
 
     vi.advanceTimersByTime(10_000);
     useGameState.getState().pauseSession();

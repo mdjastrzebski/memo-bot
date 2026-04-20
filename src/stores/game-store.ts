@@ -1,7 +1,14 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { ExerciseType, InputSource, SessionState, Word, WordState } from '../types';
+import type {
+  Difficulty,
+  InputSource,
+  PracticeMode,
+  SessionState,
+  Word,
+  WordState,
+} from '../types';
 import { shuffleArray } from '../utils/data';
 import { generateId } from '../utils/id';
 import { type Language, LANGUAGES, isSupportedLanguageCode } from '../utils/languages';
@@ -14,7 +21,8 @@ const STORE_PERSISTENCE_KEY = 'memo-bot-setup-preferences';
 
 export interface SetupPreferences {
   languageCode: string;
-  exerciseType: ExerciseType;
+  difficulty: Difficulty;
+  mode: PracticeMode;
   source: InputSource;
   manualText: string;
   sampleSize: WordSetSampleSize;
@@ -107,7 +115,8 @@ function finishSessionState(session: SessionState, now: number): SessionState {
 function createInitialSetupPreferences(): SetupPreferences {
   return {
     languageCode: LANGUAGES[0].code,
-    exerciseType: 'relaxed',
+    difficulty: 'relaxed',
+    mode: 'typing',
     source: 'manual',
     manualText: '',
     sampleSize: WORD_SET_SAMPLE_SIZES[0],
@@ -115,8 +124,12 @@ function createInitialSetupPreferences(): SetupPreferences {
   };
 }
 
-function isExerciseType(value: unknown): value is ExerciseType {
+function isDifficulty(value: unknown): value is Difficulty {
   return value === 'relaxed' || value === 'strict';
+}
+
+function isPracticeMode(value: unknown): value is PracticeMode {
+  return value === 'typing' || value === 'pronunciation';
 }
 
 function isInputSource(value: unknown): value is InputSource {
@@ -140,9 +153,12 @@ function sanitizeSetupPreferences(value: unknown): SetupPreferences {
       typeof persisted.languageCode === 'string' && isSupportedLanguageCode(persisted.languageCode)
         ? persisted.languageCode
         : defaults.languageCode,
-    exerciseType: isExerciseType(persisted.exerciseType)
-      ? persisted.exerciseType
-      : defaults.exerciseType,
+    difficulty: isDifficulty(persisted.difficulty)
+      ? persisted.difficulty
+      : isDifficulty(persisted.exerciseType)
+        ? persisted.exerciseType
+        : defaults.difficulty,
+    mode: isPracticeMode(persisted.mode) ? persisted.mode : 'typing',
     source: isInputSource(persisted.source) ? persisted.source : defaults.source,
     manualText:
       typeof persisted.manualText === 'string' ? persisted.manualText : defaults.manualText,
@@ -167,13 +183,15 @@ export interface GameActions {
   startGame: (
     words: Word[],
     language: Language,
-    exerciseType: ExerciseType,
+    difficulty: Difficulty,
+    mode: PracticeMode,
     source: InputSource,
   ) => void;
   resetGame: () => void;
   resetSetupPreferences: () => void;
   setLanguage: (language: Language) => void;
-  setExerciseType: (exerciseType: ExerciseType) => void;
+  setDifficulty: (difficulty: Difficulty) => void;
+  setMode: (mode: PracticeMode) => void;
   setSource: (source: InputSource) => void;
   setManualText: (text: string) => void;
   setSampleSize: (sampleSize: WordSetSampleSize) => void;
@@ -194,7 +212,7 @@ export const useGameState = create<GameState & GameActions>()(
       setup: createInitialSetupPreferences(),
       session: createInitialSessionState(),
 
-      startGame: (words, language, exerciseType, source) => {
+      startGame: (words, language, difficulty, mode, source) => {
         const now = Date.now();
         const initialQueue = shuffleArray(
           words.map(({ word, prompt }) => ({
@@ -212,7 +230,8 @@ export const useGameState = create<GameState & GameActions>()(
           setup: {
             ...state.setup,
             languageCode: language.code,
-            exerciseType,
+            difficulty,
+            mode,
             source,
           },
           session: createRunningSessionState(now),
@@ -245,12 +264,22 @@ export const useGameState = create<GameState & GameActions>()(
         }));
       },
 
-      setExerciseType: (exerciseType) => {
+      setDifficulty: (difficulty) => {
         set((state) => ({
           ...state,
           setup: {
             ...state.setup,
-            exerciseType,
+            difficulty,
+          },
+        }));
+      },
+
+      setMode: (mode) => {
+        set((state) => ({
+          ...state,
+          setup: {
+            ...state.setup,
+            mode,
           },
         }));
       },

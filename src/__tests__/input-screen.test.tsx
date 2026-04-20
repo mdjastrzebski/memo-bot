@@ -38,7 +38,8 @@ describe('InputScreen', () => {
     expect(state.pendingWords).toHaveLength(3);
     expect(state.pendingWords.map((word) => word.word).sort()).toEqual(['hello', 'test', 'world']);
     expect(state.setup.languageCode).toBe(LANGUAGES[0].code);
-    expect(state.setup.exerciseType).toBe('relaxed');
+    expect(state.setup.difficulty).toBe('relaxed');
+    expect(state.setup.mode).toBe('typing');
   });
 
   it('parses words with optional prompts in relaxed mode', async () => {
@@ -72,7 +73,8 @@ describe('InputScreen', () => {
     await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
 
     const state = useGameState.getState();
-    expect(state.setup.exerciseType).toBe('strict');
+    expect(state.setup.difficulty).toBe('strict');
+    expect(state.setup.mode).toBe('typing');
     expect(state.pendingWords).toHaveLength(1);
     expect(state.pendingWords[0].word).toBe('żółw');
     expect(state.pendingWords[0].prompt).toBeUndefined();
@@ -175,7 +177,8 @@ describe('InputScreen', () => {
         state: {
           setup: {
             languageCode: 'en-GB',
-            exerciseType: 'strict',
+            difficulty: 'strict',
+            mode: 'typing',
             source: 'word-set',
             manualText: 'otter|Helpful prompt',
             sampleSize: 25,
@@ -252,7 +255,8 @@ describe('InputScreen', () => {
         state: {
           setup: {
             languageCode: 'pl-PL',
-            exerciseType: 'relaxed',
+            difficulty: 'relaxed',
+            mode: 'typing',
             source: 'word-set',
             manualText: 'żółw',
             sampleSize: 10,

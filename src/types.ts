@@ -3,7 +3,8 @@ export interface Word {
   prompt?: string;
 }
 
-export type ExerciseType = 'relaxed' | 'strict';
+export type Difficulty = 'relaxed' | 'strict';
+export type PracticeMode = 'typing' | 'pronunciation';
 export type InputSource = 'manual' | 'word-set';
 
 export interface WordState extends Word {

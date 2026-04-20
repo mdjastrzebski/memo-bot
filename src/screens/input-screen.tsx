@@ -19,7 +19,7 @@ import { Textarea } from '../components/ui/textarea';
 import { toast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
-import type { ExerciseType, InputSource, Word } from '../types';
+import type { Difficulty, InputSource, PracticeMode, Word } from '../types';
 import { getLanguageByCode } from '../utils/languages';
 import { normalizeInputText } from '../utils/text-normalization';
 import {
@@ -35,13 +35,15 @@ type WordSetLoadState = 'loading' | 'ready' | 'error';
 
 export default function InputScreen() {
   const language = useGameState((state) => getLanguageByCode(state.setup.languageCode));
-  const exerciseType = useGameState((state) => state.setup.exerciseType);
+  const difficulty = useGameState((state) => state.setup.difficulty);
+  const mode = useGameState((state) => state.setup.mode);
   const source = useGameState((state) => state.setup.source);
   const text = useGameState((state) => state.setup.manualText);
   const sampleSize = useGameState((state) => state.setup.sampleSize);
   const selectedWordSetId = useGameState((state) => state.setup.selectedWordSetId);
   const setLanguage = useGameState((state) => state.setLanguage);
-  const setExerciseType = useGameState((state) => state.setExerciseType);
+  const setDifficulty = useGameState((state) => state.setDifficulty);
+  const setMode = useGameState((state) => state.setMode);
   const setSource = useGameState((state) => state.setSource);
   const setManualText = useGameState((state) => state.setManualText);
   const setSampleSize = useGameState((state) => state.setSampleSize);
@@ -81,7 +83,7 @@ export default function InputScreen() {
     (config) => config.languageCode === language.code,
   );
   const selectedWordSet = availableWordSets.find((config) => config.id === selectedWordSetId);
-  const preparedWords = parseWords(text, exerciseType === 'strict');
+  const preparedWords = parseWords(text, mode === 'typing' && difficulty === 'strict');
   const showSourceSelector = availableWordSets.length > 0;
 
   useEffect(() => {
@@ -126,7 +128,7 @@ export default function InputScreen() {
         return;
       }
 
-      startGame(preparedWords, language, exerciseType, source);
+      startGame(preparedWords, language, difficulty, mode, source);
       return;
     }
 
@@ -150,7 +152,7 @@ export default function InputScreen() {
         return;
       }
 
-      startGame(sampledWords, language, exerciseType, source);
+      startGame(sampledWords, language, difficulty, mode, source);
     } catch {
       toast({
         title: 'Could not load word set',
@@ -195,8 +197,25 @@ export default function InputScreen() {
             <ChoiceSection
               icon={<Sparkles className="h-5 w-5" />}
               title="Mode"
-              value={exerciseType}
-              onValueChange={(value) => setExerciseType(value as ExerciseType)}
+              value={mode}
+              onValueChange={(value) => setMode(value as PracticeMode)}
+              options={[
+                {
+                  value: 'typing',
+                  title: 'Typing ⌨️',
+                },
+                {
+                  value: 'pronunciation',
+                  title: 'Pronunciation 🗣️',
+                },
+              ]}
+            />
+
+            <ChoiceSection
+              icon={<Sparkles className="h-5 w-5" />}
+              title="Difficulty"
+              value={difficulty}
+              onValueChange={(value) => setDifficulty(value as Difficulty)}
               options={[
                 {
                   value: 'relaxed',
@@ -204,10 +223,15 @@ export default function InputScreen() {
                 },
                 {
                   value: 'strict',
-                  title: 'Strict 🎯',
+                  title: mode === 'typing' ? 'Strict (Dictation) 🎯' : 'Strict 🎯',
                 },
               ]}
             />
+            <p className="rounded-[1.15rem] border border-black/10 bg-white/55 px-4 py-3 text-sm font-semibold text-[#6a503b] dark:border-white/10 dark:bg-white/5 dark:text-[#d4c5b3]">
+              {mode === 'typing'
+                ? 'Typing: Relaxed ignores accents and case, Strict (Dictation) requires exact typing.'
+                : 'Pronunciation: Relaxed auto-plays each word, Strict requires using Play or Answer to hear it.'}
+            </p>
 
             <div
               aria-hidden={!showSourceSelector}
@@ -250,7 +274,7 @@ export default function InputScreen() {
 
                   <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/50 px-4 py-3 text-base font-semibold text-[#6a503b] dark:border-white/10 dark:bg-white/5 dark:text-[#d4c5b3]">
                     {preparedWords.length} words
-                    {exerciseType === 'strict' && text.trim().includes('|') && (
+                    {mode === 'typing' && difficulty === 'strict' && text.trim().includes('|') && (
                       <span className="block text-sm font-medium text-[#8c6a52] dark:text-[#c8baa8]">
                         Strict ignores prompts after the <code>|</code>.
                       </span>

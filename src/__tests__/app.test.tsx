@@ -58,7 +58,13 @@ describe('App', () => {
     // Start a game to enter learning state
     useGameState
       .getState()
-      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame(
+        [{ word: 'hello', prompt: undefined }],
+        LANGUAGES[0],
+        'relaxed',
+        'typing',
+        'manual',
+      );
 
     render(<App />);
 
@@ -73,7 +79,13 @@ describe('App', () => {
 
     useGameState
       .getState()
-      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame(
+        [{ word: 'hello', prompt: undefined }],
+        LANGUAGES[0],
+        'relaxed',
+        'typing',
+        'manual',
+      );
 
     render(<App />);
 
@@ -170,7 +182,8 @@ describe('App', () => {
       setup: {
         ...useGameState.getState().setup,
         languageCode: LANGUAGES[0].code,
-        exerciseType: 'strict',
+        difficulty: 'strict',
+        mode: 'typing',
         source: 'word-set',
       },
     });
@@ -187,7 +200,10 @@ describe('App', () => {
     });
 
     expect(screen.getByText(LANGUAGES[0].name)).toBeInTheDocument();
-    expect(screen.getByRole('radio', { name: /Strict/i })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('radio', { name: /Strict \(Dictation\)/i })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
   });
 
   it('returns null when status is learning but no current word exists', () => {
