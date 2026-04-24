@@ -126,6 +126,8 @@ describe('speech service', () => {
     expect(requestInit.body).toContain('"model_id":"eleven_multilingual_v2"');
     expect(requestInit.body).toContain('"previous_text":"Następne słowo jest po polsku."');
     expect(requestInit.body).toContain('"next_text":"."');
+    expect(requestInit.body).toContain('"voice_settings"');
+    expect(requestInit.body).toContain('"speed":0.86');
   });
 
   it('uses the per-language mapped voice', async () => {

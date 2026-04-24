@@ -6,6 +6,15 @@ import type { Language } from './languages';
 const ELEVENLABS_MODEL_ID = 'eleven_multilingual_v2';
 const ELEVENLABS_TTS_URL = 'https://api.elevenlabs.io/v1/text-to-speech';
 const ELEVENLABS_API_KEY_STORAGE_KEY = 'memo-bot-elevenlabs-api-key';
+const BROWSER_SPEECH_RATE = 0.55;
+const ELEVENLABS_VOICE_SETTINGS = {
+  // Favor consistency and intelligibility over expressive variation.
+  stability: 0.72,
+  similarity_boost: 0.88,
+  style: 0.08,
+  use_speaker_boost: true,
+  speed: 0.86,
+};
 const DEFAULT_ELEVENLABS_VOICE_ID = 'TX3LPaxmHKxFdv7VOQHJ';
 const ELEVENLABS_VOICE_IDS_BY_LANGUAGE: Record<string, string> = {
   'de-DE': 'TX3LPaxmHKxFdv7VOQHJ',
@@ -187,7 +196,7 @@ function playWithBrowserSpeech({ language, text }: SpeechRequest, playbackToken:
   try {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = language.code;
-    utterance.rate = 0.6;
+    utterance.rate = BROWSER_SPEECH_RATE;
     utterance.pitch = 1;
     utterance.onend = () => {
       finishPlayback(playbackToken);
@@ -279,6 +288,7 @@ async function synthesizeWithElevenLabs(request: SpeechRequest) {
         language_code: getElevenLabsLanguageCode(request.language),
         previous_text: context.previousText,
         next_text: context.nextText,
+        voice_settings: ELEVENLABS_VOICE_SETTINGS,
       }),
     });
 
