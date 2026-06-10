@@ -21,7 +21,7 @@ describe('InputScreen', () => {
     useGameState.getState().resetSetupPreferences();
   });
 
-  it('allows user to enter words and start the game in relaxed mode', async () => {
+  it('allows user to enter words and start the game with relaxed difficulty', async () => {
     const user = userEvent.setup();
     render(<InputScreen />);
 
@@ -38,10 +38,10 @@ describe('InputScreen', () => {
     expect(state.pendingWords).toHaveLength(3);
     expect(state.pendingWords.map((word) => word.word).sort()).toEqual(['hello', 'test', 'world']);
     expect(state.setup.languageCode).toBe(LANGUAGES[0].code);
-    expect(state.setup.exerciseType).toBe('relaxed');
+    expect(state.setup.difficulty).toBe('relaxed');
   });
 
-  it('parses words with optional prompts in relaxed mode', async () => {
+  it('parses words with optional prompts', async () => {
     const user = userEvent.setup();
     render(<InputScreen />);
 
@@ -61,7 +61,7 @@ describe('InputScreen', () => {
     );
   });
 
-  it('ignores prompts in strict mode', async () => {
+  it('keeps prompts in strict difficulty', async () => {
     const user = userEvent.setup();
     render(<InputScreen />);
 
@@ -72,10 +72,10 @@ describe('InputScreen', () => {
     await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
 
     const state = useGameState.getState();
-    expect(state.setup.exerciseType).toBe('strict');
+    expect(state.setup.difficulty).toBe('strict');
     expect(state.pendingWords).toHaveLength(1);
     expect(state.pendingWords[0].word).toBe('żółw');
-    expect(state.pendingWords[0].prompt).toBeUndefined();
+    expect(state.pendingWords[0].prompt).toBe('Helpful hint');
   });
 
   it('shows word-set controls for languages with configured sets and starts from the selected set', async () => {
@@ -175,7 +175,7 @@ describe('InputScreen', () => {
         state: {
           setup: {
             languageCode: 'en-GB',
-            exerciseType: 'strict',
+            difficulty: 'strict',
             source: 'word-set',
             manualText: 'otter|Helpful prompt',
             sampleSize: 25,
@@ -252,7 +252,7 @@ describe('InputScreen', () => {
         state: {
           setup: {
             languageCode: 'pl-PL',
-            exerciseType: 'relaxed',
+            difficulty: 'relaxed',
             source: 'word-set',
             manualText: 'żółw',
             sampleSize: 10,

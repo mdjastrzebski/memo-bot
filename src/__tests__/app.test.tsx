@@ -129,7 +129,7 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: /Start New Mission/i })).toBeInTheDocument();
   });
 
-  it('returns to setup with the same language, mode, and source after restarting from results', async () => {
+  it('returns to setup with the same language, difficulty, and source after restarting from results', async () => {
     const user = userEvent.setup();
     vi.mocked(fetch).mockImplementation(async (input: string | URL | Request) => {
       const url = String(input);
@@ -170,7 +170,7 @@ describe('App', () => {
       setup: {
         ...useGameState.getState().setup,
         languageCode: LANGUAGES[0].code,
-        exerciseType: 'strict',
+        difficulty: 'strict',
         source: 'word-set',
       },
     });

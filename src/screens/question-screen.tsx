@@ -21,7 +21,7 @@ type QuestionStatus = 'question' | 'retry' | 'correct';
 export default function QuestionScreen() {
   const currentWord = useCurrentWord();
   const language = useGameState((state) => getLanguageByCode(state.setup.languageCode));
-  const exerciseType = useGameState((state) => state.setup.exerciseType);
+  const difficulty = useGameState((state) => state.setup.difficulty);
   const remaining = useGameState((state) => state.pendingWords.length);
   const completed = useGameState((state) => state.completedWords.length);
   const correctAnswer = useGameState((state) => state.correctAnswer);
@@ -48,7 +48,7 @@ export default function QuestionScreen() {
     setInput('');
     setAnswer('');
 
-    // Prevent initial sound from playing twice in strict mode for the same word
+    // Prevent initial sound from playing twice for the same word.
     if (initialSoundPlayed.current === word) return;
     initialSoundPlayed.current = word;
 
@@ -111,9 +111,9 @@ export default function QuestionScreen() {
     const normalizedInput = normalizeAnswerText(input);
     const normalizedWord = normalizeAnswerText(word);
 
-    // Relaxed mode ignores case and accent marks; strict mode requires an exact match.
+    // Relaxed difficulty ignores case and accent marks; strict difficulty requires an exact match.
     const isCorrect =
-      exerciseType === 'relaxed'
+      difficulty === 'relaxed'
         ? normalizedInput.localeCompare(normalizedWord, undefined, { sensitivity: 'base' }) === 0
         : normalizedInput === normalizedWord;
 
@@ -156,7 +156,7 @@ export default function QuestionScreen() {
 
   const progressPercentage = (completed / (remaining + completed)) * 100;
   const showPlayButton = prompt == null || status !== 'question';
-  const showSpecialCharactersKeyboard = exerciseType !== 'strict';
+  const showSpecialCharactersKeyboard = difficulty === 'relaxed';
 
   return (
     <AppShell className="items-center">

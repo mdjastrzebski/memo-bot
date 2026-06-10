@@ -186,7 +186,7 @@ describe('QuestionScreen', () => {
     expect(screen.getByText(/hello/i)).toBeInTheDocument();
   });
 
-  it('accepts answer with different casing and accents in relaxed mode', async () => {
+  it('accepts answer with different casing and accents in relaxed difficulty', async () => {
     const user = userEvent.setup();
     useGameState
       .getState()
@@ -201,7 +201,7 @@ describe('QuestionScreen', () => {
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
   });
 
-  it('rejects answer with different casing or accents in strict mode', async () => {
+  it('rejects answer with different casing or accents in strict difficulty', async () => {
     const user = userEvent.setup();
     useGameState.getState().resetGame();
     useGameState.getState().startGame([{ word: 'Café' }], LANGUAGES[0], 'strict', 'manual');
@@ -294,7 +294,7 @@ describe('QuestionScreen', () => {
     expect(await screen.findByText(/Correct!/i)).toBeInTheDocument();
   });
 
-  it('hides the special-characters keyboard in strict mode', () => {
+  it('hides the special-characters keyboard in strict difficulty', () => {
     useGameState.getState().resetGame();
     useGameState.getState().startGame([{ word: 'café' }], LANGUAGES[0], 'strict', 'manual');
 
