@@ -462,7 +462,7 @@ function ExerciseSection({
                 />
                 <MessageSquareText className="h-5 w-5 text-[#de5a37] dark:text-[#f4c15d]" />
                 <div className="text-base font-black text-[#22170f] dark:text-[#f3eadf]">
-                  Prompt
+                  Prompt (translation)
                 </div>
               </label>
             </TooltipTrigger>
