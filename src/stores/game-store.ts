@@ -218,16 +218,18 @@ export const useGameState = create<GameState & GameActions>()(
 
       startGame: (words, language, difficulty, source) => {
         const now = Date.now();
-        const initialQueue = shuffleArray(
-          words.map(({ word, prompt, exercise }) => ({
-            id: generateId(),
-            word,
-            prompt,
-            exercise,
-            correctStreak: 0,
-            incorrectCount: 0,
-          })),
-        );
+        const wordStates = words.map(({ word, prompt, exercise }) => ({
+          id: generateId(),
+          word,
+          prompt,
+          exercise,
+          correctStreak: 0,
+          incorrectCount: 0,
+        }));
+        const initialQueue = [
+          ...shuffleArray(wordStates.filter((w) => w.exercise === 'dictation')),
+          ...shuffleArray(wordStates.filter((w) => w.exercise === 'prompt')),
+        ];
 
         set((state) => ({
           pendingWords: initialQueue,
