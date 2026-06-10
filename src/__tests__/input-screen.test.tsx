@@ -37,11 +37,12 @@ describe('InputScreen', () => {
     const state = useGameState.getState();
     expect(state.pendingWords).toHaveLength(3);
     expect(state.pendingWords.map((word) => word.word).sort()).toEqual(['hello', 'test', 'world']);
+    expect(state.pendingWords.every((word) => word.exercise === 'dictation')).toBe(true);
     expect(state.setup.languageCode).toBe(LANGUAGES[0].code);
     expect(state.setup.difficulty).toBe('relaxed');
   });
 
-  it('parses words with optional prompts', async () => {
+  it('creates dictation and prompt exercises for prompted words when both exercise types are selected', async () => {
     const user = userEvent.setup();
     render(<InputScreen />);
 
@@ -51,14 +52,51 @@ describe('InputScreen', () => {
     await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
 
     const state = useGameState.getState();
-    const words = state.pendingWords.map((word) => ({ word: word.word, prompt: word.prompt }));
-    expect(words.sort((a, b) => a.word.localeCompare(b.word))).toEqual(
+    const words = state.pendingWords.map((word) => ({
+      word: word.word,
+      prompt: word.prompt,
+      exercise: word.exercise,
+    }));
+    expect(words.sort(compareExercises)).toEqual(
       [
-        { word: 'bonjour', prompt: 'Say bonjour' },
-        { word: 'hello', prompt: 'Say hello' },
-        { word: 'world', prompt: undefined },
-      ].sort((a, b) => a.word.localeCompare(b.word)),
+        { word: 'bonjour', prompt: 'Say bonjour', exercise: 'dictation' },
+        { word: 'bonjour', prompt: 'Say bonjour', exercise: 'prompt' },
+        { word: 'hello', prompt: 'Say hello', exercise: 'dictation' },
+        { word: 'hello', prompt: 'Say hello', exercise: 'prompt' },
+        { word: 'world', prompt: undefined, exercise: 'dictation' },
+      ].sort(compareExercises),
     );
+  });
+
+  it('creates only dictation exercises when prompt exercise type is deselected', async () => {
+    const user = userEvent.setup();
+    render(<InputScreen />);
+
+    const textarea = screen.getByPlaceholderText(/Enter one word per line/i);
+    await user.type(textarea, 'hello|Say hello\nworld');
+    await user.click(screen.getByRole('checkbox', { name: /Prompt/i }));
+    await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
+
+    const state = useGameState.getState();
+    expect(state.pendingWords).toHaveLength(2);
+    expect(state.pendingWords.every((word) => word.exercise === 'dictation')).toBe(true);
+    expect(state.pendingWords.map((word) => word.word).sort()).toEqual(['hello', 'world']);
+  });
+
+  it('creates only prompt exercises for prompted words when dictation exercise type is deselected', async () => {
+    const user = userEvent.setup();
+    render(<InputScreen />);
+
+    await user.click(screen.getByRole('checkbox', { name: /Dictation/i }));
+
+    const textarea = screen.getByPlaceholderText(/Enter one word per line/i);
+    await user.type(textarea, 'hello|Say hello\nworld\nbonjour|Say bonjour');
+    await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
+
+    const state = useGameState.getState();
+    expect(state.pendingWords).toHaveLength(2);
+    expect(state.pendingWords.every((word) => word.exercise === 'prompt')).toBe(true);
+    expect(state.pendingWords.map((word) => word.word).sort()).toEqual(['bonjour', 'hello']);
   });
 
   it('keeps prompts in strict difficulty', async () => {
@@ -73,9 +111,10 @@ describe('InputScreen', () => {
 
     const state = useGameState.getState();
     expect(state.setup.difficulty).toBe('strict');
-    expect(state.pendingWords).toHaveLength(1);
-    expect(state.pendingWords[0].word).toBe('żółw');
-    expect(state.pendingWords[0].prompt).toBe('Helpful hint');
+    expect(state.pendingWords).toHaveLength(2);
+    expect(state.pendingWords.every((word) => word.word === 'żółw')).toBe(true);
+    expect(state.pendingWords.every((word) => word.prompt === 'Helpful hint')).toBe(true);
+    expect(state.pendingWords.map((word) => word.exercise).sort()).toEqual(['dictation', 'prompt']);
   });
 
   it('shows word-set controls for languages with configured sets and starts from the selected set', async () => {
@@ -177,6 +216,7 @@ describe('InputScreen', () => {
             languageCode: 'en-GB',
             difficulty: 'strict',
             source: 'word-set',
+            exercises: ['prompt'],
             manualText: 'otter|Helpful prompt',
             sampleSize: 25,
             selectedWordSetId: 'en-set-2',
@@ -198,6 +238,14 @@ describe('InputScreen', () => {
     });
 
     expect(screen.getByRole('radio', { name: /Strict/i })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.getByRole('checkbox', { name: /Prompt/i })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
+    expect(screen.getByRole('checkbox', { name: /Dictation/i })).toHaveAttribute(
+      'aria-checked',
+      'false',
+    );
     expect(screen.getByText(LANGUAGES[0].name)).toBeInTheDocument();
     expect(screen.getAllByText(/25 words/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Animals/i).length).toBeGreaterThan(0);
@@ -322,3 +370,11 @@ describe('InputScreen', () => {
     expect(screen.getByRole('button', { name: /Launch Mission/i })).toBeDisabled();
   });
 });
+
+function compareExercises(
+  a: { word: string; exercise: string },
+  b: { word: string; exercise: string },
+) {
+  const wordComparison = a.word.localeCompare(b.word);
+  return wordComparison === 0 ? a.exercise.localeCompare(b.exercise) : wordComparison;
+}

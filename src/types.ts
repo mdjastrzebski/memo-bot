@@ -1,4 +1,14 @@
+export const EXERCISES = ['dictation', 'prompt'] as const;
+
+export type Exercise = (typeof EXERCISES)[number];
+
 export interface Word {
+  word: string;
+  prompt?: string;
+  exercise: Exercise;
+}
+
+export interface WordInput {
   word: string;
   prompt?: string;
 }

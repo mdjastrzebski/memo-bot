@@ -42,7 +42,7 @@ describe('QuestionScreen', () => {
     useGameState.getState().resetGame();
     useGameState
       .getState()
-      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame([{ word: 'hello', exercise: 'dictation' }], LANGUAGES[0], 'relaxed', 'manual');
   });
 
   it('allows user to submit correct answer and see success feedback', async () => {
@@ -167,7 +167,12 @@ describe('QuestionScreen', () => {
     useGameState.getState().resetGame();
     useGameState
       .getState()
-      .startGame([{ word: 'hello', prompt: 'Say hello' }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame(
+        [{ word: 'hello', prompt: 'Say hello', exercise: 'prompt' }],
+        LANGUAGES[0],
+        'relaxed',
+        'manual',
+      );
 
     render(<QuestionScreen />);
 
@@ -190,7 +195,7 @@ describe('QuestionScreen', () => {
     const user = userEvent.setup();
     useGameState
       .getState()
-      .startGame([{ word: 'Café', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame([{ word: 'Café', exercise: 'dictation' }], LANGUAGES[0], 'relaxed', 'manual');
 
     render(<QuestionScreen />);
 
@@ -204,7 +209,9 @@ describe('QuestionScreen', () => {
   it('rejects answer with different casing or accents in strict difficulty', async () => {
     const user = userEvent.setup();
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: 'Café' }], LANGUAGES[0], 'strict', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: 'Café', exercise: 'dictation' }], LANGUAGES[0], 'strict', 'manual');
 
     render(<QuestionScreen />);
 
@@ -250,7 +257,7 @@ describe('QuestionScreen', () => {
     const user = userEvent.setup();
     useGameState
       .getState()
-      .startGame([{ word: 'café', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame([{ word: 'café', exercise: 'dictation' }], LANGUAGES[0], 'relaxed', 'manual');
 
     render(<QuestionScreen />);
 
@@ -271,7 +278,9 @@ describe('QuestionScreen', () => {
   it('accepts smart apostrophes in answers for words with straight apostrophes', async () => {
     const user = userEvent.setup();
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: "don't" }], LANGUAGES[0], 'relaxed', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: "don't", exercise: 'dictation' }], LANGUAGES[0], 'relaxed', 'manual');
 
     render(<QuestionScreen />);
 
@@ -284,7 +293,9 @@ describe('QuestionScreen', () => {
   it('accepts smart double quotes in answers for words with straight double quotes', async () => {
     const user = userEvent.setup();
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: '"hello"' }], LANGUAGES[0], 'relaxed', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: '"hello"', exercise: 'dictation' }], LANGUAGES[0], 'relaxed', 'manual');
 
     render(<QuestionScreen />);
 
@@ -296,7 +307,9 @@ describe('QuestionScreen', () => {
 
   it('hides the special-characters keyboard in strict difficulty', () => {
     useGameState.getState().resetGame();
-    useGameState.getState().startGame([{ word: 'café' }], LANGUAGES[0], 'strict', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: 'café', exercise: 'dictation' }], LANGUAGES[0], 'strict', 'manual');
 
     render(<QuestionScreen />);
 

@@ -39,6 +39,7 @@ export default function QuestionScreen() {
 
   const word = currentWord?.word;
   const prompt = currentWord?.prompt;
+  const isPromptExercise = currentWord?.exercise === 'prompt';
 
   useEffect(() => {
     if (!word) return;
@@ -49,15 +50,15 @@ export default function QuestionScreen() {
     setAnswer('');
 
     // Prevent initial sound from playing twice for the same word.
-    if (initialSoundPlayed.current === word) return;
-    initialSoundPlayed.current = word;
+    if (initialSoundPlayed.current === currentWord.id) return;
+    initialSoundPlayed.current = currentWord.id;
 
-    if (prompt == null) {
+    if (!isPromptExercise) {
       speak(word, language);
     }
 
     inputRef.current?.focus();
-  }, [word, language, prompt, currentWord]);
+  }, [word, language, isPromptExercise, currentWord]);
 
   if (!currentWord || !word) {
     return null;
@@ -126,7 +127,7 @@ export default function QuestionScreen() {
     }
 
     playCorrect();
-    if (prompt != null) speak(word, language);
+    if (isPromptExercise) speak(word, language);
 
     const isFirstAttempt = status === 'question';
     setStatus('correct');
@@ -155,7 +156,7 @@ export default function QuestionScreen() {
   };
 
   const progressPercentage = (completed / (remaining + completed)) * 100;
-  const showPlayButton = prompt == null || status !== 'question';
+  const showPlayButton = !isPromptExercise || status !== 'question';
   const showSpecialCharactersKeyboard = difficulty === 'relaxed';
 
   return (
@@ -197,18 +198,16 @@ export default function QuestionScreen() {
 
         <section className="stage-card bg-[rgba(255,251,245,0.92)] dark:bg-[rgba(29,34,46,0.92)]">
           <div className="space-y-6">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="text-[#de5a37]">
-                  <Volume2 className="h-8 w-8" />
-                </div>
-                <h2 className="display-title text-3xl font-black leading-tight text-[#22170f] dark:text-[#f8f1e6] sm:text-4xl">
-                  {prompt != null ? 'Type the word!' : 'Type what you hear!'}
-                </h2>
+            <div className="flex items-center gap-4">
+              <div className="text-[#de5a37]">
+                <Volume2 className="h-8 w-8" />
               </div>
+              <h2 className="display-title text-3xl font-black leading-tight text-[#22170f] dark:text-[#f8f1e6] sm:text-4xl">
+                {isPromptExercise ? 'Type the word!' : 'Type what you hear!'}
+              </h2>
             </div>
 
-            {prompt != null ? (
+            {isPromptExercise ? (
               <div className="py-2 text-center text-3xl font-black text-[#2f2218] dark:text-[#f3eadf] sm:text-4xl">
                 {prompt}
               </div>
@@ -239,7 +238,7 @@ export default function QuestionScreen() {
               </div>
             )}
 
-            {showPlayButton && prompt != null && (
+            {showPlayButton && isPromptExercise && (
               <Button
                 type="button"
                 onClick={handleSpeak}

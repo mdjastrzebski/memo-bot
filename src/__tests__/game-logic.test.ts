@@ -24,8 +24,8 @@ describe('Game Store Logic', () => {
 
   it('should handle duplicate words correctly by ID', () => {
     const wordList: Word[] = [
-      { word: 'duplicate', prompt: 'prompt 1' },
-      { word: 'duplicate', prompt: 'prompt 2' },
+      { word: 'duplicate', prompt: 'prompt 1', exercise: 'prompt' },
+      { word: 'duplicate', prompt: 'prompt 2', exercise: 'prompt' },
     ];
     const { startGame } = useGameState.getState();
 
@@ -61,9 +61,9 @@ describe('Game Store Logic', () => {
 
   it('should reschedule words closer to front when answered incorrectly multiple times', () => {
     const wordList: Word[] = [
-      { word: 'easy', prompt: undefined },
-      { word: 'hard', prompt: undefined },
-      { word: 'medium', prompt: undefined },
+      { word: 'easy', exercise: 'dictation' },
+      { word: 'hard', exercise: 'dictation' },
+      { word: 'medium', exercise: 'dictation' },
     ];
     const { startGame, incorrectAnswer } = useGameState.getState();
 
@@ -87,7 +87,7 @@ describe('Game Store Logic', () => {
   });
 
   it('should complete word after achieving correct streak goal following incorrect answer', () => {
-    const wordList: Word[] = [{ word: 'challenge', prompt: undefined }];
+    const wordList: Word[] = [{ word: 'challenge', exercise: 'dictation' }];
     const { startGame, incorrectAnswer, correctAnswer } = useGameState.getState();
 
     startGame(wordList, LANGUAGES[0], 'relaxed', 'manual');
@@ -126,7 +126,9 @@ describe('Game Store Logic', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-04-11T10:00:00Z'));
 
-    useGameState.getState().startGame([{ word: 'hello' }], LANGUAGES[0], 'relaxed', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello', exercise: 'dictation' }], LANGUAGES[0], 'relaxed', 'manual');
 
     const { session } = useGameState.getState();
     expect(session.startedAt).toBe(Date.now());
@@ -141,7 +143,9 @@ describe('Game Store Logic', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-04-11T10:00:00Z'));
 
-    useGameState.getState().startGame([{ word: 'hello' }], LANGUAGES[0], 'relaxed', 'manual');
+    useGameState
+      .getState()
+      .startGame([{ word: 'hello', exercise: 'dictation' }], LANGUAGES[0], 'relaxed', 'manual');
 
     vi.advanceTimersByTime(10_000);
     useGameState.getState().pauseSession();

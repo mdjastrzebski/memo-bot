@@ -1,10 +1,19 @@
-import { ArrowRight, BookOpen, BotIcon as Robot, Rocket, Sparkles } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  BotIcon as Robot,
+  MessageSquareText,
+  Rocket,
+  Sparkles,
+  Volume2,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { AppShell } from '../components/app-shell';
 import { LanguageSelector } from '../components/language-selector';
 import { Button } from '../components/ui/button';
+import { Checkbox } from '../components/ui/checkbox';
 import { Label } from '../components/ui/label';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 import {
@@ -16,10 +25,11 @@ import {
 } from '../components/ui/select';
 import { Slider } from '../components/ui/slider';
 import { Textarea } from '../components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { toast } from '../hooks/use-toast';
 import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
-import type { Difficulty, InputSource, Word } from '../types';
+import type { Difficulty, InputSource, Exercise, Word, WordInput } from '../types';
 import { getLanguageByCode } from '../utils/languages';
 import { normalizeInputText } from '../utils/text-normalization';
 import {
@@ -37,12 +47,14 @@ export default function InputScreen() {
   const language = useGameState((state) => getLanguageByCode(state.setup.languageCode));
   const difficulty = useGameState((state) => state.setup.difficulty);
   const source = useGameState((state) => state.setup.source);
+  const exercises = useGameState((state) => state.setup.exercises);
   const text = useGameState((state) => state.setup.manualText);
   const sampleSize = useGameState((state) => state.setup.sampleSize);
   const selectedWordSetId = useGameState((state) => state.setup.selectedWordSetId);
   const setLanguage = useGameState((state) => state.setLanguage);
   const setDifficulty = useGameState((state) => state.setDifficulty);
   const setSource = useGameState((state) => state.setSource);
+  const setExercises = useGameState((state) => state.setExercises);
   const setManualText = useGameState((state) => state.setManualText);
   const setSampleSize = useGameState((state) => state.setSampleSize);
   const setSelectedWordSetId = useGameState((state) => state.setSelectedWordSetId);
@@ -81,7 +93,9 @@ export default function InputScreen() {
     (config) => config.languageCode === language.code,
   );
   const selectedWordSet = availableWordSets.find((config) => config.id === selectedWordSetId);
-  const preparedWords = parseWords(text);
+  const preparedWordInputs = parseWordInputs(text);
+  const preparedWords = buildExercises(preparedWordInputs, exercises);
+  const hasPromptedWords = source === 'manual' && preparedWordInputs.some((w) => w.prompt);
   const showSourceSelector = availableWordSets.length > 0;
 
   useEffect(() => {
@@ -120,6 +134,16 @@ export default function InputScreen() {
     setSource(nextSource);
   };
 
+  const handleExerciseChange = (exercise: Exercise, checked: boolean) => {
+    const nextExercises = checked
+      ? [...exercises, exercise]
+      : exercises.filter((selectedExercise) => selectedExercise !== exercise);
+
+    if (nextExercises.length > 0) {
+      setExercises(nextExercises);
+    }
+  };
+
   const handleSubmit = async () => {
     if (source === 'manual') {
       if (preparedWords.length === 0) {
@@ -138,14 +162,15 @@ export default function InputScreen() {
 
     try {
       const wordSetWords = await getWordSetWords(selectedWordSet);
-      const sampledWords = sampleWordSetWords(wordSetWords, sampleSize).map((word) => ({
-        word,
-      }));
+      const sampledWords = buildExercises(
+        sampleWordSetWords(wordSetWords, sampleSize).map((word) => ({ word })),
+        exercises,
+      );
 
       if (sampledWords.length === 0) {
         toast({
-          title: 'This word set is empty',
-          description: 'Choose a different word set or switch back to your own words.',
+          title: 'No exercises to launch',
+          description: 'Choose dictation or use words that include prompts after |.',
         });
         return;
       }
@@ -209,6 +234,12 @@ export default function InputScreen() {
               ]}
             />
 
+            <ExerciseSection
+              exercises={exercises}
+              hasPromptedWords={hasPromptedWords}
+              onExerciseChange={handleExerciseChange}
+            />
+
             <div
               aria-hidden={!showSourceSelector}
               className={cn(
@@ -249,7 +280,7 @@ export default function InputScreen() {
                   />
 
                   <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/50 px-4 py-3 text-base font-semibold text-[#6a503b] dark:border-white/10 dark:bg-white/5 dark:text-[#d4c5b3]">
-                    {preparedWords.length} words
+                    {preparedWords.length} exercises
                   </div>
                 </div>
               ) : null}
@@ -382,6 +413,71 @@ export default function InputScreen() {
   );
 }
 
+function ExerciseSection({
+  exercises,
+  hasPromptedWords,
+  onExerciseChange,
+}: {
+  exercises: Exercise[];
+  hasPromptedWords: boolean;
+  onExerciseChange: (exercise: Exercise, checked: boolean) => void;
+}) {
+  const isDictationSelected = exercises.includes('dictation');
+  const isPromptSelected = exercises.includes('prompt');
+
+  return (
+    <TooltipProvider>
+      <fieldset className="space-y-3">
+        <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]">
+          <span className="text-[#de5a37] dark:text-[#f4c15d]">
+            <BookOpen className="h-5 w-5" />
+          </span>
+          <div>Exercise Type</div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex cursor-pointer items-center gap-3 rounded-[1.15rem] border border-black/10 bg-white/70 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-colors hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
+            <Checkbox
+              checked={isDictationSelected}
+              disabled={isDictationSelected && !isPromptSelected}
+              onCheckedChange={(checked) => onExerciseChange('dictation', checked === true)}
+              className="border-[#de5a37] data-[state=checked]:bg-[#de5a37] data-[state=checked]:text-white"
+            />
+            <Volume2 className="h-5 w-5 text-[#de5a37] dark:text-[#f4c15d]" />
+            <div className="text-base font-black text-[#22170f] dark:text-[#f3eadf]">Dictation</div>
+          </label>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <label
+                className={`flex items-center gap-3 rounded-[1.15rem] border border-black/10 bg-white/70 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-colors dark:border-white/10 dark:bg-white/5 ${
+                  hasPromptedWords
+                    ? 'cursor-pointer hover:bg-white dark:hover:bg-white/10'
+                    : 'cursor-not-allowed opacity-50'
+                }`}
+              >
+                <Checkbox
+                  checked={isPromptSelected}
+                  disabled={!hasPromptedWords || (isPromptSelected && !isDictationSelected)}
+                  onCheckedChange={(checked) => onExerciseChange('prompt', checked === true)}
+                  className="border-[#de5a37] data-[state=checked]:bg-[#de5a37] data-[state=checked]:text-white"
+                />
+                <MessageSquareText className="h-5 w-5 text-[#de5a37] dark:text-[#f4c15d]" />
+                <div className="text-base font-black text-[#22170f] dark:text-[#f3eadf]">
+                  Prompt
+                </div>
+              </label>
+            </TooltipTrigger>
+            {!hasPromptedWords && (
+              <TooltipContent>
+                <p>Add words with hints using word|hint to enable</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </div>
+      </fieldset>
+    </TooltipProvider>
+  );
+}
+
 function ChoiceSection({
   icon,
   title,
@@ -396,7 +492,6 @@ function ChoiceSection({
   options: Array<{
     value: string;
     title: string;
-    description?: string;
   }>;
 }) {
   return (
@@ -422,9 +517,9 @@ function ChoiceSection({
   );
 }
 
-function parseWords(text: string): Word[] {
+function parseWordInputs(text: string): WordInput[] {
   const lines = text.split('\n');
-  const words: Word[] = [];
+  const words: WordInput[] = [];
 
   for (const line of lines) {
     const [word, prompt] = normalizeInputText(line).split('|');
@@ -440,4 +535,28 @@ function parseWords(text: string): Word[] {
   }
 
   return words;
+}
+
+function buildExercises(wordInputs: WordInput[], selectedExercises: Exercise[]): Word[] {
+  const includeDictation = selectedExercises.includes('dictation');
+  const includePrompt = selectedExercises.includes('prompt');
+  const result: Word[] = [];
+
+  for (const wordInput of wordInputs) {
+    if (includeDictation) {
+      result.push({
+        ...wordInput,
+        exercise: 'dictation',
+      });
+    }
+
+    if (includePrompt && wordInput.prompt) {
+      result.push({
+        ...wordInput,
+        exercise: 'prompt',
+      });
+    }
+  }
+
+  return result;
 }

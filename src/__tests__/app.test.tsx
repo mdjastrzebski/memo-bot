@@ -58,7 +58,12 @@ describe('App', () => {
     // Start a game to enter learning state
     useGameState
       .getState()
-      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame(
+        [{ word: 'hello', prompt: undefined, exercise: 'dictation' }],
+        LANGUAGES[0],
+        'relaxed',
+        'manual',
+      );
 
     render(<App />);
 
@@ -73,7 +78,12 @@ describe('App', () => {
 
     useGameState
       .getState()
-      .startGame([{ word: 'hello', prompt: undefined }], LANGUAGES[0], 'relaxed', 'manual');
+      .startGame(
+        [{ word: 'hello', prompt: undefined, exercise: 'dictation' }],
+        LANGUAGES[0],
+        'relaxed',
+        'manual',
+      );
 
     render(<App />);
 
@@ -115,6 +125,7 @@ describe('App', () => {
           id: '1',
           word: 'hello',
           prompt: undefined,
+          exercise: 'dictation',
           correctStreak: 2,
           incorrectCount: 0,
           skipped: false,
@@ -162,6 +173,7 @@ describe('App', () => {
           id: '1',
           word: 'czesc',
           prompt: undefined,
+          exercise: 'dictation',
           correctStreak: 2,
           incorrectCount: 0,
           skipped: false,

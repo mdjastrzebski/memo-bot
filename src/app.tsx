@@ -47,7 +47,7 @@ export default function App() {
     <>
       <LearningSessionController />
       <QuestionScreen
-        key={`${currentWord.word}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
+        key={`${currentWord.id}-${currentWord.correctStreak}-${currentWord.incorrectCount}`}
       />
       <Footer />
       <Toaster />

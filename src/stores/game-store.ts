@@ -1,7 +1,15 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import type { Difficulty, InputSource, SessionState, Word, WordState } from '../types';
+import {
+  EXERCISES,
+  type Difficulty,
+  type InputSource,
+  type SessionState,
+  type Exercise,
+  type Word,
+  type WordState,
+} from '../types';
 import { shuffleArray } from '../utils/data';
 import { generateId } from '../utils/id';
 import { type Language, LANGUAGES, isSupportedLanguageCode } from '../utils/languages';
@@ -16,6 +24,7 @@ export interface SetupPreferences {
   languageCode: string;
   difficulty: Difficulty;
   source: InputSource;
+  exercises: Exercise[];
   manualText: string;
   sampleSize: WordSetSampleSize;
   selectedWordSetId: string;
@@ -109,6 +118,7 @@ function createInitialSetupPreferences(): SetupPreferences {
     languageCode: LANGUAGES[0].code,
     difficulty: 'relaxed',
     source: 'manual',
+    exercises: [...EXERCISES],
     manualText: '',
     sampleSize: WORD_SET_SAMPLE_SIZES[0],
     selectedWordSetId: '',
@@ -121,6 +131,15 @@ function isDifficulty(value: unknown): value is Difficulty {
 
 function isInputSource(value: unknown): value is InputSource {
   return value === 'manual' || value === 'word-set';
+}
+
+function sanitizeExercises(value: unknown, fallback: Exercise[]): Exercise[] {
+  if (!Array.isArray(value)) {
+    return fallback;
+  }
+
+  const selectedTypes = EXERCISES.filter((exercise) => value.includes(exercise));
+  return selectedTypes.length > 0 ? selectedTypes : fallback;
 }
 
 function isWordSetSampleSize(value: unknown): value is WordSetSampleSize {
@@ -142,6 +161,10 @@ function sanitizeSetupPreferences(value: unknown): SetupPreferences {
         : defaults.languageCode,
     difficulty: isDifficulty(persisted.difficulty) ? persisted.difficulty : defaults.difficulty,
     source: isInputSource(persisted.source) ? persisted.source : defaults.source,
+    exercises: sanitizeExercises(
+      persisted.exercises ?? persisted.exerciseTypes ?? persisted.taskTypes,
+      defaults.exercises,
+    ),
     manualText:
       typeof persisted.manualText === 'string' ? persisted.manualText : defaults.manualText,
     sampleSize: isWordSetSampleSize(persisted.sampleSize)
@@ -173,6 +196,7 @@ export interface GameActions {
   setLanguage: (language: Language) => void;
   setDifficulty: (difficulty: Difficulty) => void;
   setSource: (source: InputSource) => void;
+  setExercises: (exercises: Exercise[]) => void;
   setManualText: (text: string) => void;
   setSampleSize: (sampleSize: WordSetSampleSize) => void;
   setSelectedWordSetId: (wordSetId: string) => void;
@@ -195,10 +219,11 @@ export const useGameState = create<GameState & GameActions>()(
       startGame: (words, language, difficulty, source) => {
         const now = Date.now();
         const initialQueue = shuffleArray(
-          words.map(({ word, prompt }) => ({
+          words.map(({ word, prompt, exercise }) => ({
             id: generateId(),
             word,
             prompt,
+            exercise,
             correctStreak: 0,
             incorrectCount: 0,
           })),
@@ -260,6 +285,13 @@ export const useGameState = create<GameState & GameActions>()(
             ...state.setup,
             source,
           },
+        }));
+      },
+
+      setExercises: (exercises) => {
+        set((state) => ({
+          ...state,
+          setup: { ...state.setup, exercises },
         }));
       },
 
