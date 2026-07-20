@@ -4,5 +4,11 @@
     "name": "100 popularnych trudnych słów",
     "url": "/word-sets/pl/100-popularnych-trudnych-slow.txt",
     "languageCode": "pl-PL"
+  },
+  {
+    "id": "pl-trudne-slowa-klasa-4-300",
+    "name": "314 trudnych słów (klasa 4)",
+    "url": "/word-sets/pl/300-trudnych-slow-klasa-4.txt",
+    "languageCode": "pl-PL"
   }
 ]
