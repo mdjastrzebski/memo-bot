@@ -11,7 +11,7 @@ import { useGameState } from '../stores/game-store';
 import { useCurrentWord } from '../stores/selectors';
 import { getLanguageByCode } from '../utils/languages';
 import { playCorrect } from '../utils/sounds';
-import { speak } from '../utils/speak';
+import { speak, speakWithHint } from '../utils/speak';
 import { normalizeAnswerText } from '../utils/text-normalization';
 
 const CORRECT_STATE_DURATION = 1000;
@@ -54,11 +54,11 @@ export default function QuestionScreen() {
     initialSoundPlayed.current = currentWord.id;
 
     if (!isPromptExercise) {
-      speak(word, language);
+      speakWithHint(word, prompt, language);
     }
 
     inputRef.current?.focus();
-  }, [word, language, isPromptExercise, currentWord]);
+  }, [word, prompt, language, isPromptExercise, currentWord]);
 
   if (!currentWord || !word) {
     return null;
@@ -66,7 +66,7 @@ export default function QuestionScreen() {
 
   const handleSpeak = () => {
     recordSessionActivity();
-    speak(word, language);
+    speakWithHint(word, prompt, language);
     inputRef.current?.focus();
   };
 
@@ -119,7 +119,11 @@ export default function QuestionScreen() {
         : normalizedInput === normalizedWord;
 
     if (!isCorrect) {
-      speak(word, language);
+      if (isPromptExercise) {
+        speak(word, language);
+      } else {
+        speakWithHint(word, prompt, language);
+      }
       setStatus('retry');
       setAnswer(input);
       setInput('');

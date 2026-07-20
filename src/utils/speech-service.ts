@@ -76,6 +76,7 @@ let isElevenLabsDisabled = false;
 let currentPlaybackToken: number | null = null;
 let currentAudio: HTMLAudioElement | null = null;
 let queuedRequest: SpeechRequest | null = null;
+let queuedRequestDelayMs = 0;
 let nextPlaybackToken = 0;
 let speechStatus: SpeechStatus = {
   hasElevenLabsApiKey: false,
@@ -152,7 +153,17 @@ function finishPlayback(playbackToken: number) {
   }
 
   const nextRequest = queuedRequest;
+  const delayMs = queuedRequestDelayMs;
   queuedRequest = null;
+  queuedRequestDelayMs = 0;
+
+  if (delayMs > 0) {
+    setTimeout(() => {
+      void playSpeechRequest(nextRequest);
+    }, delayMs);
+    return;
+  }
+
   void playSpeechRequest(nextRequest);
 }
 
@@ -344,10 +355,40 @@ export function speak(text: string, language: Language) {
 
   if (currentPlaybackToken != null) {
     queuedRequest = nextRequest;
+    queuedRequestDelayMs = 0;
     return;
   }
 
   void playSpeechRequest(nextRequest);
+}
+
+/**
+ * Speaks a word, then after a pause speaks a short hint. Used to disambiguate
+ * homophones (e.g. "morze" vs "może") that sound identical when dictated.
+ */
+export function speakWithHint(
+  word: string,
+  hint: string | undefined,
+  language: Language,
+  hintDelayMs = 700,
+) {
+  speak(word, language);
+
+  if (!hint?.trim()) {
+    return;
+  }
+
+  const hintRequest = { language, text: hint };
+
+  if (currentPlaybackToken != null) {
+    queuedRequest = hintRequest;
+    queuedRequestDelayMs = hintDelayMs;
+    return;
+  }
+
+  setTimeout(() => {
+    void playSpeechRequest(hintRequest);
+  }, hintDelayMs);
 }
 
 export function useSpeechStatus() {
@@ -388,6 +429,7 @@ export function resetSpeechServiceForTests() {
   currentAudio = null;
   currentPlaybackToken = null;
   queuedRequest = null;
+  queuedRequestDelayMs = 0;
   nextPlaybackToken = 0;
   hasInitialized = false;
   elevenLabsApiKey = null;

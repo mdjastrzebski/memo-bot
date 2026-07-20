@@ -1,1 +1,1 @@
-export { speak } from './speech-service';
+export { speak, speakWithHint } from './speech-service';
