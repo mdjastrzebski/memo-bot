@@ -4,5 +4,11 @@
     "name": "100 popularnych trudnych słów",
     "url": "/word-sets/pl/100-popularnych-trudnych-slow.txt",
     "languageCode": "pl-PL"
+  },
+  {
+    "id": "pl-trudne-slowa-top-400",
+    "name": "Top 400 trudnych słów",
+    "url": "/word-sets/pl/top-400-trudnych-slow.txt",
+    "languageCode": "pl-PL"
   }
 ]

@@ -31,12 +31,12 @@ import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
 import type { Difficulty, InputSource, Exercise, Word, WordInput } from '../types';
 import { getLanguageByCode } from '../utils/languages';
-import { normalizeInputText } from '../utils/text-normalization';
 import {
   type WordSetConfig,
   type WordSetSampleSize,
   getWordSetConfigs,
   getWordSetWords,
+  parseWordSetEntry,
   sampleWordSetWords,
   WORD_SET_SAMPLE_SIZES,
 } from '../utils/word-sets';
@@ -61,6 +61,7 @@ export default function InputScreen() {
   const [wordSetConfigs, setWordSetConfigs] = useState<WordSetConfig[]>([]);
   const [wordSetLoadState, setWordSetLoadState] = useState<WordSetLoadState>('loading');
   const [isStartingWordSet, setIsStartingWordSet] = useState(false);
+  const [selectedWordSetWords, setSelectedWordSetWords] = useState<string[]>([]);
   const startGame = useGameState((state) => state.startGame);
   const sampleSizeIndex = WORD_SET_SAMPLE_SIZES.indexOf(sampleSize);
 
@@ -95,8 +96,36 @@ export default function InputScreen() {
   const selectedWordSet = availableWordSets.find((config) => config.id === selectedWordSetId);
   const preparedWordInputs = parseWordInputs(text);
   const preparedWords = buildExercises(preparedWordInputs, exercises);
-  const hasPromptedWords = source === 'manual' && preparedWordInputs.some((w) => w.prompt);
+  const hasPromptedWords =
+    source === 'manual'
+      ? preparedWordInputs.some((w) => w.prompt)
+      : selectedWordSetWords.some((word) => parseWordSetEntry(word).prompt);
   const showSourceSelector = availableWordSets.length > 0;
+
+  useEffect(() => {
+    if (!selectedWordSet) {
+      setSelectedWordSetWords([]);
+      return;
+    }
+
+    let isCancelled = false;
+
+    getWordSetWords(selectedWordSet)
+      .then((words) => {
+        if (!isCancelled) {
+          setSelectedWordSetWords(words);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setSelectedWordSetWords([]);
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedWordSet]);
 
   useEffect(() => {
     if (availableWordSets.length === 0) {
@@ -163,7 +192,7 @@ export default function InputScreen() {
     try {
       const wordSetWords = await getWordSetWords(selectedWordSet);
       const sampledWords = buildExercises(
-        sampleWordSetWords(wordSetWords, sampleSize).map((word) => ({ word })),
+        sampleWordSetWords(wordSetWords, sampleSize).map(parseWordSetEntry),
         exercises,
       );
 
@@ -518,20 +547,15 @@ function ChoiceSection({
 }
 
 function parseWordInputs(text: string): WordInput[] {
-  const lines = text.split('\n');
   const words: WordInput[] = [];
 
-  for (const line of lines) {
-    const [word, prompt] = normalizeInputText(line).split('|');
-    const trimmedWord = word.trim();
-    if (!trimmedWord) {
+  for (const line of text.split('\n')) {
+    const wordInput = parseWordSetEntry(line);
+    if (!wordInput.word) {
       continue;
     }
 
-    words.push({
-      word: trimmedWord,
-      prompt: prompt?.trim() || undefined,
-    });
+    words.push(wordInput);
   }
 
   return words;
