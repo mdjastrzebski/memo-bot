@@ -77,6 +77,7 @@ let currentPlaybackToken: number | null = null;
 let currentAudio: HTMLAudioElement | null = null;
 let queuedRequest: SpeechRequest | null = null;
 let queuedRequestDelayMs = 0;
+let pendingDelayedTimeoutId: ReturnType<typeof setTimeout> | null = null;
 let nextPlaybackToken = 0;
 let speechStatus: SpeechStatus = {
   hasElevenLabsApiKey: false,
@@ -140,6 +141,13 @@ function readStoredApiKey() {
   }
 }
 
+function clearPendingDelayedTimeout() {
+  if (pendingDelayedTimeoutId != null) {
+    clearTimeout(pendingDelayedTimeoutId);
+    pendingDelayedTimeoutId = null;
+  }
+}
+
 function finishPlayback(playbackToken: number) {
   if (currentPlaybackToken !== playbackToken) {
     return;
@@ -158,7 +166,8 @@ function finishPlayback(playbackToken: number) {
   queuedRequestDelayMs = 0;
 
   if (delayMs > 0) {
-    setTimeout(() => {
+    pendingDelayedTimeoutId = setTimeout(() => {
+      pendingDelayedTimeoutId = null;
       void playSpeechRequest(nextRequest);
     }, delayMs);
     return;
@@ -310,6 +319,8 @@ async function synthesizeWithElevenLabs(request: SpeechRequest) {
 }
 
 async function playSpeechRequest(request: SpeechRequest) {
+  clearPendingDelayedTimeout();
+
   const playbackToken = ++nextPlaybackToken;
   currentPlaybackToken = playbackToken;
 
@@ -386,7 +397,8 @@ export function speakWithHint(
     return;
   }
 
-  setTimeout(() => {
+  pendingDelayedTimeoutId = setTimeout(() => {
+    pendingDelayedTimeoutId = null;
     void playSpeechRequest(hintRequest);
   }, hintDelayMs);
 }
@@ -430,6 +442,7 @@ export function resetSpeechServiceForTests() {
   currentPlaybackToken = null;
   queuedRequest = null;
   queuedRequestDelayMs = 0;
+  clearPendingDelayedTimeout();
   nextPlaybackToken = 0;
   hasInitialized = false;
   elevenLabsApiKey = null;

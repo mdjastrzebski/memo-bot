@@ -82,7 +82,7 @@ export function sampleWordSetWords(words: string[], requestedSize: number): stri
 
 /** Parses a single word-set line, splitting an optional `| prompt` suffix. */
 export function parseWordSetEntry(line: string): WordInput {
-  const [word, prompt] = line.split('|');
+  const [word, prompt] = normalizeInputText(line).split('|');
   return {
     word: word.trim(),
     prompt: prompt?.trim() || undefined,

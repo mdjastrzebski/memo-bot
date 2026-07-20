@@ -31,7 +31,6 @@ import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
 import type { Difficulty, InputSource, Exercise, Word, WordInput } from '../types';
 import { getLanguageByCode } from '../utils/languages';
-import { normalizeInputText } from '../utils/text-normalization';
 import {
   type WordSetConfig,
   type WordSetSampleSize,
@@ -548,20 +547,15 @@ function ChoiceSection({
 }
 
 function parseWordInputs(text: string): WordInput[] {
-  const lines = text.split('\n');
   const words: WordInput[] = [];
 
-  for (const line of lines) {
-    const [word, prompt] = normalizeInputText(line).split('|');
-    const trimmedWord = word.trim();
-    if (!trimmedWord) {
+  for (const line of text.split('\n')) {
+    const wordInput = parseWordSetEntry(line);
+    if (!wordInput.word) {
       continue;
     }
 
-    words.push({
-      word: trimmedWord,
-      prompt: prompt?.trim() || undefined,
-    });
+    words.push(wordInput);
   }
 
   return words;
