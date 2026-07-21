@@ -7,8 +7,14 @@
   },
   {
     "id": "pl-trudne-slowa-top-400",
-    "name": "Top 400 trudnych słów",
-    "url": "/word-sets/pl/top-400-trudnych-slow.txt",
+    "name": "400 trudnych słów",
+    "url": "/word-sets/pl/400-trudnych-slow.txt",
     "languageCode": "pl-PL"
+  },
+  {
+    "id": "en-dni-miesiace-pory-roku",
+    "name": "Days of week, months, and seasons",
+    "url": "/word-sets/en/days-months-seasons.txt",
+    "languageCode": "en-GB"
   }
 ]

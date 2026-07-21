@@ -218,9 +218,10 @@ export const useGameState = create<GameState & GameActions>()(
 
       startGame: (words, language, difficulty, source) => {
         const now = Date.now();
-        const wordStates = words.map(({ word, prompt, exercise }) => ({
+        const wordStates = words.map(({ word, hint, prompt, exercise }) => ({
           id: generateId(),
           word,
+          hint,
           prompt,
           exercise,
           correctStreak: 0,

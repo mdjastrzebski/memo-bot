@@ -4,12 +4,16 @@ export type Exercise = (typeof EXERCISES)[number];
 
 export interface Word {
   word: string;
+  /** Spoken alongside the word in dictation exercises to disambiguate homophones (same language as the word). */
+  hint?: string;
+  /** Shown as on-screen text in prompt exercises (e.g. a translation); never spoken. */
   prompt?: string;
   exercise: Exercise;
 }
 
 export interface WordInput {
   word: string;
+  hint?: string;
   prompt?: string;
 }
 

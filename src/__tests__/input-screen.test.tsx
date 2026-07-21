@@ -54,16 +54,17 @@ describe('InputScreen', () => {
     const state = useGameState.getState();
     const words = state.pendingWords.map((word) => ({
       word: word.word,
+      hint: word.hint,
       prompt: word.prompt,
       exercise: word.exercise,
     }));
     expect(words.sort(compareExercises)).toEqual(
       [
-        { word: 'bonjour', prompt: 'Say bonjour', exercise: 'dictation' },
-        { word: 'bonjour', prompt: 'Say bonjour', exercise: 'prompt' },
-        { word: 'hello', prompt: 'Say hello', exercise: 'dictation' },
-        { word: 'hello', prompt: 'Say hello', exercise: 'prompt' },
-        { word: 'world', prompt: undefined, exercise: 'dictation' },
+        { word: 'bonjour', hint: undefined, prompt: undefined, exercise: 'dictation' },
+        { word: 'bonjour', hint: undefined, prompt: 'Say bonjour', exercise: 'prompt' },
+        { word: 'hello', hint: undefined, prompt: undefined, exercise: 'dictation' },
+        { word: 'hello', hint: undefined, prompt: 'Say hello', exercise: 'prompt' },
+        { word: 'world', hint: undefined, prompt: undefined, exercise: 'dictation' },
       ].sort(compareExercises),
     );
   });
@@ -106,14 +107,19 @@ describe('InputScreen', () => {
     await user.click(screen.getByLabelText(/Strict/i));
 
     const textarea = screen.getByPlaceholderText(/Enter one word per line/i);
-    await user.type(textarea, 'żółw|Helpful hint');
+    await user.type(textarea, 'żółw|Water reptile#Wodny gad');
     await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
 
     const state = useGameState.getState();
     expect(state.setup.difficulty).toBe('strict');
     expect(state.pendingWords).toHaveLength(2);
     expect(state.pendingWords.every((word) => word.word === 'żółw')).toBe(true);
-    expect(state.pendingWords.every((word) => word.prompt === 'Helpful hint')).toBe(true);
+
+    const dictationWord = state.pendingWords.find((word) => word.exercise === 'dictation');
+    const promptWord = state.pendingWords.find((word) => word.exercise === 'prompt');
+    expect(dictationWord?.hint).toBe('Wodny gad');
+    expect(dictationWord?.prompt).toBeUndefined();
+    expect(promptWord?.prompt).toBe('Water reptile');
     expect(state.pendingWords.map((word) => word.exercise).sort()).toEqual(['dictation', 'prompt']);
   });
 

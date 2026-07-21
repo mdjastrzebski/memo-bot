@@ -38,6 +38,7 @@ export default function QuestionScreen() {
   const initialSoundPlayed = useRef<string | null>(null);
 
   const word = currentWord?.word;
+  const hint = currentWord?.hint;
   const prompt = currentWord?.prompt;
   const isPromptExercise = currentWord?.exercise === 'prompt';
 
@@ -54,11 +55,11 @@ export default function QuestionScreen() {
     initialSoundPlayed.current = currentWord.id;
 
     if (!isPromptExercise) {
-      speakWithHint(word, prompt, language);
+      speakWithHint(word, hint, language);
     }
 
     inputRef.current?.focus();
-  }, [word, prompt, language, isPromptExercise, currentWord]);
+  }, [word, hint, language, isPromptExercise, currentWord]);
 
   if (!currentWord || !word) {
     return null;
@@ -66,7 +67,7 @@ export default function QuestionScreen() {
 
   const handleSpeak = () => {
     recordSessionActivity();
-    speakWithHint(word, prompt, language);
+    speakWithHint(word, hint, language);
     inputRef.current?.focus();
   };
 
@@ -122,7 +123,7 @@ export default function QuestionScreen() {
       if (isPromptExercise) {
         speak(word, language);
       } else {
-        speakWithHint(word, prompt, language);
+        speakWithHint(word, hint, language);
       }
       setStatus('retry');
       setAnswer(input);
