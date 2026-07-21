@@ -121,8 +121,8 @@ ja dziękuję
 ja gotuję
 ja idę
 ja jadę
-ja karzę | wymierzam karę
-ja każę | wydaję polecenie
+ja karzę # wymierzam karę
+ja każę # wydaję polecenie
 ja kupuję
 ja liczę
 ja maluję
@@ -201,8 +201,8 @@ miedź
 miesiąc
 mięso
 miód
-morze | zbiornik słonej wody
-może | przypuszczenie
+morze # zbiornik słonej wody
+może # przypuszczenie
 mój
 mózg
 mrówka

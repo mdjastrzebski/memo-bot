@@ -80,13 +80,25 @@ export function sampleWordSetWords(words: string[], requestedSize: number): stri
   return shuffleArray(words).slice(0, sampleSize);
 }
 
-/** Parses a single word-set line, splitting an optional `| prompt` suffix. */
+/**
+ * Parses a single word-set line: `word`, `word | prompt`, `word # hint`, or
+ * `word | prompt # hint`.
+ *
+ * `prompt` is shown as on-screen text in prompt exercises and never spoken, so it can be
+ * a translation into another language (e.g. "Monday | poniedziałek").
+ * `hint` is spoken alongside the word in dictation exercises to disambiguate homophones,
+ * so it must be in the same language as the word (e.g. "morze | zbiornik słonej wody # zbiornik słonej wody").
+ */
 export function parseWordSetEntry(line: string): WordInput {
-  const [word, prompt] = normalizeInputText(line).split('|');
-  return {
-    word: word.trim(),
-    prompt: prompt?.trim() || undefined,
-  };
+  const normalized = normalizeInputText(line);
+  const hashIndex = normalized.indexOf('#');
+
+  const hint = hashIndex === -1 ? undefined : normalized.slice(hashIndex + 1).trim() || undefined;
+  const main = hashIndex === -1 ? normalized : normalized.slice(0, hashIndex);
+
+  const [word, prompt] = main.split('|').map((part) => part.trim());
+
+  return { word, prompt: prompt || undefined, hint };
 }
 
 async function loadWordSetConfigs(): Promise<WordSetConfig[]> {

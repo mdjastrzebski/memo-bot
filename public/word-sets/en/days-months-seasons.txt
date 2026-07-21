@@ -1,0 +1,24 @@
+# Days of the week, months, and seasons in English with Polish translations.
+Monday | poniedziałek
+Tuesday | wtorek
+Wednesday | środa
+Thursday | czwartek
+Friday | piątek
+Saturday | sobota
+Sunday | niedziela
+January | styczeń
+February | luty
+March | marzec
+April | kwiecień
+May | maj
+June | czerwiec
+July | lipiec
+August | sierpień
+September | wrzesień
+October | październik
+November | listopad
+December | grudzień
+spring | wiosna
+summer | lato
+autumn | jesień
+winter | zima

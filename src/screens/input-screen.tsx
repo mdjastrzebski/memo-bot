@@ -304,7 +304,7 @@ export default function InputScreen() {
                   <Textarea
                     value={text}
                     onChange={(e) => setManualText(e.target.value)}
-                    placeholder={`Enter one word per line...\nYou can also add an optional prompt with |`}
+                    placeholder={`Enter one word per line...\nAdd an optional prompt with | and/or a spoken hint with #`}
                     className="min-h-[260px] rounded-[1.5rem] border-black/10 bg-white/80 px-5 py-4 text-lg leading-8 text-[#2f2218] placeholder:text-[#9d8a79] shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] focus-visible:ring-inset focus-visible:ring-[#de5a37] focus-visible:ring-offset-0 dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf] dark:placeholder:text-[#8b8f9a] dark:shadow-none"
                   />
 
@@ -497,7 +497,7 @@ function ExerciseSection({
             </TooltipTrigger>
             {!hasPromptedWords && (
               <TooltipContent>
-                <p>Add words with hints using word|hint to enable</p>
+                <p>Add words with a prompt using word|prompt to enable</p>
               </TooltipContent>
             )}
           </Tooltip>
@@ -569,14 +569,16 @@ function buildExercises(wordInputs: WordInput[], selectedExercises: Exercise[]):
   for (const wordInput of wordInputs) {
     if (includeDictation) {
       result.push({
-        ...wordInput,
+        word: wordInput.word,
+        hint: wordInput.hint,
         exercise: 'dictation',
       });
     }
 
     if (includePrompt && wordInput.prompt) {
       result.push({
-        ...wordInput,
+        word: wordInput.word,
+        prompt: wordInput.prompt,
         exercise: 'prompt',
       });
     }
