@@ -27,6 +27,7 @@ import { Slider } from '../components/ui/slider';
 import { Textarea } from '../components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { toast } from '../hooks/use-toast';
+import { shuffleArray } from '../utils/data';
 import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
 import type { Difficulty, InputSource, Exercise, Word, WordInput } from '../types';
@@ -37,7 +38,6 @@ import {
   getWordSetConfigs,
   getWordSetWords,
   parseWordSetEntry,
-  sampleWordSetWords,
   WORD_SET_SAMPLE_SIZES,
 } from '../utils/word-sets';
 
@@ -191,10 +191,14 @@ export default function InputScreen() {
 
     try {
       const wordSetWords = await getWordSetWords(selectedWordSet);
-      const sampledWords = buildExercises(
-        sampleWordSetWords(wordSetWords, sampleSize).map(parseWordSetEntry),
-        exercises,
-      );
+      const shuffledWordInputs = shuffleArray(wordSetWords.map(parseWordSetEntry));
+      const sampledWords: Word[] = [];
+      for (const wordInput of shuffledWordInputs) {
+        if (sampledWords.length >= sampleSize) {
+          break;
+        }
+        sampledWords.push(...buildExercises([wordInput], exercises));
+      }
 
       if (sampledWords.length === 0) {
         toast({

@@ -1,4 +1,3 @@
-import { shuffleArray } from './data';
 import { normalizeInputText } from './text-normalization';
 import type { WordInput } from '../types';
 
@@ -73,11 +72,6 @@ export function parseWordSetText(text: string): string[] {
   }
 
   return words;
-}
-
-export function sampleWordSetWords(words: string[], requestedSize: number): string[] {
-  const sampleSize = Math.min(requestedSize, words.length);
-  return shuffleArray(words).slice(0, sampleSize);
 }
 
 /**
