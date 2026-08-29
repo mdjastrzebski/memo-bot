@@ -16,5 +16,11 @@
     "name": "Days of week, months, and seasons",
     "url": "/word-sets/en/days-months-seasons.txt",
     "languageCode": "en-GB"
+  },
+  {
+    "id": "de-wprowadzenie-do-niemieckiego",
+    "name": "Wprowadzenie do niemieckiego",
+    "url": "/word-sets/de/wprowadzenie-do-niemieckiego.txt",
+    "languageCode": "de-DE"
   }
 ]

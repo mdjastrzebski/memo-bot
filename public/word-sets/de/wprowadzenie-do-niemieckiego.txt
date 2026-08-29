@@ -1,0 +1,17 @@
+# Podstawowe słowa i zwroty na wprowadzenie do niemieckiego.
+Ja | tak
+Nein | nie
+Danke | dziękuję
+Bitte | proszę
+eins | jeden
+zwei | dwa
+drei | trzy
+vier | cztery
+fünf | pięć
+Hallo | cześć
+Guten Morgen | dzień dobry
+Wie geht's? | jak się masz?
+gut | dobrze
+Wie heißt du? | jak masz na imię?
+Ich heiße Max | nazywam się Max
+Tschüss | pa
