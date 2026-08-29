@@ -240,6 +240,11 @@ export default function QuestionScreen() {
                 <div className="mt-4 text-center">
                   <WordDiff expected={word} actual={answer} />
                 </div>
+                {!isPromptExercise && prompt && (
+                  <div className="mt-4 text-center text-lg font-bold text-[#7d3d20] dark:text-[#d7b780]">
+                    {prompt}
+                  </div>
+                )}
               </div>
             )}
 

@@ -60,9 +60,9 @@ describe('InputScreen', () => {
     }));
     expect(words.sort(compareExercises)).toEqual(
       [
-        { word: 'bonjour', hint: undefined, prompt: undefined, exercise: 'dictation' },
+        { word: 'bonjour', hint: undefined, prompt: 'Say bonjour', exercise: 'dictation' },
         { word: 'bonjour', hint: undefined, prompt: 'Say bonjour', exercise: 'prompt' },
-        { word: 'hello', hint: undefined, prompt: undefined, exercise: 'dictation' },
+        { word: 'hello', hint: undefined, prompt: 'Say hello', exercise: 'dictation' },
         { word: 'hello', hint: undefined, prompt: 'Say hello', exercise: 'prompt' },
         { word: 'world', hint: undefined, prompt: undefined, exercise: 'dictation' },
       ].sort(compareExercises),
@@ -118,7 +118,7 @@ describe('InputScreen', () => {
     const dictationWord = state.pendingWords.find((word) => word.exercise === 'dictation');
     const promptWord = state.pendingWords.find((word) => word.exercise === 'prompt');
     expect(dictationWord?.hint).toBe('Wodny gad');
-    expect(dictationWord?.prompt).toBeUndefined();
+    expect(dictationWord?.prompt).toBe('Water reptile');
     expect(promptWord?.prompt).toBe('Water reptile');
     expect(state.pendingWords.map((word) => word.exercise).sort()).toEqual(['dictation', 'prompt']);
   });

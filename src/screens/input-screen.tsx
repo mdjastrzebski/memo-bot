@@ -575,6 +575,7 @@ function buildExercises(wordInputs: WordInput[], selectedExercises: Exercise[]):
       result.push({
         word: wordInput.word,
         hint: wordInput.hint,
+        prompt: wordInput.prompt,
         exercise: 'dictation',
       });
     }

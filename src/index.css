@@ -117,6 +117,8 @@ body {
   .app-shell {
     position: relative;
     overflow: hidden;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
     background:
       linear-gradient(135deg, rgba(255, 252, 244, 0.78), rgba(255, 244, 224, 0.52)),
       linear-gradient(180deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0));
@@ -126,6 +128,21 @@ body {
     background:
       linear-gradient(135deg, rgba(27, 31, 43, 0.78), rgba(21, 24, 34, 0.72)),
       linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+  }
+
+  .app-shell-content {
+    padding-top: 2.5rem;
+  }
+
+  @media (max-height: 700px) {
+    .app-shell {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    .app-shell-content {
+      padding-top: 1rem;
+    }
   }
 
   .mission-panel {

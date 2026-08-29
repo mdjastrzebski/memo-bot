@@ -96,7 +96,7 @@ export function AppShell({ children, className }: AppShellProps) {
   };
 
   return (
-    <div className="app-shell min-h-screen px-4 py-6 sm:px-6 lg:px-10">
+    <div className="app-shell min-h-screen px-4 sm:px-6 lg:px-10">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute left-[8%] top-[9%] h-28 w-28 rounded-full border border-black/10 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.7),rgba(255,255,255,0))] dark:border-white/5 dark:bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.08),rgba(255,255,255,0))]" />
         <div className="absolute right-[12%] top-[14%] h-20 w-20 rotate-12 border border-black/10 bg-[#f6c453]/60 dark:border-white/5 dark:bg-[rgba(246,196,83,0.12)]" />
@@ -106,7 +106,7 @@ export function AppShell({ children, className }: AppShellProps) {
 
       <div
         className={cn(
-          'relative mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col justify-center pt-10',
+          'app-shell-content relative mx-auto flex min-h-[calc(100vh-3rem)] w-full max-w-6xl flex-col justify-center',
           className,
         )}
       >
