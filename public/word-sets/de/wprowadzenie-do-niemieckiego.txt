@@ -15,3 +15,18 @@ gut | dobrze
 Wie heißt du? | Jak masz na imię?
 Ich heiße Max | Nazywam się Max
 tschüss | pa
+sechs | sześć
+sieben | siedem
+acht | osiem
+neun | dziewięć
+zehn | dziesięć
+Guten Tag | Dzień dobry
+Guten Abend | Dobry wieczór
+Gute Nacht | Dobranoc
+Auf Wiedersehen | Do widzenia
+Entschuldigung | przepraszam
+Wie alt bist du? | Ile masz lat?
+Ich bin zehn Jahre alt | Mam dziesięć lat
+Woher kommst du? | Skąd jesteś?
+Ich komme aus Polen | Jestem z Polski
+Bis bald | Do zobaczenia wkrótce
