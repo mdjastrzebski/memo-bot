@@ -22,5 +22,11 @@
     "name": "Wprowadzenie do niemieckiego",
     "url": "/word-sets/de/wprowadzenie-do-niemieckiego.txt",
     "languageCode": "de-DE"
+  },
+  {
+    "id": "de-kapitel-0-lektion-0a",
+    "name": "Kapitel 0 - Lektion 0a",
+    "url": "/word-sets/de/kapitel-0-lektion-0a.txt",
+    "languageCode": "de-DE"
   }
 ]
