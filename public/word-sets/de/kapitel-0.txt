@@ -1,4 +1,4 @@
-# Kapitel 0 - Lektion 0a: rzeczowniki z rodzajnikiem określonym.
+# Kapitel 0: rzeczowniki z rodzajnikiem określonym.
 der Hamburger | hamburger
 die Natur | natura
 das Kapitel | rozdział
@@ -27,3 +27,18 @@ das Konzert | koncert
 die Lektion | lekcja
 Deutsch | język niemiecki
 das Foto | zdjęcie
+die Computerspiele | gry komputerowe
+die Katzen | koty
+die Gymnastik | gimnastyka
+die Limonade | lemoniada
+die Pizza | pizza
+die Pandas | pandy
+die Bananen | banany
+die Filme | filmy
+das Domino | domino
+die Comics | komiksy
+das Boxen | boks
+ich mag | lubię
+ich mag Limonade | lubię lemoniadę
+ich mag Pizza | lubię pizzę
+die Person | osoba
