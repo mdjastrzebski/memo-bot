@@ -42,3 +42,16 @@ ich mag | lubię
 ich mag Limonade | lubię lemoniadę
 ich mag Pizza | lubię pizzę
 die Person | osoba
+ich verstehe nicht | nie rozumiem
+ich bin fertig | jestem gotowy
+Ist alles klar? | Czy wszystko jasne?
+noch einmal, bitte | jeszcze raz, proszę
+gute Arbeit | dobra robota
+kein Problem | nie ma problemu
+ich helfe dir | pomogę ci
+danke | dziękuję
+die Übung | ćwiczenie
+toll | świetnie
+super | super
+sehr schön | bardzo ładnie
+fantastisch | fantastycznie
