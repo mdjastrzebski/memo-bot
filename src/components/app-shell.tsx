@@ -22,6 +22,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Toggle } from './ui/toggle';
 
+const THEME_STORAGE_KEY = 'memobot:theme';
+
 type AppShellProps = {
   children: ReactNode;
   className?: string;
@@ -35,7 +37,7 @@ export function AppShell({ children, className }: AppShellProps) {
   const apiKeyInputId = useId();
 
   useEffect(() => {
-    const storedTheme = window.localStorage.getItem('memo-bot-theme');
+    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
     const nextDark = storedTheme === 'dark';
     setIsDark(nextDark);
     document.documentElement.classList.toggle('dark', nextDark);
@@ -44,7 +46,7 @@ export function AppShell({ children, className }: AppShellProps) {
   const handleThemeChange = (pressed: boolean) => {
     setIsDark(pressed);
     document.documentElement.classList.toggle('dark', pressed);
-    window.localStorage.setItem('memo-bot-theme', pressed ? 'dark' : 'light');
+    window.localStorage.setItem(THEME_STORAGE_KEY, pressed ? 'dark' : 'light');
   };
 
   useEffect(() => {

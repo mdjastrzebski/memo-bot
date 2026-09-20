@@ -27,11 +27,11 @@ import { Slider } from '../components/ui/slider';
 import { Textarea } from '../components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { toast } from '../hooks/use-toast';
-import { shuffleArray } from '../utils/data';
 import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
 import type { Difficulty, InputSource, Exercise, Word, WordInput } from '../types';
 import { getLanguageByCode } from '../utils/languages';
+import { selectWordsForSession } from '../utils/word-selection';
 import {
   type WordSetConfig,
   type WordSetSampleSize,
@@ -191,12 +191,15 @@ export default function InputScreen() {
 
     try {
       const wordSetWords = await getWordSetWords(selectedWordSet);
-      const shuffledWordInputs = shuffleArray(wordSetWords.map(parseWordSetEntry));
+      // Each word yields one exercise per selected type, so scale word count accordingly.
+      const wordsNeeded = Math.ceil(sampleSize / Math.max(exercises.length, 1));
+      const selectedWordInputs = selectWordsForSession(
+        selectedWordSet.id,
+        wordSetWords.map(parseWordSetEntry),
+        wordsNeeded,
+      );
       const sampledWords: Word[] = [];
-      for (const wordInput of shuffledWordInputs) {
-        if (sampledWords.length >= sampleSize) {
-          break;
-        }
+      for (const wordInput of selectedWordInputs) {
         sampledWords.push(...buildExercises([wordInput], exercises));
       }
 
