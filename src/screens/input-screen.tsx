@@ -191,10 +191,13 @@ export default function InputScreen() {
 
     try {
       const wordSetWords = await getWordSetWords(selectedWordSet);
+      // Each word can produce one exercise per selected type (dictation, prompt), so pick
+      // enough words for the resulting exercise count to land on (at least) sampleSize.
+      const wordsNeeded = Math.ceil(sampleSize / Math.max(exercises.length, 1));
       const selectedWordInputs = selectWordsForSession(
         selectedWordSet.id,
         wordSetWords.map(parseWordSetEntry),
-        sampleSize,
+        wordsNeeded,
       );
       const sampledWords: Word[] = [];
       for (const wordInput of selectedWordInputs) {
