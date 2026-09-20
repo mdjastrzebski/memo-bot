@@ -113,7 +113,7 @@ export default function QuestionScreen() {
     const normalizedInput = normalizeAnswerText(input);
     const normalizedWord = normalizeAnswerText(word);
 
-    // Relaxed difficulty ignores case and accent marks; strict difficulty requires an exact match.
+    // Relaxed difficulty ignores case and accent marks; regular and strict require an exact match.
     const isCorrect =
       difficulty === 'relaxed'
         ? normalizedInput.localeCompare(normalizedWord, undefined, { sensitivity: 'base' }) === 0
@@ -162,7 +162,7 @@ export default function QuestionScreen() {
 
   const progressPercentage = (completed / (remaining + completed)) * 100;
   const showPlayButton = !isPromptExercise || status !== 'question';
-  const showSpecialCharactersKeyboard = difficulty === 'relaxed';
+  const showSpecialCharactersKeyboard = difficulty === 'relaxed' || difficulty === 'regular';
 
   return (
     <AppShell className="items-center">

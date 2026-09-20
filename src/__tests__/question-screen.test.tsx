@@ -221,6 +221,32 @@ describe('QuestionScreen', () => {
     expect(await screen.findByText(/Try again!/i)).toBeInTheDocument();
   });
 
+  it('rejects answer with different casing or accents in regular difficulty', async () => {
+    const user = userEvent.setup();
+    useGameState.getState().resetGame();
+    useGameState
+      .getState()
+      .startGame([{ word: 'Café', exercise: 'dictation' }], LANGUAGES[0], 'regular', 'manual');
+
+    render(<QuestionScreen />);
+
+    const input = screen.getByPlaceholderText(/Type here/i);
+    await user.type(input, 'cafe{Enter}');
+
+    expect(await screen.findByText(/Try again!/i)).toBeInTheDocument();
+  });
+
+  it('shows the special-characters keyboard in regular difficulty', () => {
+    useGameState.getState().resetGame();
+    useGameState
+      .getState()
+      .startGame([{ word: 'café', exercise: 'dictation' }], LANGUAGES[0], 'regular', 'manual');
+
+    render(<QuestionScreen />);
+
+    expect(screen.getByRole('button', { name: 'é' })).toBeInTheDocument();
+  });
+
   it('calls incorrectAnswer when user corrects answer on retry', async () => {
     const user = userEvent.setup();
     render(<QuestionScreen />);

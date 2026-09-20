@@ -17,7 +17,7 @@ export interface WordInput {
   prompt?: string;
 }
 
-export type Difficulty = 'relaxed' | 'strict';
+export type Difficulty = 'relaxed' | 'regular' | 'strict';
 export type InputSource = 'manual' | 'word-set';
 
 export interface WordState extends Word {

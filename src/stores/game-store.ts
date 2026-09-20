@@ -146,7 +146,7 @@ function createInitialSetupPreferences(): SetupPreferences {
 }
 
 function isDifficulty(value: unknown): value is Difficulty {
-  return value === 'relaxed' || value === 'strict';
+  return value === 'relaxed' || value === 'regular' || value === 'strict';
 }
 
 function isInputSource(value: unknown): value is InputSource {

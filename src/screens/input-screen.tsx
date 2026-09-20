@@ -258,10 +258,15 @@ export default function InputScreen() {
               title="Difficulty"
               value={difficulty}
               onValueChange={(value) => setDifficulty(value as Difficulty)}
+              columns={3}
               options={[
                 {
                   value: 'relaxed',
                   title: 'Relaxed 🙂',
+                },
+                {
+                  value: 'regular',
+                  title: 'Regular 🙌',
                 },
                 {
                   value: 'strict',
@@ -520,6 +525,7 @@ function ChoiceSection({
   value,
   onValueChange,
   options,
+  columns = 2,
 }: {
   icon: ReactNode;
   title: string;
@@ -529,6 +535,7 @@ function ChoiceSection({
     value: string;
     title: string;
   }>;
+  columns?: 2 | 3;
 }) {
   return (
     <fieldset className="space-y-3">
@@ -536,7 +543,11 @@ function ChoiceSection({
         <span className="text-[#de5a37] dark:text-[#f4c15d]">{icon}</span>
         <div>{title}</div>
       </div>
-      <RadioGroup value={value} onValueChange={onValueChange} className="grid gap-3 sm:grid-cols-2">
+      <RadioGroup
+        value={value}
+        onValueChange={onValueChange}
+        className={cn('grid gap-3', columns === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2')}
+      >
         {options.map((option) => (
           <label
             key={option.value}
