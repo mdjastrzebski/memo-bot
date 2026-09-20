@@ -19,7 +19,7 @@ import { WORD_SET_SAMPLE_SIZES, type WordSetSampleSize } from '../utils/word-set
 const STREAK_GOAL_AFTER_INCORRECT = 2;
 const SCHEDULE_AFTER_CORRECT = 5;
 const SCHEDULE_AFTER_INCORRECT = 0;
-const STORE_PERSISTENCE_KEY = 'memobot:prefs';
+export const STORE_PERSISTENCE_KEY = 'memobot:prefs';
 
 export interface SetupPreferences {
   languageCode: string;

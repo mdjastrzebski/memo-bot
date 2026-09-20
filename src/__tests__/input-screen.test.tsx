@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import InputScreen from '../screens/input-screen';
-import { useGameState } from '../stores/game-store';
+import { STORE_PERSISTENCE_KEY, useGameState } from '../stores/game-store';
 import { LANGUAGES } from '../utils/languages';
 
 // Mock speech synthesis
@@ -215,7 +215,7 @@ describe('InputScreen', () => {
     });
 
     window.localStorage.setItem(
-      'memo-bot-setup-preferences',
+      STORE_PERSISTENCE_KEY,
       JSON.stringify({
         state: {
           setup: {
@@ -301,7 +301,7 @@ describe('InputScreen', () => {
 
   it('falls back to manual mode when saved word-set source is unavailable for the language', async () => {
     window.localStorage.setItem(
-      'memo-bot-setup-preferences',
+      STORE_PERSISTENCE_KEY,
       JSON.stringify({
         state: {
           setup: {
