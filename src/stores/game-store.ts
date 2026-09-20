@@ -31,6 +31,30 @@ export interface SetupPreferences {
   selectedWordSetId: string;
 }
 
+/**
+ * A word can have both a dictation and a prompt exercise in the same session (two separate
+ * WordState entries sharing the same `word` text). Sync a combined tier to history every time
+ * either one finishes: 'learning' as soon as any exercise for the word is still outstanding or
+ * was ever missed, 'known' only once every exercise for the word is done and none were missed.
+ * Skipped exercises are ignored since they carry no signal about how well the word is known.
+ */
+function syncWordHistory(
+  wordSetId: string,
+  wordText: string,
+  pendingWords: WordState[],
+  completedWords: WordState[],
+): void {
+  const hasPendingExercise = pendingWords.some((w) => w.word === wordText);
+  const finishedExercises = completedWords.filter((w) => w.word === wordText && !w.skipped);
+  if (finishedExercises.length === 0) {
+    return;
+  }
+
+  const anyMissed = finishedExercises.some((w) => w.incorrectCount > 0);
+  const tier = !hasPendingExercise && !anyMissed ? 'known' : 'learning';
+  updateWordTier(wordSetId, wordText, tier);
+}
+
 function createInitialSessionState(): SessionState {
   return {
     startedAt: null,
@@ -339,15 +363,17 @@ export const useGameState = create<GameState & GameActions>()(
             updatedWord.incorrectCount === 0 ||
             updatedWord.correctStreak >= STREAK_GOAL_AFTER_INCORRECT;
           if (isCompleted) {
+            const nextCompletedWords = [...state.completedWords, updatedWord];
+
             if (state.setup.source === 'word-set' && state.setup.selectedWordSetId) {
-              updateWordTier(
+              syncWordHistory(
                 state.setup.selectedWordSetId,
                 updatedWord.word,
-                updatedWord.incorrectCount === 0 ? 'known' : 'learning',
+                otherWords,
+                nextCompletedWords,
               );
             }
 
-            const nextCompletedWords = [...state.completedWords, updatedWord];
             return {
               ...state,
               pendingWords: otherWords,
@@ -403,10 +429,21 @@ export const useGameState = create<GameState & GameActions>()(
           const skippedWord: WordState = { ...word, skipped: true };
           const now = Date.now();
           const nextPendingWords = state.pendingWords.filter((w) => w.id !== word.id);
+          const nextCompletedWords = [...state.completedWords, skippedWord];
+
+          if (state.setup.source === 'word-set' && state.setup.selectedWordSetId) {
+            syncWordHistory(
+              state.setup.selectedWordSetId,
+              word.word,
+              nextPendingWords,
+              nextCompletedWords,
+            );
+          }
+
           return {
             ...state,
             pendingWords: nextPendingWords,
-            completedWords: [...state.completedWords, skippedWord],
+            completedWords: nextCompletedWords,
             session:
               nextPendingWords.length === 0
                 ? finishSessionState(state.session, now)
