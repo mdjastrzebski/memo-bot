@@ -1,0 +1,64 @@
+# Kapitel 1: zaimki osobowe, czasowniki "heißen" i "sein", pytania.
+ich | ja
+du | ty
+er | on
+sie | ona
+ich heiße | nazywam się
+du heißt | nazywasz się
+er heißt | on nazywa się
+sie heißt | ona nazywa się
+ich bin | jestem
+du bist | jesteś
+er ist | on jest
+sie ist | ona jest
+Wie heißt du? | Jak się nazywasz?
+Wie ist dein Name? | Jak masz na imię?
+Wer bist du? | Kim jesteś?
+Wer ist das? | Kto to jest?
+Wie geht's dir? | Jak się masz?
+Wie ist deine Telefonnummer? | Jaki jest twój numer telefonu?
+Meine Telefonnummer ist... | Mój numer telefonu to...
+Wie alt bist du? | Ile masz lat?
+Wie buchstabiert man das? | Jak się to literuje?
+Ich heiße... | Nazywam się...
+Ich bin 10 Jahre alt | Mam 10 lat
+ich wohne | mieszkam
+Ich wohne in Wrocław | Mieszkam we Wrocławiu
+die Schwester | siostra
+meine Schwester | moja siostra
+der Freund | przyjaciel
+die Freundin | przyjaciółka
+Er ist mein Freund | On jest moim przyjacielem
+Sie ist meine Freundin | Ona jest moją przyjaciółką
+hallo | cześć
+Entschuldigung | przepraszam
+noch mal | jeszcze raz
+Guten Morgen | dzień dobry (rano)
+Guten Tag | dzień dobry
+Guten Abend | dobry wieczór
+Gute Nacht | dobranoc
+Tschüss | pa
+sehr gut | bardzo dobrze
+gut | dobrze
+so lala | tak sobie
+schlecht | źle
+sehr schlecht | bardzo źle
+der Name | imię
+die Telefonnummer | numer telefonu
+die Handynummer | numer komórki
+das Alter | wiek
+null | zero
+eins | jeden
+zwei | dwa
+drei | trzy
+vier | cztery
+fünf | pięć
+sechs | sześć
+sieben | siedem
+acht | osiem
+neun | dziewięć
+zehn | dziesięć
+elf | jedenaście
+zwölf | dwanaście
+dreizehn | trzynaście
+vierzehn | czternaście

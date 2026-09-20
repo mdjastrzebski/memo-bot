@@ -28,5 +28,11 @@
     "name": "Kapitel 0",
     "url": "/word-sets/de/kapitel-0.txt",
     "languageCode": "de-DE"
+  },
+  {
+    "id": "de-kapitel-1",
+    "name": "Kapitel 1",
+    "url": "/word-sets/de/kapitel-1.txt",
+    "languageCode": "de-DE"
   }
 ]
