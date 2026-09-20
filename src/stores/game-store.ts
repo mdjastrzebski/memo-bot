@@ -31,13 +31,8 @@ export interface SetupPreferences {
   selectedWordSetId: string;
 }
 
-/**
- * A word can have both a dictation and a prompt exercise in the same session (two separate
- * WordState entries sharing the same `word` text). Sync a combined tier to history every time
- * either one finishes: 'learning' as soon as any exercise for the word is still outstanding or
- * was ever missed, 'known' only once every exercise for the word is done and none were missed.
- * Skipped exercises are ignored since they carry no signal about how well the word is known.
- */
+// A word may have multiple exercises (dictation, prompt) sharing the same `word` text.
+// Tier is 'known' only once all are done with none missed; skipped ones carry no signal.
 function syncWordHistory(
   wordSetId: string,
   wordText: string,

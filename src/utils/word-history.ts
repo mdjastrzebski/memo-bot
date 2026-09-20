@@ -1,9 +1,5 @@
-/**
- * Persists how well each word in a word set has been learned across sessions, so a later
- * session can prioritize words that aren't known yet. Keyed by word text within a word set;
- * entries for words later removed from the set are kept (not garbage-collected) in case the
- * word is re-added.
- */
+// Persists per-word learning tiers across sessions, keyed by word set. Entries for words
+// removed from a set are kept in case the word is re-added.
 
 export type WordTier = 'not-seen' | 'learning' | 'known';
 
@@ -62,7 +58,7 @@ function saveWordHistory(wordSetId: string, history: WordHistoryStore): void {
   try {
     window.localStorage.setItem(getWordHistoryStorageKey(wordSetId), JSON.stringify(history));
   } catch {
-    // localStorage unavailable or full; history just won't persist this time.
+    // localStorage unavailable or full; fail silently.
   }
 }
 

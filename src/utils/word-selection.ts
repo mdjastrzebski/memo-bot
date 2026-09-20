@@ -2,10 +2,7 @@ import type { WordInput } from '../types';
 import { shuffleArray } from './data';
 import { getWordTier, loadWordHistory, type WordTier } from './word-history';
 
-/**
- * Relative likelihood of picking a word of each tier for the next session. Higher = more
- * likely. Adjust freely to retune prioritization without touching the selection logic.
- */
+// Relative likelihood of picking a word of each tier; higher = more likely.
 export const WORD_TIER_SELECTION_WEIGHTS: Record<WordTier, number> = {
   'not-seen': 5,
   'learning': 3,
@@ -36,13 +33,7 @@ function weightedSampleWithoutReplacement<T>(items: T[], weights: number[], coun
   return picked;
 }
 
-/**
- * Sole entry point for deciding which words go into the next session for a word set.
- * Current policy: weighted random sampling that favors not-yet-seen words, then words still
- * being learned, then well-known words (see WORD_TIER_SELECTION_WEIGHTS) — using per-word
- * history persisted by ../utils/word-history. Swap this function's implementation to change
- * the policy; callers don't need to change.
- */
+// Weighted sampling favoring not-yet-seen and still-learning words over known ones.
 export function selectWordsForSession(
   wordSetId: string,
   wordInputs: WordInput[],
