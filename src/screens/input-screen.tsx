@@ -31,6 +31,7 @@ import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
 import type { Difficulty, InputSource, Exercise, Word, WordInput } from '../types';
 import { getLanguageByCode } from '../utils/languages';
+import { getWordTierCounts, loadWordHistory, type WordTierCounts } from '../utils/word-history';
 import { selectWordsForSession } from '../utils/word-selection';
 import {
   type WordSetConfig,
@@ -42,6 +43,28 @@ import {
 } from '../utils/word-sets';
 
 type WordSetLoadState = 'loading' | 'ready' | 'error';
+
+function WordSetStatsDots({ stats }: { stats: WordTierCounts }) {
+  return (
+    <span
+      className="flex items-center gap-2 text-xs font-semibold text-current tabular-nums opacity-70"
+      title={`${stats.known} known · ${stats.learning} learning · ${stats['not-seen']} new`}
+    >
+      <span className="flex items-center gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        {stats.known}
+      </span>
+      <span className="flex items-center gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+        {stats.learning}
+      </span>
+      <span className="flex items-center gap-1">
+        <span className="h-1.5 w-1.5 rounded-full bg-neutral-400 dark:bg-neutral-500" />
+        {stats['not-seen']}
+      </span>
+    </span>
+  );
+}
 
 export default function InputScreen() {
   const language = useGameState((state) => getLanguageByCode(state.setup.languageCode));
@@ -62,6 +85,7 @@ export default function InputScreen() {
   const [wordSetLoadState, setWordSetLoadState] = useState<WordSetLoadState>('loading');
   const [isStartingWordSet, setIsStartingWordSet] = useState(false);
   const [selectedWordSetWords, setSelectedWordSetWords] = useState<string[]>([]);
+  const [wordSetStats, setWordSetStats] = useState<Record<string, WordTierCounts>>({});
   const startGame = useGameState((state) => state.startGame);
   const sampleSizeIndex = WORD_SET_SAMPLE_SIZES.indexOf(sampleSize);
 
@@ -126,6 +150,36 @@ export default function InputScreen() {
       isCancelled = true;
     };
   }, [selectedWordSet]);
+
+  useEffect(() => {
+    const sets = wordSetConfigs.filter((config) => config.languageCode === language.code);
+    if (sets.length === 0) {
+      setWordSetStats({});
+      return;
+    }
+
+    let isCancelled = false;
+
+    Promise.all(
+      sets.map(async (config) => {
+        const words = await getWordSetWords(config).catch(() => [] as string[]);
+        const history = loadWordHistory(config.id);
+        const counts = getWordTierCounts(
+          history,
+          words.map((line) => parseWordSetEntry(line).word),
+        );
+        return [config.id, counts] as const;
+      }),
+    ).then((entries) => {
+      if (!isCancelled) {
+        setWordSetStats(Object.fromEntries(entries));
+      }
+    });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [wordSetConfigs, language.code]);
 
   useEffect(() => {
     if (availableWordSets.length === 0) {
@@ -341,17 +395,26 @@ export default function InputScreen() {
                         className="h-14 rounded-[1.25rem] border-black/10 bg-white/80 text-base font-semibold text-[#2f2218] focus:ring-inset focus:ring-[#de5a37] focus:ring-offset-0 dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf]"
                       >
                         <SelectValue placeholder="Select a word set" />
+                        {selectedWordSet && wordSetStats[selectedWordSet.id] ? (
+                          <span className="ml-auto mr-1">
+                            <WordSetStatsDots stats={wordSetStats[selectedWordSet.id]} />
+                          </span>
+                        ) : null}
                       </SelectTrigger>
                       <SelectContent className="rounded-2xl border-black/10 bg-[rgba(255,251,245,0.98)] text-[#2f2218] dark:border-white/10 dark:bg-[rgba(29,34,46,0.98)] dark:text-[#f3eadf]">
-                        {availableWordSets.map((config) => (
-                          <SelectItem
-                            key={config.id}
-                            value={config.id}
-                            className="cursor-pointer rounded-xl"
-                          >
-                            {config.name}
-                          </SelectItem>
-                        ))}
+                        {availableWordSets.map((config) => {
+                          const stats = wordSetStats[config.id];
+                          return (
+                            <SelectItem
+                              key={config.id}
+                              value={config.id}
+                              className="cursor-pointer rounded-xl"
+                              endAdornment={stats ? <WordSetStatsDots stats={stats} /> : null}
+                            >
+                              {config.name}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectContent>
                     </Select>
                   </div>

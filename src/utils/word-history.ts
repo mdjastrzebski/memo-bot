@@ -71,3 +71,15 @@ export function updateWordTier(wordSetId: string, word: string, tier: WordTier):
   history[word] = { tier, updatedAt: Date.now() };
   saveWordHistory(wordSetId, history);
 }
+
+export type WordTierCounts = Record<WordTier, number>;
+
+export function getWordTierCounts(history: WordHistoryStore, words: string[]): WordTierCounts {
+  const counts: WordTierCounts = { 'not-seen': 0, 'learning': 0, 'known': 0 };
+
+  for (const word of words) {
+    counts[getWordTier(history, word)] += 1;
+  }
+
+  return counts;
+}
