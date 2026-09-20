@@ -13,12 +13,13 @@ import {
 import { shuffleArray } from '../utils/data';
 import { generateId } from '../utils/id';
 import { type Language, LANGUAGES, isSupportedLanguageCode } from '../utils/languages';
+import { updateWordTier } from '../utils/word-history';
 import { WORD_SET_SAMPLE_SIZES, type WordSetSampleSize } from '../utils/word-sets';
 
 const STREAK_GOAL_AFTER_INCORRECT = 2;
 const SCHEDULE_AFTER_CORRECT = 5;
 const SCHEDULE_AFTER_INCORRECT = 0;
-const STORE_PERSISTENCE_KEY = 'memo-bot-setup-preferences';
+const STORE_PERSISTENCE_KEY = 'memobot:prefs';
 
 export interface SetupPreferences {
   languageCode: string;
@@ -338,6 +339,14 @@ export const useGameState = create<GameState & GameActions>()(
             updatedWord.incorrectCount === 0 ||
             updatedWord.correctStreak >= STREAK_GOAL_AFTER_INCORRECT;
           if (isCompleted) {
+            if (state.setup.source === 'word-set' && state.setup.selectedWordSetId) {
+              updateWordTier(
+                state.setup.selectedWordSetId,
+                updatedWord.word,
+                updatedWord.incorrectCount === 0 ? 'known' : 'learning',
+              );
+            }
+
             const nextCompletedWords = [...state.completedWords, updatedWord];
             return {
               ...state,
@@ -366,6 +375,10 @@ export const useGameState = create<GameState & GameActions>()(
             correctStreak: 0,
             incorrectCount: word.incorrectCount + 1,
           };
+
+          if (state.setup.source === 'word-set' && state.setup.selectedWordSetId) {
+            updateWordTier(state.setup.selectedWordSetId, updatedWord.word, 'learning');
+          }
 
           // In the first pass, go through all words. In subsequent passes, schedule the repetition closer.
           const isFirstAttempt = word.incorrectCount === 0;
