@@ -485,7 +485,7 @@ export default function InputScreen() {
                   </div>
 
                   <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/50 px-4 py-3 text-base font-semibold text-[#6a503b] dark:border-white/10 dark:bg-white/5 dark:text-[#d4c5b3]">
-                    Randomly sample up to {sampleSize} words from{' '}
+                    Randomly sample up to {sampleSize} cards from{' '}
                     <span className="font-extrabold">{selectedWordSet?.name}</span>.
                   </div>
                 </div>

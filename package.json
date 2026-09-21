@@ -13,9 +13,10 @@
     "sort:word-sets": "bun run scripts/sort-word-sets.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest --no-watch",
+    "format": "oxfmt --write .",
     "coverage": "vitest --no-watch --coverage",
     "validate": "bun run test && bun run typecheck && bun run lint && oxfmt --check .",
-    "validate:fix": "oxfmt --write . && bun run lint --fix && bun run typecheck && bun run test -u"
+    "validate:fix": "bun run format && bun run lint --fix && bun run typecheck && bun run test -u"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.2",

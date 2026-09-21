@@ -1,5 +1,5 @@
-import { normalizeInputText } from './text-normalization';
 import type { WordInput } from '../types';
+import { normalizeInputText } from './text-normalization';
 
 export interface WordSetConfig {
   id: string;

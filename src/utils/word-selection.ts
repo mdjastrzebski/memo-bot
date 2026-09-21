@@ -1,39 +1,10 @@
 import type { WordInput } from '../types';
 import { shuffleArray } from './data';
-import { getWordTier, loadWordHistory, type WordTier } from './word-history';
+import { getWordTier, loadWordHistory } from './word-history';
 
-// Relative likelihood of picking a word of each tier; higher = more likely.
-export const WORD_TIER_SELECTION_WEIGHTS: Record<WordTier, number> = {
-  'not-seen': 5,
-  'learning': 3,
-  'known': 1,
-};
-
-function weightedSampleWithoutReplacement<T>(items: T[], weights: number[], count: number): T[] {
-  const pool = items.map((item, index) => ({ item, weight: weights[index] }));
-  const picked: T[] = [];
-
-  while (pool.length > 0 && picked.length < count) {
-    const totalWeight = pool.reduce((sum, entry) => sum + entry.weight, 0);
-    let target = Math.random() * totalWeight;
-
-    let selectedIndex = pool.length - 1;
-    for (let i = 0; i < pool.length; i += 1) {
-      target -= pool[i].weight;
-      if (target <= 0) {
-        selectedIndex = i;
-        break;
-      }
-    }
-
-    picked.push(pool[selectedIndex].item);
-    pool.splice(selectedIndex, 1);
-  }
-
-  return picked;
-}
-
-// Weighted sampling favoring not-yet-seen and still-learning words over known ones.
+// Priority order: up to half from the learning tier, then not-seen words in
+// set order (not randomized), then leftover learning words, then known words
+// as a last resort.
 export function selectWordsForSession(
   wordSetId: string,
   wordInputs: WordInput[],
@@ -44,9 +15,38 @@ export function selectWordsForSession(
   }
 
   const history = loadWordHistory(wordSetId);
-  const weights = wordInputs.map(
-    (wordInput) => WORD_TIER_SELECTION_WEIGHTS[getWordTier(history, wordInput.word)],
-  );
 
-  return weightedSampleWithoutReplacement(wordInputs, weights, count);
+  const notSeen: WordInput[] = [];
+  const learning: WordInput[] = [];
+  const known: WordInput[] = [];
+  for (const wordInput of wordInputs) {
+    const tier = getWordTier(history, wordInput.word);
+    if (tier === 'not-seen') {
+      notSeen.push(wordInput);
+    } else if (tier === 'learning') {
+      learning.push(wordInput);
+    } else {
+      known.push(wordInput);
+    }
+  }
+
+  const shuffledLearning = shuffleArray(learning);
+  const learningTarget = Math.ceil(count / 2);
+
+  const selected: WordInput[] = shuffledLearning.slice(0, learningTarget);
+  selected.push(...notSeen.slice(0, count - selected.length));
+
+  // Not enough not-seen words to fill the rest: pull in remaining learning words first.
+  if (selected.length < count) {
+    selected.push(
+      ...shuffledLearning.slice(learningTarget, learningTarget + (count - selected.length)),
+    );
+  }
+
+  // Still short: only now fall back to already-known words.
+  if (selected.length < count) {
+    selected.push(...shuffleArray(known).slice(0, count - selected.length));
+  }
+
+  return shuffleArray(selected);
 }

@@ -11,42 +11,6 @@ ich bin | jestem
 du bist | jesteś
 er ist | on jest
 sie ist | ona jest
-Wie heißt du? | Jak się nazywasz?
-Wie ist dein Name? | Jak masz na imię?
-Wer bist du? | Kim jesteś?
-Wer ist das? | Kto to jest?
-Wie geht's dir? | Jak się masz?
-Wie ist deine Telefonnummer? | Jaki jest twój numer telefonu?
-Meine Telefonnummer ist... | Mój numer telefonu to...
-Wie alt bist du? | Ile masz lat?
-Wie buchstabiert man das? | Jak się to literuje?
-Ich heiße... | Nazywam się...
-Ich bin 10 Jahre alt | Mam 10 lat
-ich wohne | mieszkam
-Ich wohne in Wrocław | Mieszkam we Wrocławiu
-die Schwester | siostra
-meine Schwester | moja siostra
-der Freund | przyjaciel
-die Freundin | przyjaciółka
-Er ist mein Freund | On jest moim przyjacielem
-Sie ist meine Freundin | Ona jest moją przyjaciółką
-hallo | cześć
-Entschuldigung | przepraszam
-noch mal | jeszcze raz
-Guten Morgen | dzień dobry (rano)
-Guten Tag | dzień dobry
-Guten Abend | dobry wieczór
-Gute Nacht | dobranoc
-Tschüss | pa
-sehr gut | bardzo dobrze
-gut | dobrze
-so lala | tak sobie
-schlecht | źle
-sehr schlecht | bardzo źle
-der Name | imię
-die Telefonnummer | numer telefonu
-die Handynummer | numer komórki
-das Alter | wiek
 null | zero
 eins | jeden
 zwei | dwa
@@ -62,3 +26,38 @@ elf | jedenaście
 zwölf | dwanaście
 dreizehn | trzynaście
 vierzehn | czternaście
+noch mal | jeszcze raz
+sehr gut | bardzo dobrze
+gut | dobrze
+so lala | tak sobie
+schlecht | źle
+sehr schlecht | bardzo źle
+der Name | imię
+die Telefonnummer | numer telefonu
+die Handynummer | numer komórki
+das Alter | wiek
+wie heißt du? | jak się nazywasz?
+wie ist dein Name? | jak masz na imię?
+wer bist du? | kim jesteś?
+wer ist das? | kto to jest?
+wie geht's dir? | jak się masz?
+wie ist deine Telefonnummer? | jaki jest twój numer telefonu?
+meine Telefonnummer ist | mój numer telefonu to
+wie alt bist du? | ile masz lat?
+wie buchstabiert man das? | jak się to literuje?
+ich bin 10 Jahre alt | mam 10 lat
+ich wohne | mieszkam
+ich wohne in Wrocław | mieszkam we Wrocławiu
+die Schwester | siostra
+meine Schwester | moja siostra
+der Freund | przyjaciel
+die Freundin | przyjaciółka
+er ist mein Freund | on jest moim przyjacielem
+sie ist meine Freundin | ona jest moją przyjaciółką
+hallo | cześć
+Entschuldigung | przepraszam
+Guten Morgen | dzień dobry (rano)
+Guten Tag | dzień dobry
+Guten Abend | dobry wieczór
+Gute Nacht | dobranoc
+Tschüss | pa
