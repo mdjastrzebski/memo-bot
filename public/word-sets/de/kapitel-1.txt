@@ -3,12 +3,12 @@ ich | ja
 du | ty
 er | on
 sie | ona
-ich heiße | nazywam się
-du heißt | nazywasz się
+ich heiße | ja nazywam się
+du heißt | ty nazywasz się
 er heißt | on nazywa się
 sie heißt | ona nazywa się
-ich bin | jestem
-du bist | jesteś
+ich bin | ja jestem
+du bist | ty jesteś
 er ist | on jest
 sie ist | ona jest
 null | zero
@@ -32,6 +32,13 @@ gut | dobrze
 so lala | tak sobie
 schlecht | źle
 sehr schlecht | bardzo źle
+hallo | cześć
+Entschuldigung | przepraszam
+Guten Morgen | dzień dobry (rano)
+Guten Tag | dzień dobry
+Guten Abend | dobry wieczór
+Gute Nacht | dobranoc
+Tschüss | pa
 der Name | imię
 die Telefonnummer | numer telefonu
 die Handynummer | numer komórki
@@ -46,7 +53,7 @@ meine Telefonnummer ist | mój numer telefonu to
 wie alt bist du? | ile masz lat?
 wie buchstabiert man das? | jak się to literuje?
 ich bin 10 Jahre alt | mam 10 lat
-ich wohne | mieszkam
+ich wohne | ja mieszkam
 ich wohne in Wrocław | mieszkam we Wrocławiu
 die Schwester | siostra
 meine Schwester | moja siostra
@@ -54,10 +61,3 @@ der Freund | przyjaciel
 die Freundin | przyjaciółka
 er ist mein Freund | on jest moim przyjacielem
 sie ist meine Freundin | ona jest moją przyjaciółką
-hallo | cześć
-Entschuldigung | przepraszam
-Guten Morgen | dzień dobry (rano)
-Guten Tag | dzień dobry
-Guten Abend | dobry wieczór
-Gute Nacht | dobranoc
-Tschüss | pa
