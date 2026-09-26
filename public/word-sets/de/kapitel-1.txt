@@ -61,3 +61,9 @@ der Freund | przyjaciel
 die Freundin | przyjaciółka
 er ist mein Freund | on jest moim przyjacielem
 sie ist meine Freundin | ona jest moją przyjaciółką
+fünfzehn | piętnaście
+sechzehn | szesnaście
+siebzehn | siedemnaście
+achtzehn | osiemnaście
+neunzehn | dziewiętnaście
+zwanzig | dwadzieścia
