@@ -75,6 +75,7 @@ describe('InputScreen', () => {
 
     const textarea = screen.getByPlaceholderText(/Enter one word per line/i);
     await user.type(textarea, 'hello|Say hello\nworld');
+    await openOptions(user);
     await user.click(screen.getByRole('checkbox', { name: /Prompt/i }));
     await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
 
@@ -88,6 +89,7 @@ describe('InputScreen', () => {
     const user = userEvent.setup();
     render(<InputScreen />);
 
+    await openOptions(user);
     await user.click(screen.getByRole('checkbox', { name: /Dictation/i }));
 
     const textarea = screen.getByPlaceholderText(/Enter one word per line/i);
@@ -104,7 +106,8 @@ describe('InputScreen', () => {
     const user = userEvent.setup();
     render(<InputScreen />);
 
-    await user.click(screen.getByLabelText(/Strict/i));
+    await openOptions(user);
+    await user.click(screen.getByRole('radio', { name: /Strict/i }));
 
     const textarea = screen.getByPlaceholderText(/Enter one word per line/i);
     await user.type(textarea, 'żółw|Water reptile#Wodny gad');
@@ -165,8 +168,8 @@ describe('InputScreen', () => {
 
     await user.click(screen.getByRole('radio', { name: /Word set/i }));
     expect(screen.getAllByText(/Common tricky words/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole('slider', { name: /Session Size/i })).toBeInTheDocument();
-    expect(screen.getAllByText(/5 words/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('radiogroup', { name: /Session size/i })).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: '5' })).toHaveAttribute('aria-checked', 'true');
 
     await user.click(screen.getByRole('button', { name: /Launch Mission/i }));
 
@@ -234,6 +237,7 @@ describe('InputScreen', () => {
 
     await useGameState.persist.rehydrate();
 
+    const user = userEvent.setup();
     render(<InputScreen />);
 
     await waitFor(() => {
@@ -243,6 +247,7 @@ describe('InputScreen', () => {
       );
     });
 
+    await openOptions(user);
     expect(screen.getByRole('radio', { name: /Strict/i })).toHaveAttribute('aria-checked', 'true');
     expect(screen.getByRole('checkbox', { name: /Prompt/i })).toHaveAttribute(
       'aria-checked',
@@ -253,7 +258,7 @@ describe('InputScreen', () => {
       'false',
     );
     expect(screen.getByText(LANGUAGES[0].name)).toBeInTheDocument();
-    expect(screen.getAllByText(/25 words/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('radio', { name: '25' })).toHaveAttribute('aria-checked', 'true');
     expect(screen.getAllByText(/Animals/i).length).toBeGreaterThan(0);
     expect(useGameState.getState().setup.manualText).toBe('otter|Helpful prompt');
   });
@@ -302,6 +307,9 @@ describe('InputScreen', () => {
     });
     await user.click(screen.getByRole('radio', { name: /Word set/i }));
 
+    expect(screen.queryByRole('list', { name: /Words in set/i })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole('button', { name: /Show 3 words/i }));
+
     const list = await screen.findByRole('list', { name: /Words in set/i });
     await waitFor(() => {
       expect(within(list).getAllByRole('listitem')).toHaveLength(3);
@@ -347,11 +355,11 @@ describe('InputScreen', () => {
     });
 
     await user.click(screen.getByRole('radio', { name: /Word set/i }));
-    await user.click(screen.getByRole('button', { name: '25' }));
+    await user.click(screen.getByRole('radio', { name: '25' }));
     await user.click(screen.getByRole('radio', { name: /My words/i }));
     await user.click(screen.getByRole('radio', { name: /Word set/i }));
 
-    expect(screen.getAllByText(/25 words/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole('radio', { name: '25' })).toHaveAttribute('aria-checked', 'true');
     expect(useGameState.getState().setup.sampleSize).toBe(25);
   });
 
@@ -423,7 +431,22 @@ describe('InputScreen', () => {
     await user.click(screen.getByRole('radio', { name: /Word set/i }));
 
     expect(screen.queryByPlaceholderText(/Enter one word per line/i)).not.toBeInTheDocument();
-    expect(screen.getByRole('slider', { name: /Session Size/i })).toBeInTheDocument();
+    expect(screen.getByRole('radiogroup', { name: /Session size/i })).toBeInTheDocument();
+  });
+
+  it('collapses options by default and summarizes the current choices', async () => {
+    const user = userEvent.setup();
+    render(<InputScreen />);
+
+    const optionsToggle = screen.getByRole('button', { name: /Options/i });
+    expect(optionsToggle).toHaveTextContent('Relaxed · Dictation + Prompt');
+    expect(screen.queryByRole('radiogroup', { name: /Difficulty/i })).not.toBeInTheDocument();
+
+    await user.click(optionsToggle);
+    await user.click(screen.getByRole('radio', { name: /Strict/i }));
+
+    expect(optionsToggle).toHaveTextContent('Strict · Dictation + Prompt');
+    expect(useGameState.getState().setup.difficulty).toBe('strict');
   });
 
   it('disables manual start when no words are entered', () => {
@@ -432,6 +455,10 @@ describe('InputScreen', () => {
     expect(screen.getByRole('button', { name: /Launch Mission/i })).toBeDisabled();
   });
 });
+
+async function openOptions(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole('button', { name: /Options/i }));
+}
 
 function compareExercises(
   a: { word: string; exercise: string },

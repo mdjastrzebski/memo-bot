@@ -199,6 +199,7 @@ describe('App', () => {
     });
 
     expect(screen.getByText(LANGUAGES[0].name)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: /Options/i }));
     expect(screen.getByRole('radio', { name: /Strict/i })).toHaveAttribute('aria-checked', 'true');
   });
 

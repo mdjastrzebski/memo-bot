@@ -1,8 +1,27 @@
 import { Github, X } from 'lucide-react';
 import { useState } from 'react';
 
+const FOOTER_DISMISSED_STORAGE_KEY = 'memobot:footer-dismissed';
+
+function loadDismissed(): boolean {
+  try {
+    return window.localStorage.getItem(FOOTER_DISMISSED_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
 export function Footer() {
-  const [dismissed, setDismissed] = useState(false);
+  const [dismissed, setDismissed] = useState(loadDismissed);
+
+  const handleDismiss = () => {
+    setDismissed(true);
+    try {
+      window.localStorage.setItem(FOOTER_DISMISSED_STORAGE_KEY, 'true');
+    } catch {
+      // localStorage unavailable; dismiss for this session only.
+    }
+  };
 
   if (dismissed) return null;
 
@@ -21,7 +40,7 @@ export function Footer() {
         </a>
         <button
           type="button"
-          onClick={() => setDismissed(true)}
+          onClick={handleDismiss}
           aria-label="Dismiss banner"
           className="-mr-1 ml-1 rounded-full p-0.5 opacity-50 transition-opacity hover:opacity-100"
         >

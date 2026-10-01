@@ -2,12 +2,14 @@ import {
   ArrowRight,
   BookOpen,
   BotIcon as Robot,
+  ChevronDown,
+  ChevronRight,
   Circle,
   CircleCheck,
   CircleDotDashed,
   MessageSquareText,
   Rocket,
-  Sparkles,
+  SlidersHorizontal,
   Volume2,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -15,10 +17,10 @@ import type { ReactNode } from 'react';
 
 import { AppShell } from '../components/app-shell';
 import { LanguageSelector } from '../components/language-selector';
+import { SegmentedControl } from '../components/segmented-control';
 import { Button } from '../components/ui/button';
 import { Checkbox } from '../components/ui/checkbox';
-import { Label } from '../components/ui/label';
-import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../components/ui/collapsible';
 import {
   Select,
   SelectContent,
@@ -26,7 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Slider } from '../components/ui/slider';
 import { Textarea } from '../components/ui/textarea';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../components/ui/tooltip';
 import { toast } from '../hooks/use-toast';
@@ -149,8 +150,8 @@ export default function InputScreen() {
   const [isStartingWordSet, setIsStartingWordSet] = useState(false);
   const [selectedWordSetWords, setSelectedWordSetWords] = useState<string[]>([]);
   const [wordSetStats, setWordSetStats] = useState<Record<string, WordTierCounts>>({});
+  const [isWordListOpen, setIsWordListOpen] = useState(false);
   const startGame = useGameState((state) => state.startGame);
-  const sampleSizeIndex = WORD_SET_SAMPLE_SIZES.indexOf(sampleSize);
 
   useEffect(() => {
     let isCancelled = false;
@@ -343,216 +344,130 @@ export default function InputScreen() {
     <AppShell>
       <div className="mx-auto w-full max-w-3xl">
         <section className="stage-card bg-[rgba(255,251,245,0.92)] dark:bg-[rgba(29,34,46,0.92)]">
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="flex h-24 w-24 items-center justify-center rounded-[2rem] bg-[rgba(222,90,55,0.12)] p-4 text-[#de5a37] dark:bg-[rgba(222,90,55,0.18)]">
+          <div className="space-y-6 sm:space-y-7">
+            <div className="flex items-center gap-3 sm:gap-5">
+              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.25rem] bg-[rgba(222,90,55,0.12)] p-2.5 text-[#de5a37] dark:bg-[rgba(222,90,55,0.18)] sm:h-20 sm:w-20 sm:rounded-[1.6rem] sm:p-3.5">
                 <Robot className="h-full w-full" />
               </div>
-              <div className="space-y-2">
-                <h1 className="display-title text-5xl font-black leading-[0.95] text-[#22170f] dark:text-[#f8f1e6] sm:text-6xl">
+              <div className="min-w-0 flex-1">
+                <h1 className="display-title whitespace-nowrap text-3xl font-black leading-none text-[#22170f] dark:text-[#f8f1e6] sm:text-5xl">
                   Memo Bot
                 </h1>
-                <p className="text-2xl font-extrabold text-[#5b4636] dark:text-[#d4c5b3]">
+                <p className="mt-1.5 text-sm font-extrabold leading-tight text-[#5b4636] dark:text-[#d4c5b3] sm:mt-2 sm:text-xl">
                   Build a spelling mission.
                 </p>
               </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]">
-                Language
-              </Label>
               <LanguageSelector value={language} onChange={setLanguage} />
-              {wordSetLoadState === 'error' && (
-                <div className="rounded-[1.2rem] border border-black/10 bg-white/55 px-4 py-3 text-sm font-semibold text-[#7d3d20] dark:border-white/10 dark:bg-white/5 dark:text-[#f4c15d]">
-                  Word sets are unavailable right now. You can still practice with your own words.
-                </div>
-              )}
             </div>
 
-            <ChoiceSection
-              icon={<Sparkles className="h-5 w-5" />}
-              title="Difficulty"
-              value={difficulty}
-              onValueChange={(value) => setDifficulty(value as Difficulty)}
-              columns={3}
-              options={[
-                {
-                  value: 'relaxed',
-                  title: 'Relaxed 🙂',
-                },
-                {
-                  value: 'regular',
-                  title: 'Regular 🙌',
-                },
-                {
-                  value: 'strict',
-                  title: 'Strict 🎯',
-                },
-              ]}
-            />
-
-            <ExerciseSection
-              exercises={exercises}
-              hasPromptedWords={hasPromptedWords}
-              onExerciseChange={handleExerciseChange}
-            />
+            {wordSetLoadState === 'error' && (
+              <div className="rounded-[1.2rem] border border-black/10 bg-white/55 px-4 py-3 text-sm font-semibold text-[#7d3d20] dark:border-white/10 dark:bg-white/5 dark:text-[#f4c15d]">
+                Word sets are unavailable right now. You can still practice with your own words.
+              </div>
+            )}
 
             <div
               aria-hidden={!showSourceSelector}
               className={cn(
                 'overflow-hidden transition-[max-height,opacity] duration-500 ease-in-out',
                 showSourceSelector
-                  ? 'max-h-32 opacity-100'
+                  ? 'max-h-20 opacity-100'
                   : 'pointer-events-none max-h-0 opacity-0',
               )}
             >
-              <div className="pb-1">
-                <ChoiceSection
-                  icon={<BookOpen className="h-5 w-5" />}
-                  title="Source"
-                  value={source}
-                  onValueChange={(value) => handleSourceChange(value as InputSource)}
-                  options={[
-                    {
-                      value: 'manual',
-                      title: 'My words',
-                    },
-                    {
-                      value: 'word-set',
-                      title: 'Word set',
-                    },
-                  ]}
+              <SegmentedControl
+                label="Source"
+                value={source}
+                onValueChange={handleSourceChange}
+                options={[
+                  { value: 'manual', label: 'My words' },
+                  { value: 'word-set', label: 'Word set' },
+                ]}
+              />
+            </div>
+
+            {source === 'manual' || !showSourceSelector ? (
+              <div className="space-y-3">
+                <Textarea
+                  value={text}
+                  onChange={(e) => setManualText(e.target.value)}
+                  placeholder={`Enter one word per line...\nAdd an optional prompt with | and/or a spoken hint with #`}
+                  className="min-h-[200px] rounded-[1.5rem] border-black/10 bg-white/80 px-5 py-4 text-lg leading-8 text-[#2f2218] placeholder:text-[#9d8a79] shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] focus-visible:ring-inset focus-visible:ring-[#de5a37] focus-visible:ring-offset-0 dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf] dark:placeholder:text-[#8b8f9a] dark:shadow-none"
                 />
+                <p className="px-2 text-right text-sm font-bold text-[#6a503b] dark:text-[#d4c5b3] sm:text-base">
+                  {preparedWords.length} exercises
+                </p>
               </div>
-            </div>
+            ) : null}
 
-            <div>
-              {source === 'manual' || !showSourceSelector ? (
-                <div className="space-y-4 pb-1">
-                  <Textarea
-                    value={text}
-                    onChange={(e) => setManualText(e.target.value)}
-                    placeholder={`Enter one word per line...\nAdd an optional prompt with | and/or a spoken hint with #`}
-                    className="min-h-[260px] rounded-[1.5rem] border-black/10 bg-white/80 px-5 py-4 text-lg leading-8 text-[#2f2218] placeholder:text-[#9d8a79] shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] focus-visible:ring-inset focus-visible:ring-[#de5a37] focus-visible:ring-offset-0 dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf] dark:placeholder:text-[#8b8f9a] dark:shadow-none"
+            {showSourceSelector && source === 'word-set' ? (
+              <div className="space-y-4 sm:space-y-5">
+                <Select value={selectedWordSet?.id ?? ''} onValueChange={setSelectedWordSetId}>
+                  <SelectTrigger
+                    aria-label="Word set"
+                    className="h-14 rounded-[1.25rem] border-black/10 bg-white/80 px-4 text-base font-semibold sm:text-lg text-[#2f2218] focus:ring-inset focus:ring-[#de5a37] focus:ring-offset-0 dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf]"
+                  >
+                    <SelectValue placeholder="Select a word set" />
+                    {selectedWordSet && wordSetStats[selectedWordSet.id] ? (
+                      <span className="ml-auto mr-1">
+                        <WordSetStatsDots stats={wordSetStats[selectedWordSet.id]} />
+                      </span>
+                    ) : null}
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-black/10 bg-[rgba(255,251,245,0.98)] text-[#2f2218] dark:border-white/10 dark:bg-[rgba(29,34,46,0.98)] dark:text-[#f3eadf]">
+                    {availableWordSets.map((config) => {
+                      const stats = wordSetStats[config.id];
+                      return (
+                        <SelectItem
+                          key={config.id}
+                          value={config.id}
+                          className="cursor-pointer rounded-xl"
+                          endAdornment={stats ? <WordSetStatsDots stats={stats} /> : null}
+                        >
+                          {config.name}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
+
+                {selectedWordSet && selectedWordSetWords.length > 0 ? (
+                  <Collapsible open={isWordListOpen} onOpenChange={setIsWordListOpen}>
+                    <CollapsibleTrigger className="-mt-1 group flex items-center gap-1.5 rounded-full px-2 py-1 text-sm font-bold sm:text-base text-[#6a503b] transition-colors hover:bg-black/5 dark:text-[#d4c5b3] dark:hover:bg-white/10">
+                      <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]:rotate-90" />
+                      {isWordListOpen ? 'Hide words' : `Show ${selectedWordSetWords.length} words`}
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pt-2">
+                      <WordSetWordList
+                        wordSetId={selectedWordSet.id}
+                        words={selectedWordSetWords}
+                      />
+                    </CollapsibleContent>
+                  </Collapsible>
+                ) : null}
+
+                <div className="space-y-2.5">
+                  <div className={SECTION_LABEL_CLASS_NAME}>Session size</div>
+                  <SegmentedControl
+                    label="Session size"
+                    value={String(sampleSize)}
+                    onValueChange={(value) => setSampleSize(Number(value) as WordSetSampleSize)}
+                    options={WORD_SET_SAMPLE_SIZES.map((size) => ({
+                      value: String(size),
+                      label: String(size),
+                    }))}
                   />
-
-                  <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/50 px-4 py-3 text-base font-semibold text-[#6a503b] dark:border-white/10 dark:bg-white/5 dark:text-[#d4c5b3]">
-                    {preparedWords.length} exercises
-                  </div>
                 </div>
-              ) : null}
+              </div>
+            ) : null}
 
-              {showSourceSelector && source === 'word-set' ? (
-                <div className="space-y-4 pb-1">
-                  <div className="space-y-3">
-                    <Label
-                      htmlFor="word-set"
-                      className="text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]"
-                    >
-                      Word Set
-                    </Label>
-                    <Select value={selectedWordSet?.id ?? ''} onValueChange={setSelectedWordSetId}>
-                      <SelectTrigger
-                        id="word-set"
-                        className="h-14 rounded-[1.25rem] border-black/10 bg-white/80 text-base font-semibold text-[#2f2218] focus:ring-inset focus:ring-[#de5a37] focus:ring-offset-0 dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf]"
-                      >
-                        <SelectValue placeholder="Select a word set" />
-                        {selectedWordSet && wordSetStats[selectedWordSet.id] ? (
-                          <span className="ml-auto mr-1">
-                            <WordSetStatsDots stats={wordSetStats[selectedWordSet.id]} />
-                          </span>
-                        ) : null}
-                      </SelectTrigger>
-                      <SelectContent className="rounded-2xl border-black/10 bg-[rgba(255,251,245,0.98)] text-[#2f2218] dark:border-white/10 dark:bg-[rgba(29,34,46,0.98)] dark:text-[#f3eadf]">
-                        {availableWordSets.map((config) => {
-                          const stats = wordSetStats[config.id];
-                          return (
-                            <SelectItem
-                              key={config.id}
-                              value={config.id}
-                              className="cursor-pointer rounded-xl"
-                              endAdornment={stats ? <WordSetStatsDots stats={stats} /> : null}
-                            >
-                              {config.name}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {selectedWordSet ? (
-                    <WordSetWordList wordSetId={selectedWordSet.id} words={selectedWordSetWords} />
-                  ) : null}
-
-                  <div className="space-y-4 rounded-[1.25rem] border border-black/10 bg-white/60 px-4 py-4 dark:border-white/10 dark:bg-white/5">
-                    <div className="flex items-center justify-between gap-3">
-                      <Label
-                        id="sample-size-label"
-                        className="text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]"
-                      >
-                        Session Size
-                      </Label>
-                      <div className="rounded-full bg-[rgba(222,90,55,0.12)] px-3 py-1 text-sm font-black text-[#7d3d20] dark:bg-[rgba(244,193,93,0.16)] dark:text-[#f7d27a]">
-                        {sampleSize} words
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="relative px-2">
-                        <div className="pointer-events-none absolute inset-x-[0.5rem] top-1/2 h-2 -translate-y-1/2 rounded-full bg-[#ead9c4] dark:bg-[#3a404d]" />
-                        <div className="pointer-events-none absolute inset-x-[0.5rem] top-1/2 flex -translate-y-1/2 justify-between">
-                          {WORD_SET_SAMPLE_SIZES.map((size) => (
-                            <span
-                              key={size}
-                              className={cn(
-                                'h-4 w-4 rounded-full border-2 border-white shadow-sm transition-colors dark:border-[rgba(29,34,46,0.95)]',
-                                size <= sampleSize
-                                  ? 'bg-[#de5a37] dark:bg-[#f4c15d]'
-                                  : 'bg-[#d7c1a8] dark:bg-[#677087]',
-                              )}
-                            />
-                          ))}
-                        </div>
-                        <Slider
-                          thumbLabel="Session Size"
-                          value={[sampleSizeIndex < 0 ? 0 : sampleSizeIndex]}
-                          min={0}
-                          max={WORD_SET_SAMPLE_SIZES.length - 1}
-                          step={1}
-                          onValueChange={([nextIndex]) => {
-                            setSampleSize(
-                              (WORD_SET_SAMPLE_SIZES[nextIndex] ??
-                                WORD_SET_SAMPLE_SIZES[0]) as WordSetSampleSize,
-                            );
-                          }}
-                          className="relative z-10"
-                        />
-                      </div>
-
-                      <div className="flex justify-between gap-2 text-sm font-bold text-[#6a503b] dark:text-[#d4c5b3]">
-                        {WORD_SET_SAMPLE_SIZES.map((size) => (
-                          <button
-                            key={size}
-                            type="button"
-                            onClick={() => setSampleSize(size)}
-                            className={cn(
-                              'min-w-0 flex-1 rounded-full px-2 py-1 text-center transition-colors',
-                              size === sampleSize
-                                ? 'bg-[rgba(222,90,55,0.14)] text-[#7d3d20] dark:bg-[rgba(244,193,93,0.16)] dark:text-[#f7d27a]'
-                                : 'hover:bg-black/5 dark:hover:bg-white/10',
-                            )}
-                          >
-                            {size}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ) : null}
-            </div>
+            <OptionsSection
+              difficulty={difficulty}
+              exercises={exercises}
+              hasPromptedWords={hasPromptedWords}
+              onDifficultyChange={setDifficulty}
+              onExerciseChange={handleExerciseChange}
+            />
 
             <Button
               onClick={() => {
@@ -562,7 +477,7 @@ export default function InputScreen() {
                 isStartingWordSet ||
                 (source === 'manual' ? preparedWords.length === 0 : !selectedWordSet)
               }
-              className="h-16 w-full rounded-[1.4rem] border border-black/10 bg-[#de5a37] px-6 text-xl font-extrabold text-white shadow-[0_16px_30px_rgba(222,90,55,0.32)] transition-transform hover:-translate-y-0.5 hover:bg-[#c94d2d] disabled:translate-y-0 disabled:bg-[#d6a08f] dark:border-white/10 dark:bg-[#d46b47] dark:hover:bg-[#bf5d3c] dark:disabled:bg-[#725245]"
+              className="h-14 w-full rounded-[1.4rem] sm:h-16 border border-black/10 bg-[#de5a37] px-6 text-xl font-extrabold text-white shadow-[0_16px_30px_rgba(222,90,55,0.32)] transition-transform hover:-translate-y-0.5 hover:bg-[#c94d2d] disabled:translate-y-0 disabled:bg-[#d6a08f] dark:border-white/10 dark:bg-[#d46b47] dark:hover:bg-[#bf5d3c] dark:disabled:bg-[#725245]"
             >
               {isStartingWordSet ? (
                 <BookOpen className="h-6 w-6 animate-pulse" />
@@ -576,6 +491,74 @@ export default function InputScreen() {
         </section>
       </div>
     </AppShell>
+  );
+}
+
+const SECTION_LABEL_CLASS_NAME =
+  'text-xs font-extrabold uppercase tracking-[0.22em] sm:text-sm text-[#7d3d20] dark:text-[#f7d27a]';
+
+const DIFFICULTY_OPTIONS: Array<{ value: Difficulty; label: string; name: string }> = [
+  { value: 'relaxed', label: 'Relaxed 🙂', name: 'Relaxed' },
+  { value: 'regular', label: 'Regular 🙌', name: 'Regular' },
+  { value: 'strict', label: 'Strict 🎯', name: 'Strict' },
+];
+
+const EXERCISE_NAMES: Record<Exercise, string> = {
+  dictation: 'Dictation',
+  prompt: 'Prompt',
+};
+
+function OptionsSection({
+  difficulty,
+  exercises,
+  hasPromptedWords,
+  onDifficultyChange,
+  onExerciseChange,
+}: {
+  difficulty: Difficulty;
+  exercises: Exercise[];
+  hasPromptedWords: boolean;
+  onDifficultyChange: (difficulty: Difficulty) => void;
+  onExerciseChange: (exercise: Exercise, checked: boolean) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const difficultyName = DIFFICULTY_OPTIONS.find((option) => option.value === difficulty)?.name;
+  const exerciseSummary = (['dictation', 'prompt'] as const)
+    .filter((exercise) => exercises.includes(exercise))
+    .map((exercise) => EXERCISE_NAMES[exercise])
+    .join(' + ');
+
+  return (
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      className="rounded-[1.25rem] border border-black/10 bg-white/50 dark:border-white/10 dark:bg-white/5"
+    >
+      <CollapsibleTrigger className="group flex w-full items-center gap-3 rounded-[1.25rem] px-4 py-3.5 text-left sm:px-5 sm:py-4 transition-colors hover:bg-white/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#de5a37] dark:hover:bg-white/5">
+        <SlidersHorizontal className="h-5 w-5 shrink-0 text-[#de5a37] dark:text-[#f4c15d]" />
+        <span className={SECTION_LABEL_CLASS_NAME}>Options</span>
+        <span className="ml-auto truncate text-sm font-bold text-[#6a503b] dark:text-[#d4c5b3] sm:text-base">
+          {difficultyName} · {exerciseSummary}
+        </span>
+        <ChevronDown className="h-4 w-4 shrink-0 text-[#6a503b] transition-transform group-data-[state=open]:rotate-180 dark:text-[#d4c5b3]" />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="space-y-5 px-3 pb-4 pt-1 sm:px-5 sm:pb-5">
+        <div className="space-y-2.5">
+          <div className={SECTION_LABEL_CLASS_NAME}>Difficulty</div>
+          <SegmentedControl
+            label="Difficulty"
+            value={difficulty}
+            onValueChange={onDifficultyChange}
+            options={DIFFICULTY_OPTIONS}
+          />
+        </div>
+        <ExerciseSection
+          exercises={exercises}
+          hasPromptedWords={hasPromptedWords}
+          onExerciseChange={onExerciseChange}
+        />
+      </CollapsibleContent>
+    </Collapsible>
   );
 }
 
@@ -593,32 +576,30 @@ function ExerciseSection({
 
   return (
     <TooltipProvider>
-      <fieldset className="space-y-3">
-        <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]">
-          <span className="text-[#de5a37] dark:text-[#f4c15d]">
-            <BookOpen className="h-5 w-5" />
-          </span>
-          <div>Exercise Type</div>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <label className="flex cursor-pointer items-center gap-3 rounded-[1.15rem] border border-black/10 bg-white/70 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-colors hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
+      <fieldset className="space-y-2">
+        <legend className={cn(SECTION_LABEL_CLASS_NAME, 'mb-2.5')}>Exercise type</legend>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex cursor-pointer items-center gap-2.5 rounded-[1rem] border border-black/10 bg-white/70 px-3 py-2.5 transition-colors sm:px-4 sm:py-3 hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
             <Checkbox
               checked={isDictationSelected}
               disabled={isDictationSelected && !isPromptSelected}
               onCheckedChange={(checked) => onExerciseChange('dictation', checked === true)}
               className="border-[#de5a37] data-[state=checked]:bg-[#de5a37] data-[state=checked]:text-white"
             />
-            <Volume2 className="h-5 w-5 text-[#de5a37] dark:text-[#f4c15d]" />
-            <div className="text-base font-black text-[#22170f] dark:text-[#f3eadf]">Dictation</div>
+            <Volume2 className="hidden h-4 w-4 shrink-0 text-[#de5a37] dark:text-[#f4c15d] sm:block" />
+            <span className="truncate text-sm font-black text-[#22170f] dark:text-[#f3eadf] sm:text-base">
+              Dictation
+            </span>
           </label>
           <Tooltip>
             <TooltipTrigger asChild>
               <label
-                className={`flex items-center gap-3 rounded-[1.15rem] border border-black/10 bg-white/70 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-colors dark:border-white/10 dark:bg-white/5 ${
+                className={cn(
+                  'flex items-center gap-2.5 rounded-[1rem] border border-black/10 bg-white/70 px-3 py-2.5 transition-colors sm:px-4 sm:py-3 dark:border-white/10 dark:bg-white/5',
                   hasPromptedWords
                     ? 'cursor-pointer hover:bg-white dark:hover:bg-white/10'
-                    : 'cursor-not-allowed opacity-50'
-                }`}
+                    : 'cursor-not-allowed opacity-50',
+                )}
               >
                 <Checkbox
                   checked={isPromptSelected}
@@ -626,10 +607,10 @@ function ExerciseSection({
                   onCheckedChange={(checked) => onExerciseChange('prompt', checked === true)}
                   className="border-[#de5a37] data-[state=checked]:bg-[#de5a37] data-[state=checked]:text-white"
                 />
-                <MessageSquareText className="h-5 w-5 text-[#de5a37] dark:text-[#f4c15d]" />
-                <div className="text-base font-black text-[#22170f] dark:text-[#f3eadf]">
-                  Prompt (translation)
-                </div>
+                <MessageSquareText className="hidden h-4 w-4 shrink-0 text-[#de5a37] dark:text-[#f4c15d] sm:block" />
+                <span className="truncate text-sm font-black text-[#22170f] dark:text-[#f3eadf] sm:text-base">
+                  Prompt<span className="hidden sm:inline"> (translation)</span>
+                </span>
               </label>
             </TooltipTrigger>
             {!hasPromptedWords && (
@@ -641,51 +622,6 @@ function ExerciseSection({
         </div>
       </fieldset>
     </TooltipProvider>
-  );
-}
-
-function ChoiceSection({
-  icon,
-  title,
-  value,
-  onValueChange,
-  options,
-  columns = 2,
-}: {
-  icon: ReactNode;
-  title: string;
-  value: string;
-  onValueChange: (value: string) => void;
-  options: Array<{
-    value: string;
-    title: string;
-  }>;
-  columns?: 2 | 3;
-}) {
-  return (
-    <fieldset className="space-y-3">
-      <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-[0.22em] text-[#7d3d20] dark:text-[#f7d27a]">
-        <span className="text-[#de5a37] dark:text-[#f4c15d]">{icon}</span>
-        <div>{title}</div>
-      </div>
-      <RadioGroup
-        value={value}
-        onValueChange={onValueChange}
-        className={cn('grid gap-3', columns === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-2')}
-      >
-        {options.map((option) => (
-          <label
-            key={option.value}
-            className="flex cursor-pointer items-center gap-3 rounded-[1.15rem] border border-black/10 bg-white/70 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] transition-colors hover:bg-white dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
-          >
-            <RadioGroupItem value={option.value} className="border-[#de5a37] text-[#de5a37]" />
-            <div className="text-base font-black text-[#22170f] dark:text-[#f3eadf]">
-              {option.title}
-            </div>
-          </label>
-        ))}
-      </RadioGroup>
-    </fieldset>
   );
 }
 
