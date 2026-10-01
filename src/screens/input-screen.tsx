@@ -2,12 +2,15 @@ import {
   ArrowRight,
   BookOpen,
   BotIcon as Robot,
+  Circle,
+  CircleCheck,
+  CircleDotDashed,
   MessageSquareText,
   Rocket,
   Sparkles,
   Volume2,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { AppShell } from '../components/app-shell';
@@ -31,7 +34,13 @@ import { cn } from '../lib/utils';
 import { useGameState } from '../stores/game-store';
 import type { Difficulty, InputSource, Exercise, Word, WordInput } from '../types';
 import { getLanguageByCode } from '../utils/languages';
-import { getWordTierCounts, loadWordHistory, type WordTierCounts } from '../utils/word-history';
+import {
+  getWordTier,
+  getWordTierCounts,
+  loadWordHistory,
+  type WordTier,
+  type WordTierCounts,
+} from '../utils/word-history';
 import { selectWordsForSession } from '../utils/word-selection';
 import {
   type WordSetConfig,
@@ -63,6 +72,60 @@ function WordSetStatsDots({ stats }: { stats: WordTierCounts }) {
         {stats['not-seen']}
       </span>
     </span>
+  );
+}
+
+const WORD_TIER_DISPLAY: Record<WordTier, { label: string; icon: ReactNode }> = {
+  'known': {
+    label: 'Known',
+    icon: <CircleCheck className="h-4 w-4 text-emerald-500" />,
+  },
+  'learning': {
+    label: 'Learning',
+    icon: <CircleDotDashed className="h-4 w-4 text-amber-500" />,
+  },
+  'not-seen': {
+    label: 'New',
+    icon: <Circle className="h-4 w-4 text-neutral-400 dark:text-neutral-500" />,
+  },
+};
+
+function WordSetWordList({ wordSetId, words }: { wordSetId: string; words: string[] }) {
+  const entries = useMemo(() => {
+    const history = loadWordHistory(wordSetId);
+    return words.map((line) => {
+      const { word, prompt } = parseWordSetEntry(line);
+      return { word, prompt, tier: getWordTier(history, word) };
+    });
+  }, [wordSetId, words]);
+
+  if (entries.length === 0) {
+    return null;
+  }
+
+  return (
+    <ul
+      aria-label="Words in set"
+      className="max-h-72 overflow-y-auto rounded-[1.5rem] border border-black/10 bg-white/80 px-5 py-3 text-sm leading-7 text-[#2f2218] shadow-[inset_0_1px_0_rgba(255,255,255,0.55)] dark:border-white/10 dark:bg-[rgba(19,23,32,0.82)] dark:text-[#f3eadf] dark:shadow-none"
+    >
+      {entries.map(({ word, prompt, tier }) => (
+        <li key={word} className="flex items-center gap-2.5">
+          <span
+            role="img"
+            aria-label={WORD_TIER_DISPLAY[tier].label}
+            title={WORD_TIER_DISPLAY[tier].label}
+          >
+            {WORD_TIER_DISPLAY[tier].icon}
+          </span>
+          <span className="truncate">
+            {word}
+            {prompt ? (
+              <span className="text-[#9d8a79] dark:text-[#8b8f9a]"> – {prompt}</span>
+            ) : null}
+          </span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -419,6 +482,10 @@ export default function InputScreen() {
                     </Select>
                   </div>
 
+                  {selectedWordSet ? (
+                    <WordSetWordList wordSetId={selectedWordSet.id} words={selectedWordSetWords} />
+                  ) : null}
+
                   <div className="space-y-4 rounded-[1.25rem] border border-black/10 bg-white/60 px-4 py-4 dark:border-white/10 dark:bg-white/5">
                     <div className="flex items-center justify-between gap-3">
                       <Label
@@ -482,11 +549,6 @@ export default function InputScreen() {
                         ))}
                       </div>
                     </div>
-                  </div>
-
-                  <div className="rounded-[1.25rem] border border-dashed border-black/10 bg-white/50 px-4 py-3 text-base font-semibold text-[#6a503b] dark:border-white/10 dark:bg-white/5 dark:text-[#d4c5b3]">
-                    Randomly sample up to {sampleSize} cards from{' '}
-                    <span className="font-extrabold">{selectedWordSet?.name}</span>.
                   </div>
                 </div>
               ) : null}

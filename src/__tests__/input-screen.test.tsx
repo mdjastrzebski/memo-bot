@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -256,6 +256,62 @@ describe('InputScreen', () => {
     expect(screen.getAllByText(/25 words/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Animals/i).length).toBeGreaterThan(0);
     expect(useGameState.getState().setup.manualText).toBe('otter|Helpful prompt');
+  });
+
+  it('lists the selected word-set words with their learning status', async () => {
+    const user = userEvent.setup();
+    window.localStorage.setItem(
+      'memobot:set:history:en-status-set',
+      JSON.stringify({
+        colour: { tier: 'known', updatedAt: 1 },
+        friend: { tier: 'learning', updatedAt: 2 },
+      }),
+    );
+    vi.mocked(fetch).mockImplementation(async (input: string | URL | Request) => {
+      const url = String(input);
+      if (url.endsWith('/word-sets/config.json')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => [
+            {
+              id: 'en-status-set',
+              name: 'Status words',
+              url: '/word-sets/en-status-set.txt',
+              languageCode: 'en-GB',
+            },
+          ],
+        } as Response;
+      }
+
+      if (url.endsWith('/word-sets/en-status-set.txt')) {
+        return {
+          ok: true,
+          status: 200,
+          text: async () => 'colour|kolor\nfriend\nenough',
+        } as Response;
+      }
+
+      return { ok: false, status: 404, text: async () => '' } as Response;
+    });
+
+    render(<InputScreen />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('radio', { name: /Word set/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole('radio', { name: /Word set/i }));
+
+    const list = await screen.findByRole('list', { name: /Words in set/i });
+    await waitFor(() => {
+      expect(within(list).getAllByRole('listitem')).toHaveLength(3);
+    });
+
+    const items = within(list).getAllByRole('listitem');
+    expect(items.map((item) => item.textContent)).toEqual(['colour – kolor', 'friend', 'enough']);
+    expect(within(items[0]).getByRole('img', { name: 'Known' })).toBeInTheDocument();
+    expect(within(items[1]).getByRole('img', { name: 'Learning' })).toBeInTheDocument();
+    expect(within(items[2]).getByRole('img', { name: 'New' })).toBeInTheDocument();
   });
 
   it('preserves the selected word-set size when toggling sources', async () => {
