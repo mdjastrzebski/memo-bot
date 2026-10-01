@@ -11,6 +11,7 @@ ich bin | ja jestem
 du bist | ty jesteś
 er ist | on jest
 sie ist | ona jest
+ich bin da | jestem obecny
 null | zero
 eins | jeden
 zwei | dwa
@@ -39,6 +40,7 @@ Guten Tag | dzień dobry
 Guten Abend | dobry wieczór
 Gute Nacht | dobranoc
 Tschüss | pa
+Auf Wiedersehen | do widzenia
 der Name | imię
 die Telefonnummer | numer telefonu
 die Handynummer | numer komórki
