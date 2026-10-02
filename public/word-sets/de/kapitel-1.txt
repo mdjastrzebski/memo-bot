@@ -56,7 +56,7 @@ wie alt bist du? | ile masz lat?
 wie buchstabiert man das? | jak się to literuje?
 ich bin 10 Jahre alt | mam 10 lat
 ich wohne | ja mieszkam
-ich wohne in Wrocław | mieszkam we Wrocławiu
+ich wohne in Breslau | mieszkam we Wrocławiu
 die Schwester | siostra
 meine Schwester | moja siostra
 der Freund | przyjaciel
