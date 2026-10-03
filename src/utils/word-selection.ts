@@ -31,7 +31,7 @@ export function selectWordsForSession(
   }
 
   const shuffledLearning = shuffleArray(learning);
-  const learningTarget = Math.ceil(count / 2);
+  const learningTarget = Math.floor(count / 2);
 
   const selected: WordInput[] = shuffledLearning.slice(0, learningTarget);
   selected.push(...notSeen.slice(0, count - selected.length));
