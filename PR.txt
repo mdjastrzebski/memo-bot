@@ -1,0 +1,13 @@
+## What does this PR do?
+
+Changes word-set card picking once every word in the set has been seen: sessions now draw 25% (rounded down) from known words and 75% (rounded up) from learning words, so learnt words get periodic review. Selection while unseen words remain is unchanged.
+
+## Relevant implementation details
+
+- New `selectReviewWords` helper in `src/utils/word-selection.ts`, used only when there are no not-seen words.
+- Each tier tops up the other's shortfall (few learning words → more known words, and vice versa).
+
+## How did you test this?
+
+- Added unit tests for the 25/75 split and both shortfall cases in `src/__tests__/word-selection.test.ts`.
+- `bun run validate` passes.
