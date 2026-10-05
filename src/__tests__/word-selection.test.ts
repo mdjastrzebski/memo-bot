@@ -58,4 +58,53 @@ describe('selectWordsForSession', () => {
     expect(selected).toEqual(expect.arrayContaining(['l1', 'n1']));
     expect(selected.filter((word) => word.startsWith('k'))).toHaveLength(1);
   });
+
+  describe('when all words have been seen', () => {
+    it('takes 25% (rounded down) known words and 75% (rounded up) learning words', () => {
+      seedTiers({
+        l1: 'learning',
+        l2: 'learning',
+        l3: 'learning',
+        l4: 'learning',
+        l5: 'learning',
+        k1: 'known',
+        k2: 'known',
+        k3: 'known',
+      });
+
+      const selected = select(['l1', 'l2', 'l3', 'l4', 'l5', 'k1', 'k2', 'k3'], 5);
+
+      expect(selected).toHaveLength(5);
+      expect(selected.filter((word) => word.startsWith('k'))).toHaveLength(1);
+      expect(selected.filter((word) => word.startsWith('l'))).toHaveLength(4);
+    });
+
+    it('fills with extra known words when learning words run out', () => {
+      seedTiers({ l1: 'learning', k1: 'known', k2: 'known', k3: 'known', k4: 'known' });
+
+      const selected = select(['l1', 'k1', 'k2', 'k3', 'k4'], 4);
+
+      expect(selected).toContain('l1');
+      expect(selected.filter((word) => word.startsWith('k'))).toHaveLength(3);
+    });
+
+    it('fills with extra learning words when known words run out', () => {
+      seedTiers({
+        l1: 'learning',
+        l2: 'learning',
+        l3: 'learning',
+        l4: 'learning',
+        l5: 'learning',
+        l6: 'learning',
+        l7: 'learning',
+        l8: 'learning',
+        l9: 'learning',
+      });
+
+      const selected = select(['l1', 'l2', 'l3', 'l4', 'l5', 'l6', 'l7', 'l8', 'l9'], 8);
+
+      expect(selected).toHaveLength(8);
+      expect(new Set(selected).size).toBe(8);
+    });
+  });
 });

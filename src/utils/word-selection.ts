@@ -2,9 +2,13 @@ import type { WordInput } from '../types';
 import { shuffleArray } from './data';
 import { getWordTier, loadWordHistory } from './word-history';
 
-// Priority order: up to half from the learning tier, then not-seen words in
-// set order (not randomized), then leftover learning words, then known words
-// as a last resort.
+// While not-seen words remain, priority order is: up to half from the learning
+// tier, then not-seen words in set order (not randomized), then leftover learning
+// words, then known words as a last resort.
+//
+// Once every word has been seen, the session mixes in known words for review:
+// 25% (rounded down) from the known tier and 75% (rounded up) from the learning
+// tier, with either tier filling any shortfall of the other.
 export function selectWordsForSession(
   wordSetId: string,
   wordInputs: WordInput[],
@@ -31,6 +35,12 @@ export function selectWordsForSession(
   }
 
   const shuffledLearning = shuffleArray(learning);
+  const shuffledKnown = shuffleArray(known);
+
+  if (notSeen.length === 0) {
+    return shuffleArray(selectReviewWords(shuffledLearning, shuffledKnown, count));
+  }
+
   const learningTarget = Math.floor(count / 2);
 
   const selected: WordInput[] = shuffledLearning.slice(0, learningTarget);
@@ -45,8 +55,22 @@ export function selectWordsForSession(
 
   // Still short: only now fall back to already-known words.
   if (selected.length < count) {
-    selected.push(...shuffleArray(known).slice(0, count - selected.length));
+    selected.push(...shuffledKnown.slice(0, count - selected.length));
   }
 
   return shuffleArray(selected);
+}
+
+function selectReviewWords(learning: WordInput[], known: WordInput[], count: number): WordInput[] {
+  const knownTarget = Math.min(Math.floor(count / 4), known.length);
+  const learningTarget = Math.min(count - knownTarget, learning.length);
+
+  const selected = [...learning.slice(0, learningTarget), ...known.slice(0, knownTarget)];
+
+  // Not enough learning words to fill the rest: top up with more known words.
+  if (selected.length < count) {
+    selected.push(...known.slice(knownTarget, knownTarget + (count - selected.length)));
+  }
+
+  return selected;
 }

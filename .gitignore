@@ -41,3 +41,6 @@ next-env.d.ts
 
 # coverage
 /coverage
+
+# Local PR description
+PR.txt
